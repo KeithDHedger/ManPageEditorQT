@@ -1,3 +1,3 @@
 # ManPageEditorQT
-A manpage editor for QT
+A manpage editor for QT  
 Nothing to see here yet, move along ...
