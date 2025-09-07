@@ -1,0 +1,19 @@
+#!/bin/bash
+
+shopt -s nullglob
+cd "ManPageEditorQT/src"
+
+rm moc_* &>/dev/null||true
+
+moc ManPageEditorQT.h -o moc_ManPageEditorQT.cpp
+while read
+	do
+		outfile=${REPLY#./*}
+		outfile=moc_${outfile%*.h}.cpp
+		moc $REPLY -o $outfile
+	done < <(find -name "QT_*.h")
+
+csrclst=$(echo "../src/*.c" "../src/*.cpp")
+echo COMMONSRC = $csrclst > ../sources
+
+exit 0
