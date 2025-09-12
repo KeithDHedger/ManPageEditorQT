@@ -49,59 +49,59 @@ NoteBookClass::~NoteBookClass()
 
 NoteBookClass::NoteBookClass(ManPageEditorQT *mpclass,QWidget *parent): QTabWidget(parent)
 {
-//	QIcon		qicon;
-//	QWidget		*container;
-//	QHBoxLayout	*layout;
-//
-//	this->mainKKEditClass=kk;
-//	this->setAcceptDrops(true);
-//	this->scrollLeft=new QToolButton(this);
-//	this->scrollRight=new QToolButton(this);
-//	qicon=QIcon::fromTheme("go-previous");
-//	this->scrollLeft->setIcon(qicon);
-//	qicon=QIcon::fromTheme("go-next");
-//	this->scrollRight->setIcon(qicon);
-//
-//	container=new QWidget(this);
-//	layout=new QHBoxLayout(container);
-////scroll rite
-//	container->setFixedHeight(this->tabBar()->height());
-//	container->setSizePolicy(QSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed));
-//	layout->setContentsMargins(1,0,1,0);
-//	this->scrollRight->setFixedHeight(tabBar()->height());
-//	this->scrollRight->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
-//	this->scrollRight->setToolButtonStyle(Qt::ToolButtonIconOnly);
-//	layout->addWidget(this->scrollRight);
-//	this-> setCornerWidget(container, Qt::TopRightCorner);
-//
-////scroll left
-//	container=new QWidget(this);
-//	layout=new QHBoxLayout(container);
-//	container->setFixedHeight(this->tabBar()->height());
-//	container->setSizePolicy(QSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed));
-//	layout->setContentsMargins(1,0,1,0);
-//	this->scrollLeft->setFixedHeight(tabBar()->height());
-//	this->scrollLeft->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
-//	this->scrollLeft->setToolButtonStyle(Qt::ToolButtonIconOnly);
-//	layout->addWidget(this->scrollLeft);
-//	this-> setCornerWidget(container, Qt::TopLeftCorner);
-//
-//	this->scrollLeft->setAutoRepeat(true);
-//	this->scrollRight->setAutoRepeat(true);
-//
-//	QObject::connect(this->scrollLeft,&QPushButton::clicked,[this]()
-//		{
-//			this->scrollTabsLeft();
-//		});
-//	QObject::connect(this->scrollRight,&QPushButton::clicked,[this]()
-//		{
-//			this->scrollTabsRight();
-//		});
-//
-//	this->tabBar()->setStyleSheet(QString("QTabBar::scroller{width: 0px;}"));
-//	this->setDocumentMode(true);
-//	this->setTabsClosable(true);
-//	this->setMovable(true);
+	QIcon		qicon;
+	QWidget		*container;
+	QHBoxLayout	*layout;
+
+	this->mainManPageEditorQTClass=mpclass;
+	this->setAcceptDrops(true);
+	this->scrollLeft=new QToolButton(this);
+	this->scrollRight=new QToolButton(this);
+	qicon=QIcon::fromTheme("go-previous");
+	this->scrollLeft->setIcon(qicon);
+	qicon=QIcon::fromTheme("go-next");
+	this->scrollRight->setIcon(qicon);
+
+	container=new QWidget(this);
+	layout=new QHBoxLayout(container);
+//scroll rite
+	container->setFixedHeight(this->tabBar()->height());
+	container->setSizePolicy(QSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed));
+	layout->setContentsMargins(1,0,1,0);
+	this->scrollRight->setFixedHeight(tabBar()->height());
+	this->scrollRight->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
+	this->scrollRight->setToolButtonStyle(Qt::ToolButtonIconOnly);
+	layout->addWidget(this->scrollRight);
+	this-> setCornerWidget(container, Qt::TopRightCorner);
+
+//scroll left
+	container=new QWidget(this);
+	layout=new QHBoxLayout(container);
+	container->setFixedHeight(this->tabBar()->height());
+	container->setSizePolicy(QSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed));
+	layout->setContentsMargins(1,0,1,0);
+	this->scrollLeft->setFixedHeight(tabBar()->height());
+	this->scrollLeft->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
+	this->scrollLeft->setToolButtonStyle(Qt::ToolButtonIconOnly);
+	layout->addWidget(this->scrollLeft);
+	this-> setCornerWidget(container, Qt::TopLeftCorner);
+
+	this->scrollLeft->setAutoRepeat(true);
+	this->scrollRight->setAutoRepeat(true);
+
+	QObject::connect(this->scrollLeft,&QPushButton::clicked,[this]()
+		{
+			this->scrollTabsLeft();
+		});
+	QObject::connect(this->scrollRight,&QPushButton::clicked,[this]()
+		{
+			this->scrollTabsRight();
+		});
+
+	this->tabBar()->setStyleSheet(QString("QTabBar::scroller{width: 0px;}"));
+	this->setDocumentMode(true);
+	this->setTabsClosable(true);
+	this->setMovable(true);
 }
 
 //
@@ -140,31 +140,31 @@ NoteBookClass::NoteBookClass(ManPageEditorQT *mpclass,QWidget *parent): QTabWidg
 //	QTabWidget::dropEvent(event);
 //}
 //
-//void NoteBookClass::scrollTabsLeft(void)
-//{
-//	int	ctab=this->currentIndex()-1;
-//
-//	while((ctab>-1) && (this->isTabVisible(ctab)==false))
-//		ctab--;
-//
-//	if(ctab==-1)
-//		return;
-//
-//	this->setCurrentIndex(ctab);
-//}
-//
-//void NoteBookClass::scrollTabsRight(void)
-//{
-//	int	ctab=this->currentIndex()+1;
-//
-//	while((ctab<this->count()) && (this->isTabVisible(ctab)==false))
-//		ctab++;
-//
-//	if(ctab==this->count())
-//		ctab=this->count()-1;
-//	else
-//		this->setCurrentIndex(ctab);
-//}
+void NoteBookClass::scrollTabsLeft(void)
+{
+	int	ctab=this->currentIndex()-1;
+
+	while((ctab>-1) && (this->isTabVisible(ctab)==false))
+		ctab--;
+
+	if(ctab==-1)
+		return;
+
+	this->setCurrentIndex(ctab);
+}
+
+void NoteBookClass::scrollTabsRight(void)
+{
+	int	ctab=this->currentIndex()+1;
+
+	while((ctab<this->count()) && (this->isTabVisible(ctab)==false))
+		ctab++;
+
+	if(ctab==this->count())
+		ctab=this->count()-1;
+	else
+		this->setCurrentIndex(ctab);
+}
 //
 
 #endif

@@ -1,11 +1,10 @@
 # http://www.gnu.org/software/automake
 
 Makefile.in
-/ar-lib
-/mdate-sh
-/py-compile
-/test-driver
-/ylwrap
+*.o
+*moc_*
+manpageeditorqt
+config.h
 .deps/
 .dirstamp
 
@@ -34,10 +33,6 @@ autom4te.cache
 /libtool
 /ltmain.sh
 .libs/
-
-# http://www.gnu.org/software/texinfo
-
-/texinfo.tex
 
 # http://www.gnu.org/software/m4/
 

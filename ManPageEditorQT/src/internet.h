@@ -22,25 +22,21 @@
 #define MYEMAIL "kdhedger68713@gmail.com"
 #define MYWEBSITE "https://keithdhedger.github.io/"
 #define GLOBALWEBSITE "https://keithdhedger.github.io"
+#define BCPAGE GLOBALWEBSITE "/pages/bashcompiler/bashcompiler.html"
+#define KKEDITQTPAGE "https://keithdhedger.github.io/KKEditQT/"
+#define KKTERMINALPAGE GLOBALWEBSITE "/pages/kkterminal/kkterminal.html"
+#define QTSUPAGE GLOBALWEBSITE "/pages/qtsu/qtsu.html"
+#define THEMEMANAGER GLOBALWEBSITE "/pages/apps.html#themeed"
+#define XDECSPAGE GLOBALWEBSITE "/pages/xdecorations/xdecorations.html"
 #define ASPELLPAGE GLOBALWEBSITE "/pages/aspellgui/aspelgui.html"
 #define MANPAGEPAGE GLOBALWEBSITE "/pages/manpageeditor/manpageeditor.html"
 #define CLIPVIEW GLOBALWEBSITE "/pages/clipviewer/clip.html"
-#define THEMEMANAGER GLOBALWEBSITE "/pages/apps.html#themeed"
 #define COMPMANAGER GLOBALWEBSITE "/pages/apps.html#xfcecomp"
-#define KKEDITPAGE "https://keithdhedger.github.io/KKEdit/"
-#define KKEDITPAGEFR "https://keithdhedger.github.io/KKEdit/help.fr.html"
-#define KKTERMINALPAGE GLOBALWEBSITE "/pages/kkterminal/kkterminal.html"
-#define KKEDITQTPAGE "https://keithdhedger.github.io/KKEditQT/"
-#define XDECSPAGE GLOBALWEBSITE "/pages/xdecorations/xdecorations.html"
 #define GTKSUPAGE GLOBALWEBSITE "/pages/gtksu/gtksu.html"
-#define KKFILEMANAGER "https://github.com/KeithDHedger/KKFileManager"
 
-#define COPYRITE "Copyright © 2013-2023 K.D.Hedger"
+#define COPYRITE "Copyright © 2013-2025 K.D.Hedger"
 
-#ifndef _USEQT5_
 extern const char	*moreapps[];
 extern const char	*authors[];
-#else
-extern const char*	authors;
-#endif
+
 #endif

@@ -24,6 +24,7 @@
 class NoteBookClass;
 class ManPageEditorQT;
 class MenuItemClass;
+class ManpageConvertClass;
 
 #include <QApplication>
 #include <QMessageBox>
@@ -36,11 +37,21 @@ class MenuItemClass;
 #include <QTabWidget>
 #include <QAction>
 #include <QToolBar>
+#include <QToolButton>
+#include <QPushButton>
+#include <QTabBar>
 #include <QMenuBar>
 #include <QMenu>
 #include <QMenuBar>
 #include <QStatusBar>
-
+#include <QDialog>
+#include <QFileDialog>
+#include <QTextEdit>
+#include <QTextDocumentWriter>
+#include <QLineEdit>
+#include <QHBoxLayout>
+#include <QRegularExpression>
+#include <QTextDocument>
 
 #include <QSettings>
 #include <QCompleter>
@@ -48,12 +59,11 @@ class MenuItemClass;
 
 //#include "config.h"
 
-#include "ChooserDialog.h"
-
 #include "ManPageEditorQT.h"
 #include "QT_notebook.h"
 #include "QT_menuitem.h"
 #include "Callbacks.h"
+#include "ManpageConvert.h"
 
 extern ManPageEditorQT	*mpclass;
 

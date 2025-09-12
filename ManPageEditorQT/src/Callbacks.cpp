@@ -28,34 +28,54 @@ qDebug()<<mc;
 		{
 //file menu
 			case NEWMENUITEM:
-				//this->newFile();
 				break;
 			case OPENMENUITEM:
-				//this->openFileDialog();
+				{
+					QString	filepath="";
+					filepath=QFileDialog::getOpenFileName(nullptr,"Open File",this->lastLoadDir,"",nullptr,QFileDialog::HideNameFilterDetails);
+					if(filepath.isEmpty()==false)
+						{
+							this->lastLoadDir=QFileInfo(filepath).dir().absolutePath();
+							this->currentFilePath=filepath;
+							this->mpConv->importManpage(filepath);
+						}
+				}
 				break;
 			case NEWEDMENUITEM:
 			//	this->newEditor(NEWEDMENUITEM);
 				break;
 
 			case SAVEMENUITEM:
-			//	this->saveFile(-1,false);
-			//	this->setToolbarSensitive();
+				if(this->currentFilePath.isEmpty()==true)
+					break;
+				this->mpConv->exportManpage(this->currentFilePath);
 				break;
 			case SAVEASMENUITEM:
-			//	this->saveFileAs(-1);
+				{
+					QString filepath;
+					filepath=QFileDialog::getSaveFileName(nullptr,"Save File",this->lastSaveDir,"",nullptr,QFileDialog::HideNameFilterDetails);
+					if(filepath.isEmpty()==false)
+						{
+							this->currentFilePath=filepath;
+							this->lastSaveDir=QFileInfo(filepath).canonicalPath();
+							this->mpConv->exportManpage(filepath);
+						}
+				}
 				break;
 
 			case PRINTMENUITEM:
 			//	this->printDocument();
 				break;
 			case CLOSEMENUITEM:
+				this->closeTabs();
 				//this->closingAllTabs=false;
 				//this->closeTab(-1);
 				break;
 			case CLOSEALLMENUITEM:
-				//this->closeAllTabs();
+				this->closeTabs();
 				break;
 			case QUITMENUITEM:
+				this->writeExitData();
 				QApplication::quit();
 				break;
 		}

@@ -29,36 +29,7 @@ ManPageEditorQT::ManPageEditorQT(QApplication *app)
 ManPageEditorQT::~ManPageEditorQT()
 {
 	QDir		fold(this->tmpFolderName);
-
-	for(int j=0;j<NOMORESHORTCUT;j++)
-		delete this->appShortcuts[j];
-
 	fold.removeRecursively();
-}
-
-
-
-void ManPageEditorQT::setAppShortcuts(void)
-{
-	for(int j=0;j<NOMORESHORTCUT;j++)
-		{
-			if(this->appShortcuts[j]!=NULL)
-				{
-					delete this->appShortcuts[j];
-					this->appShortcuts[j]=new QShortcut(this->mainWindow);
-				}
-			if(this->defaultShortCutsList.size()>j)
-				{
-					this->appShortcuts[j]->setKey(QKeySequence(this->defaultShortCutsList.at(j)));
-					//this->appShortcuts[j]->setObjectName(QString("%1").arg(j));
-					//QObject::connect(this->appShortcuts[j],SIGNAL(activated()),this,SLOT(doAppShortCuts()));
-				}
-			else
-				{
-					this->defaultShortCutsList<<"";
-					//this->appShortcuts[j]->setObjectName(QString("%1").arg(NOSHORTCUT));
-				}
-		}
 }
 
 MenuItemClass* ManPageEditorQT::makeMenuItemClass(int mainmenu,const QString name,const QKeySequence key,const QString iconname,int userdata)
@@ -75,7 +46,6 @@ MenuItemClass* ManPageEditorQT::makeMenuItemClass(int mainmenu,const QString nam
 		{
 			case FILEMENU:
 				this->fileMenu->addAction(menuitem);
-			//	QObject::connect(menuitem,SIGNAL(triggered()),this,SLOT(doFileMenuItems()));
 				QObject::connect(menuitem,&MenuItemClass::triggered,[this,menuitem]()
 					{
 						this->doFileMenuItems(menuitem);
@@ -88,7 +58,6 @@ MenuItemClass* ManPageEditorQT::makeMenuItemClass(int mainmenu,const QString nam
 					{
 						this->doEditMenuItems(menuitem);
 					});
-				//QObject::connect(menuitem,SIGNAL(triggered()),this,SLOT(doEditMenuItems()));
 				break;
 			case FORMATMENU:
 				this->formatMenu->addAction(menuitem);
@@ -116,17 +85,7 @@ void ManPageEditorQT::buildMainGui(void)
 	MenuItemClass	*menuItemSink;
 
 	this->mainNotebook=new NoteBookClass(this);
-
-//this->mainNotebook->setStyleSheet(QString("QTabBar::tab {width: 256;}"));//TODO//
-//	this->mainNotebook->setContextMenuPolicy(Qt::CustomContextMenu);
-//	QObject::connect(this->mainNotebook,SIGNAL(customContextMenuRequested(const QPoint &)),SLOT(tabContextMenu(const QPoint &)));
-
-//	QObject::connect(this->mainNotebook,SIGNAL(currentChanged(int)),this,SLOT(switchPage(int)));
-//	//QObject::connect(this->mainNotebook,SIGNAL(tabBarClicked(int)),this,SLOT(switchPage(int)));
-//	QObject::connect(this->mainNotebook,SIGNAL(tabCloseRequested(int)),this,SLOT(closeTab(int)));
-
 	this->menuBar=new QMenuBar;
-	//this->toolBar=new ToolBarClass(this);
 
 //file menu
 	this->fileMenu=new QMenu("&File");
@@ -226,93 +185,20 @@ void ManPageEditorQT::initApp(void)
 	QFile	file;
 
 	this->homeFolder=QString("%1").arg(tdir.homePath());
-//	this->homeDataFolder=QString("%1/%2").arg(this->homeFolder).arg(KKEDITFOLDER);
-//	this->sessionFolder=QString("%1/%2/%3").arg(this->homeFolder).arg(KKEDITFOLDER).arg("sesssions");
-//	this->toolsFolder=QString("%1/%2/%3").arg(this->homeFolder).arg(KKEDITFOLDER).arg("tools");
-//	this->recentFiles=new RecentMenuClass(this);
-//	this->theme=new ThemeClass(this);
-//	QObject::connect(this->fileWatch,&QFileSystemWatcher::fileChanged,[this](const QString &path)
-//		{
-//			this->fileChangedOnDisk(path);
-//		});
 
-//	tdir.mkpath(this->sessionFolder);
-//	for(int j=0;j<MAXSESSIONS;j++)
-//		{
-//			QProcess::execute("touch",QStringList()<<this->sessionFolder+"/Session-"+QString::number(j));
-//
-//			file.setFileName(QString("%1/Session-%2").arg(this->sessionFolder).arg(j));
-//			if(file.open(QIODevice::Text | QIODevice::ReadOnly))
-//				{
-//					tstr=QTextStream(&file).readLine();
-//					file.close();
-//					if(tstr.isEmpty()==true)
-//						{
-//							if(file.open(QIODevice::Text | QIODevice::WriteOnly))
-//								{
-//									if(j>0)
-//										{
-//											QTextStream(&file) << "New Session-" << j <<Qt::endl;
-//											this->sessionNames[j]=QString("New Session-%1").arg(j);
-//										}
-//									else
-//										{
-//											QTextStream(&file) << "Default Session" <<Qt::endl;
-//											this->sessionNames[0]=QString("Default Session");
-//										}
-//									file.close();
-//								}
-//						}
-//					else
-//						this->sessionNames[j]=tstr;
-//				}
-//		}
-
-
-//qDebug()<<tmpfoldertemplate;
-		this->tmpFolderName=mkdtemp(tmpfoldertemplate);
-		if(this->tmpFolderName==NULL)
-			{
-				qDebug()<<"Can't create temporary folder, quitting ...";
-				exit (100);
-			}
-
-//qDebug()<<this->tmpFolderName;
-
-	//this->gotDoxygen=QProcess::execute("sh",QStringList()<<"-c"<<"which doxygen 2>&1 >/dev/null");
-	//this->gotManEditor=QProcess::execute("sh",QStringList()<<"-c"<<"which manpageeditor 2>&1 >/dev/null");
-
-//	if(getuid()!=0)
-//		styleName="classic";
-//	else
-//		styleName="Root Source";
-	//this->highlightColour="#808080";
+	this->tmpFolderName=mkdtemp(tmpfoldertemplate);
+	if(this->tmpFolderName.isEmpty()==true)
+		{
+			qDebug()<<"Can't create temporary folder, quitting ...";
+			exit (100);
+		}
 	this->mainWindow=new QMainWindow;
+	this->mpConv=new ManpageConvertClass(this);
 
-	for(int j=0;j<NOMORESHORTCUT;j++)
-		this->appShortcuts[j]=new QShortcut(this->mainWindow);
-
-	this->setAppShortcuts();
-//	this->readConfigs();
-//	if(this->queueID==-1)
-//		{
-//			if((this->queueID=msgget(this->sessionID,IPC_CREAT|0660))==-1)
-//				fprintf(stderr,"Can't create message queue, scripting wont work :( ...\n");
-//		}
-//	this->checkMessages=new QTimer();
-//	QObject::connect(this->checkMessages,SIGNAL(timeout()),this,SLOT(doTimer()));
-//	this->checkMessages->start(this->prefsMsgTimer);
-//	this->theme->loadTheme(this->prefStyleName);
-
-////////////////////////////////////////////////////
+	this->readConfigs();
 	this->buildMainGui();
-//	this->buildPrefsWindow();
-//	this->buildToolOutputWindow();
-//	this->loadPlugins();
 
-//#ifdef _BUILDDOCVIEWER_
-//	this->buildDocViewer();
-//#endif
+//	this->buildPrefsWindow();
 
 //	this->buildFindReplace();
 //#ifdef _ASPELL_
@@ -333,16 +219,12 @@ void ManPageEditorQT::initApp(void)
 //	this->buildSpellCheckerGUI();
 //#endif
 //
-//	this->htmlFile=QString("%1/Docview-%2.html").arg(this->tmpFolderName).arg(this->randomName(6));
-//	this->htmlURI="file://"+this->htmlFile;
 //
 //	this->recentFiles->updateRecents();
 //
-//	if(this->forceDefaultGeom==false)
-//		r=this->prefs.value("app/geometry",QVariant(QRect(50,50,1024,768))).value<QRect>();
-//	this->mainWindow->setGeometry(r);
-//
-////this->onExitSaveSession //TODO//
+	r=this->prefs.value("app/geometry",QVariant(QRect(50,50,1024,768))).value<QRect>();
+	this->mainWindow->setGeometry(r);
+
 //	this->setToolbarSensitive();
 	this->mainWindow->show();
 }
@@ -382,6 +264,219 @@ void ManPageEditorQT::setUpToolBar(void)
 	widg->setLayout(hbox);
 	this->toolBar.addWidget(widg);
 }
+
+QTextEdit* ManPageEditorQT::getDocumentForTab(int tabnum)
+{
+	if(tabnum==-1)
+		return(qobject_cast<QTextEdit*>(this->mainNotebook->currentWidget()));
+	else
+		return(qobject_cast<QTextEdit*>(this->mainNotebook->widget(tabnum)));
+}
+
+//bool ManPageEditorQT::saveFile(QString filepath)
+//{
+//	for(int j=0;j<this->mainNotebook->count();j++)
+//		{
+//			QTextEdit			*te=getDocumentForTab(j);
+//			QTextDocumentWriter	writer(QString("%1/%2-%3").arg(this->tmpFolderName).arg(j).arg(this->mainNotebook->tabText(j)));
+//			writer.setFormat("markdown"); 
+//   			writer.write(te->document());
+//		}
+////	QTextEdit			*te=getDocumentForTab(this->mainNotebook->currentIndex());
+////	QTextDocumentWriter	writer(filepath);
+////	writer.setFormat("markdown"); 
+////    bool success = writer.write(te->document());
+//	//QString mdstr=te->toMarkdown(QTextDocument::MarkdownDialectCommonMark);
+////	QTextStream(stdout)<<mdstr<<Qt::endl;
+////	QString htmlstr=te->toHtml();
+////	QTextStream(stdout)<<htmlstr<<Qt::endl;
+////
+////	QString str=te->toPlainText();
+////	QTextStream(stdout)<<str<<Qt::endl;
+//
+//	return(false);	
+//}
+
+//bool ManPageEditorQT::saveFileAs(void)
+//{
+//	QString	filepath;
+//	filepath=QFileDialog::getSaveFileName(nullptr,"Save File",this->lastSaveDir,"",nullptr,QFileDialog::HideNameFilterDetails);
+//	if(filepath.isEmpty()==false)
+//		{
+//			this->saveFile(filepath);
+//		}
+//	return(false);	
+//}
+//
+//
+//bool ManPageEditorQT::openFile(QString filepath,bool addtorecents)
+//{
+//	QString		content;
+//	QFile		file(filepath);
+//	bool			retval;
+//
+//	this->te=new QTextEdit;
+//	retval=file.open(QIODevice::Text | QIODevice::ReadOnly);
+//	if(retval==true)
+//		{
+//			content=QString::fromUtf8(file.readAll());
+//			this->te->setMarkdown(content);
+//		}
+//	this->te->setAcceptRichText(true);
+//	this->mainNotebook->addTab(this->te,QFileInfo(filepath).baseName());
+//
+//	return(false);	
+//}
+
+QString ManPageEditorQT::openFileDialog(QString title,QString dir)
+{
+	QString	filepath="";
+	filepath=QFileDialog::getOpenFileName(nullptr,title,dir,"",nullptr,QFileDialog::HideNameFilterDetails);
+	return(filepath);
+}
+
+void ManPageEditorQT::writeExitData(void)
+{
+//editor
+//	if(this->forceDefaultGeom==false)
+	this->prefs.setValue("app/geometry",this->mainWindow->geometry());
+	this->prefs.setValue("editor/lastsavedir",this->lastSaveDir);
+	this->prefs.setValue("editor/lastloaddir",this->lastLoadDir);
+
+//	this->prefs.setValue("editor/funcsort",this->prefsFunctionMenuLayout);
+//	this->prefs.setValue("editor/prefsdepth",this->prefsDepth);
+//	this->prefs.setValue("editor/toolbarlayout",this->prefsToolBarLayout);
+//	this->prefs.setValue("editor/maxtabchars",this->prefsMaxTabChars);
+//	this->prefs.setValue("editor/maxfuncchars",this->prefsMaxMenuChars);
+//	this->prefs.setValue("editor/terminalcommand",this->prefsTerminalCommand);
+//	this->prefs.setValue("editor/rootcommand",this->prefsRootCommand);
+//	this->prefs.setValue("editor/toolbarlayout",this->prefsToolBarLayout);
+//	this->prefs.setValue("editor/qtdocdir",this->prefsQtDocDir);
+//	this->prefs.setValue("editor/noopendup",this->prefsNoOpenduplicate);
+//	this->prefs.setValue("editor/nowarnings",this->prefsNoWarnings);
+//	this->prefs.setValue("editor/maxrecents",this->recentFiles->maxFiles);
+//	this->prefs.setValue("editor/printcommand",this->prefsPrintCommand);
+	
+//document
+//	this->prefs.setValue("document/indent",this->prefsIndent);
+//	this->prefs.setValue("document/wrap",this->prefsLineWrap);
+//	this->prefs.setValue("document/tabwidth",this->prefsTabWidth);
+//	this->prefs.setValue("document/syntaxhilighting",this->prefsSyntaxHilighting);
+//	this->prefs.setValue("document/font",this->prefsDocumentFont);
+//	this->prefs.setValue("document/showlinenumbers",this->prefsShowLineNumbers);
+//	this->prefs.setValue("document/highlightline",this->prefsHighLightline);
+//	this->prefs.setValue("document/autoshowcompletions",this->prefsAutoShowCompletions);
+//	this->prefs.setValue("document/autoshowminchars",this->autoShowMinChars);
+
+//theme
+//	this->prefs.setValue("theme/style",this->prefStyleName);
+//	this->prefs.setValue("theme/hilitelinecol",this->prefsHiLiteLineColor);
+//	this->prefs.setValue("theme/bmhilitecol",this->prefsBookmarkHiLiteColor);
+
+//application
+//	this->prefs.setValue("app/prefsmenustylestring",this->prefsMenuStyleString);
+//	this->prefs.setValue("app/msgtimer",this->prefsMsgTimer);
+//	this->prefs.setValue("app/usesingle",this->prefsUseSingle);
+//	this->prefs.setValue("app/bekind",this->prefsNagScreen);
+//	this->prefs.setValue("app/toolsopgeometry",this->toolOutputWindow->geometry());
+//	this->prefs.setValue("app/shortcuts",this->defaultShortCutsList);
+//	this->prefs.setValue("app/onexitsavesession",this->onExitSaveSession);
+
+//find
+//	this->setSearchPrefs();
+//	this->findList=this->tailStringList(this->findList,this->maxFRHistory);
+//	this->replaceList=this->tailStringList(this->replaceList,this->maxFRHistory);
+//	this->prefs.setValue("find/findlist",this->findList);
+//	this->prefs.setValue("find/replacelist",this->replaceList);
+//	this->prefs.setValue("find/wrapsearch",this->wrapSearch);
+//	this->prefs.setValue("find/findinallfiles",this->findInAllFiles);
+//	this->prefs.setValue("find/insensitivesearch",this->insensitiveSearch);
+//	this->prefs.setValue("find/useregex",this->useRegex);
+//	this->prefs.setValue("find/hightlightall",this->hightlightAll);
+//	this->prefs.setValue("find/replaceall",this->replaceAll);
+//	this->prefs.setValue("find/searchback",this->searchBack);
+//	this->prefs.setValue("find/findafterreplace",this->findAfterReplace);
+//	this->prefs.setValue("find/maxfrhistory",this->maxFRHistory);
+}
+
+void ManPageEditorQT::readConfigs(void)
+{
+/*
+	this->prefs.setValue("app/geometry",this->mainWindow->geometry());
+	this->prefs.setValue("editor/lastsavedir",this->lastSaveDir);
+	this->prefs.setValue("editor/lastloaddir",this->lastLoadDir);
+*/
+//editor
+	this->lastSaveDir=this->prefs.value("editor/lastsavedir","").toString();
+	this->lastLoadDir=this->prefs.value("editor/lastloaddir","").toString();
+
+//	this->prefsFunctionMenuLayout=this->prefs.value("editor/funcsort",4).toInt();
+//	this->prefsDepth=this->prefs.value("editor/prefsdepth",1).toInt();
+//	this->prefsToolBarLayout=this->prefs.value("editor/toolbarlayout","NSOsURsBWsFGsE9ELEDEE").toString();
+//	this->prefsMaxTabChars=this->prefs.value("editor/maxtabchars",20).toInt();
+//	this->prefsMaxMenuChars=this->prefs.value("editor/maxfuncchars",64).toInt();
+//	this->prefsTerminalCommand=this->prefs.value("editor/terminalcommand","xterm -e").toString();
+//	this->prefsRootCommand=this->prefs.value("editor/rootcommand","gtksu -- env QTWEBENGINE_DISABLE_SANDBOX=1 env QT_QPA_PLATFORMTHEME=qt5ct ").toString();
+//	this->prefsQtDocDir=this->prefs.value("editor/qtdocdir","/usr/share/doc/qt5").toString();
+//	this->prefsNoOpenduplicate=this->prefs.value("editor/noopendup",QVariant(bool(true))).value<bool>();
+//	this->prefsNoWarnings=this->prefs.value("editor/nowarnings",QVariant(bool(false))).value<bool>();
+//	this->recentFiles->maxFiles=this->prefs.value("editor/maxrecents",10).toInt();
+//	this->prefsPrintCommand=this->prefs.value("editor/printcommand","").toString();
+
+//document
+//	this->prefsHighLightline=this->prefs.value("document/highlightline",QVariant(bool(true))).value<bool>();
+//	this->prefsShowLineNumbers=this->prefs.value("document/showlinenumbers",QVariant(bool(true))).value<bool>();
+//	this->prefsDocumentFont=this->prefs.value("document/font",QVariant(QFont("Monospace",10))).value<QFont>();
+//	this->prefsSyntaxHilighting=this->prefs.value("document/syntaxhilighting",QVariant(bool(true))).value<bool>();
+//	this->prefsTabWidth=this->prefs.value("document/tabwidth",4).toInt();
+//	this->prefsLineWrap=this->prefs.value("document/wrap",QVariant(bool(true))).value<bool>();
+//	this->prefsIndent=this->prefs.value("document/indent",QVariant(bool(true))).value<bool>();
+//	this->prefsAutoShowCompletions=this->prefs.value("document/autoshowcompletions",QVariant(bool(true))).value<bool>();
+//	this->autoShowMinChars=this->prefs.value("document/autoshowminchars",6).toInt();
+//
+////theme
+//	this->prefStyleName=this->prefs.value("theme/style","default").toString();
+//	this->prefStyleNameHold=this->prefStyleName;
+//	this->prefsHiLiteLineColor=this->prefs.value("theme/hilitelinecol",QVariant(QColor(0xff,0xff,0xff,0x40))).value<QColor>();
+//	this->prefsBookmarkHiLiteColor=this->prefs.value("theme/bmhilitecol",QVariant(QColor(0,0,0,0x40))).value<QColor>();
+//
+////application
+//	this->prefsMenuStyleString=this->prefs.value("app/prefsmenustylestring","QMenu{menu-scrollable: true;padding: 0px;margin: 0px}").toString();
+//	this->prefsMsgTimer=this->prefs.value("app/msgtimer",1000).toInt();
+//	this->prefsUseSingle=this->prefs.value("app/usesingle",QVariant(bool(true))).value<bool>();
+//	this->prefsNagScreen=this->prefs.value("app/bekind",QVariant(bool(false))).value<bool>();
+//	this->defaultShortCutsList=this->prefs.value("app/shortcuts",QVariant(QStringList({"Ctrl+H","Ctrl+Y","Ctrl+?","Ctrl+K","Ctrl+Shift+H","Ctrl+D","Ctrl+Shift+D","Ctrl+L","Ctrl+M","Ctrl+Shift+M","Ctrl+@","Ctrl+'","Ctrl+Shift+C"}))).toStringList();
+//	this->onExitSaveSession=this->prefs.value("app/onexitsavesession",QVariant(bool(true))).value<bool>();
+//	this->disabledPlugins=this->prefs.value("app/disabledplugins").toStringList();
+//
+////find
+//	this->findList=this->prefs.value("find/findlist").toStringList();
+//	this->replaceList=this->prefs.value("find/replacelist").toStringList();
+//	this->wrapSearch=this->prefs.value("find/wrapsearch",QVariant(bool(false))).value<bool>();
+//	this->findInAllFiles=this->prefs.value("find/findinallfiles",QVariant(bool(false))).value<bool>();
+//	this->insensitiveSearch=this->prefs.value("find/insensitivesearch",QVariant(bool(false))).value<bool>();
+//	this->useRegex=this->prefs.value("find/useregex",QVariant(bool(false))).value<bool>();
+//	this->hightlightAll=this->prefs.value("find/hightlightall",QVariant(bool(false))).value<bool>();
+//	this->replaceAll=this->prefs.value("find/replaceall",QVariant(bool(false))).value<bool>();
+//	this->searchBack=this->prefs.value("find/searchback",QVariant(bool(false))).value<bool>();
+//	this->findAfterReplace=this->prefs.value("find/findafterreplace",QVariant(bool(false))).value<bool>();
+//	this->maxFRHistory=this->prefs.value("find/maxfrhistory",5).toInt();
+//
+//	this->setAppShortcuts();	
+}
+
+bool ManPageEditorQT::closeTabs(void)
+{
+	while(this->mainNotebook->count()>0)
+		{
+			QTextEdit	*te=this->getDocumentForTab(0);
+			this->mainNotebook->removeTab(0);
+			delete te;
+		}
+	return(true);
+}
+
+
 
 #if 0
 void ManPageEditorQT::switchPage(int index)
@@ -584,12 +679,12 @@ void ManPageEditorQT::initApp(int argc,char** argv)
 	this->buildToolOutputWindow();
 	this->loadPlugins();
 
-#ifdef _BUILDDOCVIEWER_
+//#ifdef _BUILDDOCVIEWER_
 	this->buildDocViewer();
-#endif
+//#endif
 
 	this->buildFindReplace();
-#ifdef _ASPELL_
+//#ifdef _ASPELL_
 	AspellCanHaveError	*possible_err;
 	this->aspellConfig=new_aspell_config();
 	possible_err=new_aspell_speller(this->aspellConfig);
@@ -605,7 +700,7 @@ void ManPageEditorQT::initApp(int argc,char** argv)
 	this->spellCheckMenuItem->setIcon(itemicon);
 	QObject::connect(this->spellCheckMenuItem,SIGNAL(triggered()),this,SLOT(doOddMenuItems()));
 	this->buildSpellCheckerGUI();
-#endif
+//#endif
 
 	this->htmlFile=QString("%1/Docview-%2.html").arg(this->tmpFolderName).arg(this->randomName(6));
 	this->htmlURI="file://"+this->htmlFile;
@@ -793,9 +888,9 @@ void ManPageEditorQT::writeExitData(void)
 	if(this->forceDefaultGeom==false)
 		this->prefs.setValue("app/geometry",this->mainWindow->geometry());
 
-#ifdef _BUILDDOCVIEWER_
+//#ifdef _BUILDDOCVIEWER_
 	this->prefs.setValue("app/viewergeometry",this->docView->geometry());
-#endif
+//#endif
 
 	this->prefs.setValue("editor/funcsort",this->prefsFunctionMenuLayout);
 	this->prefs.setValue("editor/prefsdepth",this->prefsDepth);
@@ -914,11 +1009,11 @@ void ManPageEditorQT::showBarberPole(QString windowtitle,QString bodylabel,QStri
 {
 	QStringList	arguments;
 
-#ifdef _DEBUGCODE_
+//#ifdef _DEBUGCODE_
 	QString		app="KKEditQT/app/KKEditQTProgressBar";
-#else
+//#else
 	QString		app="KKEditQTProgressBar";
-#endif
+//#endif
 	arguments<<"-c"<<QString("\"%6\" \"%1\" \"%2\" \"%3\" \"%4\" \"%5\"").arg(windowtitle).arg(bodylabel).arg(cancellabel).arg(maxitems).arg(controlfile).arg(app);
 	QProcess::startDetached("sh",arguments);
 }
@@ -1149,10 +1244,10 @@ void ManPageEditorQT::shutDownApp()
 
 	if(this->saveAllFiles(true)==true)
 		{
-#ifdef _ASPELL_
+//#ifdef _ASPELL_
 			delete_aspell_config(this->aspellConfig);
 			delete_aspell_speller(this->spellChecker);
-#endif
+//#endif
 			QApplication::quit();
 		}
 }
@@ -1377,7 +1472,7 @@ void ManPageEditorQT::runCLICommands(int quid)
 
 void ManPageEditorQT::setDocMenu(void)
 {
-#ifdef _BUILDDOCVIEWER_
+//#ifdef _BUILDDOCVIEWER_
 	if(this->docView->isVisible()==true)//ugly hack!!//
 		{
 			this->toggleDocViewMenuItem->setText("Hide Docviewer");
@@ -1388,12 +1483,12 @@ void ManPageEditorQT::setDocMenu(void)
 			this->toggleDocViewMenuItem->setText("Show Docviewer");
 			this->docviewerVisible=false;
 		}
-#endif
+//#endif
 }
 
 void ManPageEditorQT::showWebPage(QString windowtitle,QString url)
 {
-#ifdef _BUILDDOCVIEWER_
+//#ifdef _BUILDDOCVIEWER_
 	if(windowtitle.isEmpty()==false)
 		this->docView->setWindowTitle(windowtitle);
 
@@ -1405,9 +1500,9 @@ void ManPageEditorQT::showWebPage(QString windowtitle,QString url)
 	this->docView->setWindowState(Qt::WindowNoState);//TODO//doesnt work
 
 	this->setDocMenu();
-#else
+//#else
 	QDesktopServices::openUrl(QUrl(url));
-#endif
+//#endif
 }
 
 void ManPageEditorQT::printDocument(void)
@@ -1626,9 +1721,9 @@ void ManPageEditorQT::runAllPlugs(plugData pd)
 					pd.plugName=this->plugins[j].plugName;
 					pd.plugPath=this->plugins[j].plugPath;
 					pd.plugVersion=this->plugins[j].plugVersion;
-#ifdef _DEBUGCODE_
+//#ifdef _DEBUGCODE_
 					pd.printIt();
-#endif
+//#endif
 					this->plugins[j].instance->plugRun(&pd);
 				}
 		}

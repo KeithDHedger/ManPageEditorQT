@@ -39,9 +39,9 @@ class NoteBookClass : public QTabWidget
 		~NoteBookClass();
 
 		ManPageEditorQT	*mainManPageEditorQTClass=NULL;
-	//	void			scrollTabsRight(void);
-	//	void			scrollTabsLeft(void);
-	//	void			setScrollButtonStatus(int btnnum,bool enabled,bool visible);
+		void			scrollTabsRight(void);
+		void			scrollTabsLeft(void);
+		void			setScrollButtonStatus(int btnnum,bool enabled,bool visible);
 
 	protected:
 //dand
@@ -51,8 +51,8 @@ class NoteBookClass : public QTabWidget
 
 //internals
 	private:
-	//	QToolButton	*scrollLeft;
-	//	QToolButton	*scrollRight;
+		QToolButton	*scrollLeft;
+		QToolButton	*scrollRight;
 };
 
 #endif

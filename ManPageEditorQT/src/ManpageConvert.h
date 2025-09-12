@@ -1,8 +1,8 @@
 /*
  *
- * ©K. D. Hedger. Wed 10 Sep 15:12:29 BST 2025 keithdhedger@gmail.com
+ * ©K. D. Hedger. Mon  8 Sep 10:59:37 BST 2025 keithdhedger@gmail.com
 
- * This file (main.cpp) is part of ManPageEditorQT.
+ * This file (ManpageConvert.h) is part of ManPageEditorQT.
 
  * ManPageEditorQT is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,24 +18,22 @@
  * along with ManPageEditorQT.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef _MANPAGECONVERT_
+#define _MANPAGECONVERT_
+
 #include "Globals.h"
 
-int main(int argc, char **argv)
+class ManpageConvertClass
 {
-	int				status;
-	QApplication		app(argc,argv);
-	QPixmap			pixmap(DATADIR "/pixmaps/KKEditQT.png");
+	public:
+						ManpageConvertClass(ManPageEditorQT *mainclass);
+						~ManpageConvertClass();
 
-	app.setOrganizationName("KDHedger");
-	app.setApplicationName("ManPageEditorQT");
+		void				importManpage(QString filepath);
+		void				exportManpage(QString filepath);
 
-	mpclass=new ManPageEditorQT(&app);
-    mpclass->splash=new QSplashScreen(pixmap,Qt::FramelessWindowHint|Qt::X11BypassWindowManagerHint);
+	private:
+		ManPageEditorQT *mainClass=NULL;
+};
 
-	if(argc>1)
-		mpclass->mpConv->importManpage(argv[1]);
-	status=app.exec();
-
-	delete mpclass;
-	return status;
-}
+#endif

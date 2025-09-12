@@ -65,8 +65,6 @@ enum {TABCONTEXTMENUCNT=(OPENFROMHERE-COPYFOLDERPATH) / 0x100 +1};
 
 enum {NONESRCCODE=0,CPPSRCCODE=0x100,CSRCCODE=0x200,BASHSRCCODE=0x300,PYTHONSRCCODE=0x400,GOSRCCODE=0x500,LUASRCCODE=0x600,YAMLSRCCODE=0x700,PHPSRCCODE=0x800,XMLSRCCODE=0x900,CSSSRCCODE=0xa00,JSSRCCODE=0xb00,MAKESRCCODE=0xc00};
 
-enum {HIDETABSHORTCUT=0,DELETELINESHORTCUT,DELETETOEOLSHORTCUT,DELETETOSOLSHORTCUT,SELECTWORDSHORTCUT,DELETEWORDSHORTCUT,DUPLICATELINESHORTCUT,SELECTLINESHORTCUT,MOVELINEUPSHORTCUT,MOVELINEDOWNSHORTCUT,MOVESELECTIONUPSHORTCUT,MOVESELECTIONDOWNSHORTCUT,FORCESHOWCOMPLETE,NOMORESHORTCUT,NOSHORTCUT};
-
 enum {FRCASE=0,FRUSEREGEX,FRREPLACEFIND,FRWRAP,FRALLFILES,FRHIGHLIGHTALL,FRREPLACEALL,FRSEARCHBACK,FRMAXSWITCHES};
 
 //class ThemeClass;
@@ -182,130 +180,40 @@ class ManPageEditorQT : public QObject
 //app vars
 		QMainWindow					*mainWindow;
 		NoteBookClass				*mainNotebook=NULL;
+		ManpageConvertClass			*mpConv=NULL;
 
 
 		QApplication					*application;
-	//	QTimer 						*checkMessages=NULL;
 		QString						tmpFolderName;
 		QString						htmlFile;
 		QString						htmlURI;
 		QSettings					prefs;
-//		int							gotManEditor;
-//		int							gotDoxygen;
+		QString						lastSaveDir="";
+		QString						lastLoadDir="";
+		QString						currentFilePath="";
 
-////		QHash<int,DocumentClass*>	pages;
-
-		int							newPageIndex=1;
-		int							sessionID=-1;
-		int							queueID=-1;
-		bool							safeFlag=false;
-		bool							verySafeFlag=false;
-		int							currentWorkSpace=-1;
-		bool							forcedMultInst=false;
-		bool							forceDefaultGeom=false;
-		bool							sessionBusy=false;
-//		tabMenuStruct				tabContextMenuItems[TABCONTEXTMENUCNT]={{COPYFOLDERPATH,"Copy Folder Path","edit-copy"},{COPYFILEPATH,"Copy File Path","edit-copy"},{COPYFILENAME,"Copy File Name","edit-copy"},{SPELLCHECKDOC,"Spellcheck Document","tools-check-spelling"},{SRCHILTIE,"Source Hilighting","text-x-script"},{HIDETAB,"Hide Tab","list-remove"},{LOCKCONTENTS,"Lock Contents","emblem-readonly"},{OPENFROMHERE,"Open From Here","document-open"}};
-		const char					*srcMenuNames[20]={"None","C++","C","SH","Python","Go","Lua","YAML","PHP","XML","CSS","Javascript","Make",NULL};
-//#ifdef _ASPELL_
-//		AspellConfig					*aspellConfig=NULL;
-//		AspellSpeller				*spellChecker=0;
-//		QDialog						*spellCheckGUI=NULL;
-//		QComboBox					*wordDropBox;
-//		QLabel						*infoLabel;
-//		MenuItemClass				*spellCheckMenuItem;
-//		bool							returnWord=false;
-//		QString						goodWord;
-//		QString						badWord;
-//		bool							cancelCheck=false;
-//#endif
-		QShortcut					*appShortcuts[NOMORESHORTCUT];
-		QStringList					defaultShortCutsList={"Ctrl+H","Ctrl+Y","Ctrl+?","Ctrl+K","Ctrl+Shift+H","Ctrl+D","Ctrl+Shift+D","Ctrl+L","Ctrl+M","Ctrl+Shift+M","Ctrl+@","Ctrl+'","Ctrl+Shift+C"};
-
+		QTextEdit*					getDocumentForTab(int tabnum);
 		QSplashScreen				*splash;
 //recent files
 //		RecentMenuClass				*recentFiles=NULL;
 
-		//sesions
-//		QHash<int,QString>			sessionNames;
 		QString						homeFolder;
 		QString						homeDataFolder;
-		QString						sessionFolder;
-//		unsigned int					currentSessionNumber=0xdeadbeef;
-//		QString						toolsFolder;
+
 
 //app functions
 		void							initApp(void);
 		void							buildMainGui(void);
-//		void							readConfigs(void);
-//		void							findFile(void);
-//		void							buildTools(void);
-//		void							showBarberPole(QString windowtitle,QString bodylabel,QString cancellabel,QString maxitems,QString controlfile);
-//		void							buildDocs(void);
-//		void							showDocs(void);
-//		void							shutDownApp(void);
-//
-//		void							buildSpellCheckerGUI(void);
-//		void							setUpSpellGUI(QString word,DocumentClass *doc);
-//		bool							checkSelection(QString selection);
-//		void							checkDoc(DocumentClass *doc);
+		void							readConfigs(void);
+
 		void							setAppShortcuts(void);
-//
+
 //		void							setToolbarSensitive(void);
-//		QString						randomName(int len);
 //
-//		QStringList					tailStringList(QStringList list,int maxsize);
-//
-//		void							writeExitData(void);
+		void							writeExitData(void);
 //		int							yesNoDialog(QString txt,QString info);
 
-//webpage
-	//	void							showWebPage(QString windowtitle,QString url);
-//scripting
-//		void							runCLICommands(int quid);
-		QCommandLineParser			parser;
-//odds
-//		void							setBit(int *data,int bit);
-//		void							resetBit(int *data,int bit);
-//		int							getBit(int data,int bit);
 
-#if 0
-//app prefs
-//document
-		bool							prefsIndent=true;
-		bool							prefsShowLineNumbers=true;
-		bool							prefsLineWrap=true;
-		bool							prefsHighLightline=true;
-		bool							prefsSyntaxHilighting=true;
-		QFont						prefsDocumentFont;
-		unsigned int					prefsTabWidth=4;
-		bool							prefsAutoShowCompletions;
-//theme
-		QColor						prefsHiLiteLineColor;
-		QColor						prefsBookmarkHiLiteColor;
-		QString						prefStyleName;
-		QString						prefStyleNameHold;
-		ThemeClass					*theme=NULL;
-
-//editor
-		int							prefsFunctionMenuLayout=0;
-		unsigned int					prefsDepth=1;
-		QString						prefsToolBarLayout;
-		unsigned int					prefsMaxTabChars=20;
-		unsigned int					prefsMaxMenuChars=MAXTEXTWIDTH;
-		QString						prefsTerminalCommand;
-		QString						prefsRootCommand;
-		QString						prefsQtDocDir;
-		bool							prefsNoOpenduplicate=false;
-		bool							prefsNoWarnings=false;
-		QString						prefsPrintCommand;
-
-//app
-		int							prefsMsgTimer;
-		bool							prefsUseSingle=true;
-		bool							prefsNagScreen=false;
-		bool							onExitSaveSession=false;
-		QString						prefsMenuStyleString;
-#endif
 //editor vars
 		QStatusBar					*statusBar;
 		QLabel						*statusText;
@@ -321,18 +229,8 @@ class ManPageEditorQT : public QObject
 		bool							closingAllTabs=false;
 		int							autoShowMinChars=6;
 		unsigned int 				untitledNumber=1;
-		//HistoryClass					*history;
-		//QFileSystemWatcher			*fileWatch;
 
 //editor functions
-//		QString						truncateWithElipses(const QString str,int maxlen);
-//		void							sortTabs(void);
-//		void							rebuildTabsMenu(void);
-//		void							functionSearchDialog(void);
-//		bool							checkForOpenFile(QString filepath);
-//		void							printDocument(void);
-//		void							rebuildFunctionMenu(int tab);
-//		void							fileChangedOnDisk(const QString &path);
 
 //menubar
 		QMenuBar						*menuBar;
@@ -345,7 +243,9 @@ class ManPageEditorQT : public QObject
 		MenuItemClass				*saveMenuItem;
 		MenuItemClass				*saveAsMenuItem;
 		MenuItemClass				*printMenuItem;
+
 		MenuItemClass				*closeMenuItem;
+
 
 //edit menu
 		QMenu						*editMenu;
@@ -375,73 +275,17 @@ class ManPageEditorQT : public QObject
 //toolbar functions
 		void							setUpToolBar(void);
 
-////file vars
-//		bool							openFromDialog=false;
-
+//file vars
 //file functions
 //		void							newFile(const QString data="",const QString filename="");
-//		bool							openFile(QString filepath,int linenumber=1,bool warn=false,bool addtorecents=true);
-//		bool							openFileDialog(void);
-//		void							openAsHexDump(void);
-//		QString						runPipeAndCapture(QString command);
-//		void							runPipeAndCaptureToToolOP(QString command);
-//		void							runNoOutput(QString command,bool sync=true,bool asroot=false);
-//
-//		bool							saveFile(int tabnum,bool ask=true);
-//		void							newEditor(int what);
-//		bool							saveAllFiles(bool ask=false);
-//		bool							saveFileAs(int tabnum,QString filepath="");
-//		int							askSaveDialog(const QString filename);
-//		QStringList					getNewRecursiveTagList(QString filepath);
+		//bool							openFile(QString filepath,bool addtorecents=true);
+		QString						openFileDialog(QString title,QString dir);
+
+		//bool							saveFile(QString filepath);
+		//bool							saveFileAs(void);
 
 //document vars
-//		QStringList					completionWords;
-//		QCompleter					*completer=NULL;
-//		QString						currentFilepath;
-//		QString						currentFilename;
-
 //document functions
-//		DocumentClass				*getDocumentForTab(int tabnum);
-//		void							resetAllFilePrefs(void);
-//		bool							goToDefinition(const QString txt);
-//		void							showLineEntry(void);
-//		void							gotoLine(int linenumber);
-//		void							reloadDocument(void);
-//		void							setCompWordList(void);
-//		void							insertCompletion(const QString &completion);
-
-//bookmark vars
-//		QHash<int,bookMarkStruct>	bookMarks;
-//		int							bookMarksIndex=100;
-////bookmark functions
-//		void							rebuildBookMarkMenu(void);
-//		void							handleBMMenu(QWidget *widget,int what,QTextCursor curs);
-//
-////tools menu
-//		QMenu						*toolsMenu;
-////tools vars
-//		QDialog						*toolsWindow;
-//		QComboBox					*toolSelect;
-//		QMainWindow					*toolOutputWindow;
-//		QPlainTextEdit				*toolsOPText=NULL;
-//
-////tools functions
-//		void							rebuildToolsMenu(void);
-//		QStringList					verifyTool(QString filepath);
-//		void							buildToolOutputWindow(void);
-//
-////docviewer vars
-//		QString						currentURL;
-//#ifdef _BUILDDOCVIEWER_
-//		QMainWindow					*docView=NULL;
-//		QWebEngineView				*webEngView=NULL;
-//		bool							docviewerVisible=false;
-//		MenuItemClass				*toggleDocViewMenuItem;
-////docviewer functions
-//#endif
-//		void							buildDocViewer(void);
-//		void							setDocMenu(void);
-//		bool							docViewLinkTrap(const QUrl url);
 
 //prefswindow
 //prefswindow vars
@@ -485,24 +329,6 @@ class ManPageEditorQT : public QObject
 
 //search vars
 //search functions
-//		void							searchAPIDocs(const QString txt,int what);
-//		void							searchDoxyDocs(const QString txt);
-
-//plugins
-//plugin menu
-//		QMenu						*pluginMenu;
-
-//plug vars
-//		QDialog						*pluginPrefsWindow;
-//		QStringList					disabledPlugins;
-//		QHash<int,pluginStruct>		plugins;
-//
-////plug functions
-//		bool							loadPlug(pluginStruct *ps,bool force=false);
-//		bool							unloadPlug(pluginStruct *ps);
-//		void							loadPlugins(void);
-//		void							buildPlugPrefs(void);
-//		void							runAllPlugs(plugData pd);
 
 	public slots:
 		//void							doFileMenuItems();
@@ -554,13 +380,8 @@ class ManPageEditorQT : public QObject
 		void							doEditMenuItems(MenuItemClass *mc);
 		void							doFormatMenuItems(MenuItemClass *mc);
 		void							doHelpMenuItems(MenuItemClass *mc);
+		bool							closeTabs(void);
 
-//menu functions
-//		void							clickMenu(QMenu *menu,QString name);
-//		void							notDoneYet(QString string);
-//		void							sendMessgage(QString msg);
-////editor functions
-//		void							setTabVisibilty(int tab,bool visible);
 };
 
 #endif

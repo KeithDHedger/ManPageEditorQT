@@ -1,0 +1,11 @@
+0.0.5
+Redone save file.
+Fixed emphasised text ending/starting in spaces
+Fixed export emphasised text embeded in string.
+Save last load folder.
+Save last save folder.
+Basic export of manpag.
+Basic import of manpage.
+
+0.0.0-0.0.4
+Internal.
