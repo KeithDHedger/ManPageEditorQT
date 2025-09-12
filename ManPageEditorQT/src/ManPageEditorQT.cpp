@@ -337,9 +337,17 @@ QString ManPageEditorQT::openFileDialog(QString title,QString dir)
 
 void ManPageEditorQT::writeExitData(void)
 {
+	QRect rg;
+	QRect rf;
+
 //editor
 //	if(this->forceDefaultGeom==false)
-	this->prefs.setValue("app/geometry",this->mainWindow->geometry());
+	//this->prefs.setValue("app/geometry",this->mainWindow->frameGeometry());
+	rg=this->mainWindow->geometry();
+	rf=this->mainWindow->frameGeometry();
+	rf.setHeight(rf.height()-(rf.height()-rg.height()));
+	rf.setWidth(rf.width()-(rf.width()-rg.width()));
+	this->prefs.setValue("app/geometry",rf);
 	this->prefs.setValue("editor/lastsavedir",this->lastSaveDir);
 	this->prefs.setValue("editor/lastloaddir",this->lastLoadDir);
 

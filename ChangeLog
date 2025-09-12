@@ -1,4 +1,5 @@
 0.0.5
+fixed saveing/restoreing window position/size.
 Redone save file.
 Fixed emphasised text ending/starting in spaces
 Fixed export emphasised text embeded in string.
