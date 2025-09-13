@@ -3,25 +3,6 @@
 shopt -s nullglob
 cd "ManPageEditorQT/src"
 
-if [[ -e "/usr/lib64/qt6/libexec/moc" ]];then
-	MOCPATH="/usr/lib64/qt6/libexec/moc"
-elif [[ -e "/usr/lib/qt6/libexec/moc" ]];then
-	MOCPATH="/usr/lib64/qt6/libexec/moc"
-else
-	MOCPATH=$(which moc)
-fi
-
-echo "Using moc: $MOCPATH"
-rm moc_* &>/dev/null||true
-
-$MOCPATH ManPageEditorQT.h -o moc_ManPageEditorQT.cpp
-while read
-	do
-		outfile=${REPLY#./*}
-		outfile=moc_${outfile%*.h}.cpp
-		$MOCPATH $REPLY -o $outfile
-	done < <(find -name "QT_*.h")
-
 csrclst=$(echo "../src/*.c" "../src/*.cpp")
 echo COMMONSRC = $csrclst > ../sources
 

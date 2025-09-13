@@ -25,24 +25,15 @@
 
 class MenuItemClass : public QAction
 {
-	Q_OBJECT
-
 	public:
 		explicit MenuItemClass(const QString &text, QWidget *parent = 0);
 		~MenuItemClass();
-		ManPageEditorQT		*mainManPageEditorQTClass=NULL;
+		ManPageEditorQT	*mainManPageEditorQTClass=NULL;
 
 		void				setMenuID(unsigned int id);
 		unsigned int 	getMenuID(void);
 		void				setMenuString(QString str);
 		QString			getMenuString(void);
-
-
-		bool				inPopup=false;
-		bool				alwaysInPopup=false;
-
-	public slots:
-		void				menuClickedGotoLine();
 
 	private:
 		int				menuID;

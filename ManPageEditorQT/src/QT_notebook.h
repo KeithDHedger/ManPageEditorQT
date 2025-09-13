@@ -20,9 +20,6 @@
 
 #ifndef _QT_NOTEBOOK_
 #define _QT_NOTEBOOK_
-//
-//class KKEditClass;
-//class TabColours;
 
 #include "Globals.h"
 
@@ -32,7 +29,7 @@
 
 class NoteBookClass : public QTabWidget
 {
-	Q_OBJECT
+	//Q_OBJECT
 
 	public:
 		explicit NoteBookClass(ManPageEditorQT *mpclass,QWidget *parent=0);

@@ -51,9 +51,3 @@ QString MenuItemClass::getMenuString(void)
 	return(this->menuString);
 }
 
-void MenuItemClass::menuClickedGotoLine()
-{
-//	DocumentClass	*document=qobject_cast<DocumentClass*>(this->mainKKEditClass->mainNotebook->currentWidget());
-//	this->mainKKEditClass->history->pushToBackList(document->getCurrentLineNumber(),document->getFilePath());
-//	this->mainKKEditClass->gotoLine(this->getMenuID());
-}

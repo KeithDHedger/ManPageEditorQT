@@ -52,6 +52,8 @@ class ManpageConvertClass;
 #include <QHBoxLayout>
 #include <QRegularExpression>
 #include <QTextDocument>
+#include <QProcess>
+#include <QDebug>
 
 #include <QSettings>
 #include <QCompleter>

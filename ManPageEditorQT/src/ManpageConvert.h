@@ -26,15 +26,15 @@
 class ManpageConvertClass
 {
 	public:
-						ManpageConvertClass(ManPageEditorQT *mainclass);
-						~ManpageConvertClass();
+		ManpageConvertClass(ManPageEditorQT *mainclass);
+		~ManpageConvertClass();
 
 		void				importManpage(QString filepath);
 		void				exportManpage(QString filepath);
 
 	private:
 		QString			manString=R"foo("myprogram" "1" "0.0.0" "Me" "My set of programs")foo";
-		ManPageEditorQT *mainClass=NULL;
+		ManPageEditorQT	*mainClass=NULL;
 };
 
 #endif

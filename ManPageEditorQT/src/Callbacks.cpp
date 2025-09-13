@@ -60,6 +60,10 @@ qDebug()<<mc;
 				}
 				break;
 
+			case PREVIEWMENUITEM:
+				this->doPreView();
+				break;
+
 			case PRINTMENUITEM:
 			//	this->printDocument();
 				break;

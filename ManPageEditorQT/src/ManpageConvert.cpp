@@ -64,12 +64,13 @@ void ManpageConvertClass::exportManpage(QString filepath)
 				{
 					td=td.replace(QRegularExpression(".*<p.*\\\">(.*)</p>.*",QRegularExpression::InvertedGreedinessOption),"\\1");
 					td=td.replace("</body></html>","");
-					td=td.replace(QRegularExpression("(.*)<span style=.*weight.*\">(.*)</span>(.*)",QRegularExpression::InvertedGreedinessOption),"\\1\\fB\\2\\fR\\3");
-					td=td.replace(QRegularExpression("(.*)<span style=.*underline.*>(.*)</span>(.*)",QRegularExpression::InvertedGreedinessOption),"\\1\\fI\\2\\fR\\3");
+					td=td.replace(QRegularExpression(R"RX(<span style=" text-decoration: underline;">([^<]*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fI\\1\\fR");
+					td=td.replace(QRegularExpression(R"RX(<span style=" text-decoration: italic;">([^<]*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fI\\1\\fR");
+					td=td.replace(QRegularExpression(R"RX(<span style=\" font-weight:.*;\">([^<]*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fB\\1\\fR");
 					htmlpage+=td+"\n.br\n";
 				}
 		}
-
+//<span style=" font-style:italic;">STRING_ARG</span>
 	QFile data(filepath);
 	if(data.open(QFile::WriteOnly|QFile::Truncate))
 		{
@@ -90,6 +91,8 @@ void ManpageConvertClass::importManpage(QString filepath)
 	retval=file.open(QIODevice::Text | QIODevice::ReadOnly);
 	if(retval==true)
 		{
+			this->mainClass->lastLoadDir=QFileInfo(filepath).dir().absolutePath();
+			this->mainClass->currentFilePath=filepath;
 			content=QString::fromUtf8(file.readAll());
 			sections=content.split(QRegularExpression("\\.SH[[:space:]]*",QRegularExpression::DotMatchesEverythingOption|QRegularExpression::InvertedGreedinessOption),Qt::SkipEmptyParts);
 			for(int j=0;j<sections.size();j++)
@@ -113,8 +116,8 @@ void ManpageConvertClass::importManpage(QString filepath)
 							reform=reform.replace("\n","  \n");
 							reform=reform.replace("\n\t","\f\t");
 
-							reform=reform.replace(QRegularExpression(R"RX(\\fI([[:space:]]*)([^\s].*)([[:space:]]*)\\f[RP])RX",QRegularExpression::DotMatchesEverythingOption|QRegularExpression::InvertedGreedinessOption),QString("_\\2_"));
-							reform=reform.replace(QRegularExpression(R"RX(\\fB([[:space:]]*)([^\s].*)([[:space:]]*)\\f[RP])RX",QRegularExpression::DotMatchesEverythingOption|QRegularExpression::InvertedGreedinessOption),QString("**\\2**"));
+							reform=reform.replace(QRegularExpression(R"RX(\\fI([[:space:]]*)([^\s].*)([[:space:]]*)\\f[RP])RX",QRegularExpression::DotMatchesEverythingOption|QRegularExpression::InvertedGreedinessOption),QString("<u>\\2</u>"));
+							reform=reform.replace(QRegularExpression(R"RX(\\fB([[:space:]]*)([^\s].*)([[:space:]]*)\\f[RP])RX",QRegularExpression::DotMatchesEverythingOption|QRegularExpression::InvertedGreedinessOption),QString("<b>\\2</b>"));
 
 							reform=reform.replace("\n","\n\n");
 								

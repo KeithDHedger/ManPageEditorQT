@@ -26,7 +26,7 @@
 enum {FILEMENU=0x4000,EDITMENU,FORMATMENU,HELPMENU,NOMENU};
 
 //file
-enum {NEWMENUITEM=0x8000,OPENMENUITEM,SAVEMENUITEM,SAVEASMENUITEM,PRINTMENUITEM,CLOSEMENUITEM,QUITMENUITEM};
+enum {NEWMENUITEM=0x8000,OPENMENUITEM,SAVEMENUITEM,SAVEASMENUITEM,PRINTMENUITEM,CLOSEMENUITEM,PREVIEWMENUITEM,QUITMENUITEM};
 //edit
 enum {UNDOMENUITEM=0x9000,REDOMENUITEM,UNDOALLMENUITEM,REDOALLMENUITEM,EDSEP1,CUTMENUITEM,COPYMENUITEM,PASTEMENUITEM,DELETEMENUITEM,EDSEP2,SELECTALLMENUITEM,EDSEP3,FINDMENUITEM,FINDNEXTMENUITEM,EDSEP4,EDSEP5,PREFSMENUITEM};
 //format
@@ -53,8 +53,6 @@ enum {FRCASE=0,FRUSEREGEX,FRREPLACEFIND,FRWRAP,FRALLFILES,FRHIGHLIGHTALL,FRREPLA
 
 class ManPageEditorQT : public QObject
 {
-	Q_OBJECT
-
 	public:
 		ManPageEditorQT(QApplication *app);
 		~ManPageEditorQT();
@@ -65,16 +63,17 @@ class ManPageEditorQT : public QObject
 		ManpageConvertClass			*mpConv=NULL;
 
 		QApplication					*application;
+
+		QString						homeFolder;
+		QString						homeDataFolder;
 		QString						tmpFolderName;
-		QSettings					prefs;
 		QString						lastSaveDir="";
 		QString						lastLoadDir="";
 		QString						currentFilePath="";
 
+		QSettings					prefs;
 		QTextEdit*					getDocumentForTab(int tabnum);
 
-		QString						homeFolder;
-		QString						homeDataFolder;
 
 //app functions
 		void							initApp(void);
@@ -83,7 +82,6 @@ class ManPageEditorQT : public QObject
 		void							setAppShortcuts(void);
 //		void							setToolbarSensitive(void);
 		void							writeExitData(void);
-
 
 //editor vars
 		QStatusBar					*statusBar;
@@ -98,8 +96,6 @@ class ManPageEditorQT : public QObject
 		bool							findAfterReplace=false;
 		int							currentPage=0;
 		bool							closingAllTabs=false;
-		//int							autoShowMinChars=6;
-		//unsigned int 				untitledNumber=1;
 
 //editor functions
 //menubar
@@ -113,6 +109,7 @@ class ManPageEditorQT : public QObject
 		MenuItemClass				*saveMenuItem;
 		MenuItemClass				*saveAsMenuItem;
 		MenuItemClass				*printMenuItem;
+		MenuItemClass				*previewMenuItem;
 		MenuItemClass				*closeMenuItem;
 
 //edit menu
@@ -155,6 +152,8 @@ class ManPageEditorQT : public QObject
 		void							doBold(void);
 		void							doItalic(void);
 		void							doClear(void);
+
+		void							doPreView(void);
 
 //prefswindow
 //prefswindow vars
@@ -199,7 +198,6 @@ class ManPageEditorQT : public QObject
 //search vars
 //search functions
 
-	public slots:
 ////search functions
 //		void							setSearchPrefs(void);
 

@@ -1,4 +1,6 @@
 0.0.5
+Added build for qt5, (use USEQTVERSION=5 ./autogen.sh --prefix=/usr ).
+Done preview ( uses xterm ).
 Added clear.
 Added italic/undeline.
 Added bold.

@@ -107,6 +107,10 @@ void ManPageEditorQT::buildMainGui(void)
 
 	this->fileMenu->addSeparator();
 
+//preview
+	this->previewMenuItem=this->makeMenuItemClass(FILEMENU,"Preview",0,"edit-find",PREVIEWMENUITEM);
+
+
 //printfile
 	this->printMenuItem=this->makeMenuItemClass(FILEMENU,"Print",QKeySequence::Print,"document-print",PRINTMENUITEM);
 
@@ -414,6 +418,9 @@ void ManPageEditorQT::doBold(void)
 	QTextEdit		*te=this->getDocumentForTab(this->mainNotebook->currentIndex());
 	QTextCharFormat	fmt;
 
+	fmt.setFontWeight(QFont::Normal);			
+	fmt.setFontUnderline(false);			
+
 	fmt.setFontWeight(QFont::Bold);			
 	te->mergeCurrentCharFormat(fmt);			
 }
@@ -423,7 +430,10 @@ void ManPageEditorQT::doItalic(void)
 	QTextEdit		*te=this->getDocumentForTab(this->mainNotebook->currentIndex());
 	QTextCharFormat	fmt;
 
-	fmt.setFontUnderline(true);			
+	fmt.setFontWeight(QFont::Normal);			
+	fmt.setFontUnderline(false);			
+
+	fmt.setFontUnderline(true);	
 	te->mergeCurrentCharFormat(fmt);			
 }
 
@@ -437,11 +447,12 @@ void ManPageEditorQT::doClear(void)
 	te->mergeCurrentCharFormat(fmt);			
 }
 
-/*
-QTextCharFormat fmt;
-    fmt.setFontItalic(actionTextItalic->isChecked());
-    mergeFormatOnWordOrSelection(fmt);
-*/
+void ManPageEditorQT::doPreView(void)
+{
+	this->mpConv->exportManpage(this->tmpFolderName+"/preview");
+	QProcess::execute("xterm",QStringList()<<"-hold"<<"-e"<<"man "+this->tmpFolderName+"/preview");
+}
+
 //manProps
 // .TH "myprogram" "1" "0.0.0" "Me" "My set of programs"
 
@@ -475,19 +486,6 @@ QTextCharFormat fmt;
 //	if(this->data->customSize==true)
 //		prefs.theDialog->resize(this->data->adjustBoxSize(256,-1));
 //	return(prefs);
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #if 0
 void ManPageEditorQT::switchPage(int index)
