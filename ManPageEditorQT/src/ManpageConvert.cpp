@@ -31,72 +31,50 @@ ManpageConvertClass::ManpageConvertClass(ManPageEditorQT *mainclass)
 
 void ManpageConvertClass::exportManpage(QString filepath)
 {
-QString htmlpage=R"foo(.TH "myprogram" "1" "0.0.0" "Me" "My set of programs")foo";
+	QString		htmlpage="";
+	QString		thtml="";
+	QStringList	ss;
+	QString		td;
 
-	QString manpage=R"foo(.TH "myprogram" "1" "0.0.0" "Me" "My set of programs")foo";
-	manpage+="\n";
+	htmlpage=this->mainClass->getProperties(this->manString);
+	htmlpage+="\n";
 	for(int j=0;j<this->mainClass->mainNotebook->count();j++)
 		{
 			QTextEdit	*te=this->mainClass->getDocumentForTab(j);
-			manpage+=".SH \""+this->mainClass->mainNotebook->tabText(j)+"\"\n";
-			//QTextStream(stderr)<<">>>"<<te->toMarkdown()<<"<<<<"<<Qt::endl;
-			manpage+=te->toMarkdown()+"\n";
-			htmlpage+="\n.SH \""+this->mainClass->mainNotebook->tabText(j)+"\"\n";
-			htmlpage+=te->toHtml();
-
+			thtml+="\n.SH \""+this->mainClass->mainNotebook->tabText(j)+"\"\n";
+			thtml+=te->toHtml();
 		}
-//manpage=manpage.replace("\f","\n");
-//	manpage=manpage.replace(")\n","\\)\n");
-{
-QStringList ss=htmlpage.split("\n");
-//QTextStream(stdout)<<".SH "<<<<Qt::endl;
-for(int j=0;j<ss.size();j++)
-	{
-		QTextStream(stderr)<<QString(ss.at(j))<<Qt::endl;
-		if(ss.at(j).startsWith(".SH"))
-			QTextStream(stdout)<<ss.at(j)<<Qt::endl;
-		if(ss.at(j).startsWith(".TH"))
-			QTextStream(stdout)<<R"foo(.TH "myprogram" "1" "0.0.0" "Me" "My set of programs")foo"<<Qt::endl;
 
-		QString td=QString(ss.at(j));
-		td=td.replace("\f","");
-		td=td.replace("&gt;",">");
-		td=td.replace("&lt;","<");
-		td=td.replace("&quot;","\"");
-		td=td.replace("&amp;","&");
-		td=td.replace("\\\"","\\\\\"");
-		td=td.replace(QRegularExpression(".* href=\"(.*)\"><.*"),"\\1");
-//QTextStream(stderr)<<td<<Qt::endl;
-		//if(ss.at(j).contains(QRegularExpression("^<p.*\">(.*)</p>$"))==true)
-		//if(ss.at(j).contains(QRegularExpression("<p.*\">(.*)</p>",QRegularExpression::InvertedGreedinessOption))==true)
-		if(ss.at(j).contains(QRegularExpression(".*<p.*\\\">(.*)</p>.*",QRegularExpression::InvertedGreedinessOption))==true)
-			{
-				td=td.replace(QRegularExpression(".*<p.*\\\">(.*)</p>.*",QRegularExpression::InvertedGreedinessOption),"\\1");
-		//	QTextStream(stderr)<<td<<Qt::endl;
-				td=td.replace("</body></html>","");
-				td=td.replace(QRegularExpression("(.*)<span style=.*weight.*\">(.*)</span>(.*)",QRegularExpression::InvertedGreedinessOption),"\\1\\fB\\2\\fR\\3");
-				td=td.replace(QRegularExpression("(.*)<span style=.*underline.*>(.*)</span>(.*)",QRegularExpression::InvertedGreedinessOption),"\\1\\fI\\2\\fR\\3");
-			//QTextStream(stderr)<<td<<Qt::endl;
-				
-				QTextStream(stdout)<<td<<"\n.br"<<Qt::endl;
-			}
-	}
-}
-	manpage=manpage.replace(QRegularExpression("\\*\\*([[:space:]]*)(\\S.*)([[:space:]]*)\\*\\*",QRegularExpression::DotMatchesEverythingOption|QRegularExpression::InvertedGreedinessOption),"\\1\\fB\\2\\fR\\3");
-	manpage=manpage.replace(QRegularExpression("\\b_([[:space:]]*)(\\S.*)([[:space:]]*)_\\b",QRegularExpression::DotMatchesEverythingOption|QRegularExpression::InvertedGreedinessOption),"\\1\\fI\\2\\fR\\3");
+	ss=thtml.split("\n");
+	for(int j=0;j<ss.size();j++)
+		{
+			if(ss.at(j).startsWith(".SH"))
+				htmlpage+=ss.at(j)+"\n.br\n";
 
-//clean new lines
-	manpage=manpage.replace("\n\n","\n");
-	manpage=manpage.replace("\n","\n.br\n");
-	manpage=manpage.replace("\f","");
-	manpage=manpage.replace(".br\n\n.br\n",".br\n");
-//QTextStream(stderr)<<manpage<<Qt::endl;
+			td=QString(ss.at(j));
+			td=td.replace("\f","");
+			td=td.replace("&gt;",">");
+			td=td.replace("&lt;","<");
+			td=td.replace("&quot;","\"");
+			td=td.replace("&amp;","&");
+			td=td.replace("\\\"","\\\\\"");
+			td=td.replace(QRegularExpression(".* href=\"(.*)\"><.*"),"\\1");
+
+			if(ss.at(j).contains(QRegularExpression(".*<p.*\\\">(.*)</p>.*",QRegularExpression::InvertedGreedinessOption))==true)
+				{
+					td=td.replace(QRegularExpression(".*<p.*\\\">(.*)</p>.*",QRegularExpression::InvertedGreedinessOption),"\\1");
+					td=td.replace("</body></html>","");
+					td=td.replace(QRegularExpression("(.*)<span style=.*weight.*\">(.*)</span>(.*)",QRegularExpression::InvertedGreedinessOption),"\\1\\fB\\2\\fR\\3");
+					td=td.replace(QRegularExpression("(.*)<span style=.*underline.*>(.*)</span>(.*)",QRegularExpression::InvertedGreedinessOption),"\\1\\fI\\2\\fR\\3");
+					htmlpage+=td+"\n.br\n";
+				}
+		}
 
 	QFile data(filepath);
 	if(data.open(QFile::WriteOnly|QFile::Truncate))
 		{
 			QTextStream out(&data);
-			out<<manpage;
+			out<<htmlpage;
 			data.close();
 		}
 }
@@ -113,17 +91,12 @@ void ManpageConvertClass::importManpage(QString filepath)
 	if(retval==true)
 		{
 			content=QString::fromUtf8(file.readAll());
-//			te=new QTextEdit;
-//							te->setAcceptRichText(true);
-//							te->setHtml(content);
-//							this->mainClass->mainNotebook->addTab(te,filepath);
-//			return;
 			sections=content.split(QRegularExpression("\\.SH[[:space:]]*",QRegularExpression::DotMatchesEverythingOption|QRegularExpression::InvertedGreedinessOption),Qt::SkipEmptyParts);
 			for(int j=0;j<sections.size();j++)
 				{
 					if(j==0)
 						{
-							qDebug()<<sections.at(0);
+							this->manString=this->mainClass->getProperties(sections.at(0));
 						}
 					else
 						{
@@ -131,27 +104,19 @@ void ManpageConvertClass::importManpage(QString filepath)
 							QString		name=QString(lines.at(0)).replace(QRegularExpression("^.*\"(.*)\".*$"),"\\1").trimmed();
 							QString		reform="";
 							QString		thisline="";
+
 							reform=sections.at(j);
 							reform=reform.replace(QRegularExpression("^(.*)\\n",QRegularExpression::InvertedGreedinessOption|QRegularExpression::DotMatchesEverythingOption),"");
-
-
-
 							reform=reform.replace(".br","  \n");
 							reform=reform.replace("<","\\<");
 							reform=reform.replace("\n ","\f ");
 							reform=reform.replace("\n","  \n");
 							reform=reform.replace("\n\t","\f\t");
 
-//reform=reform.replace(QRegularExpression(R"RX(\\fI([[:space:]]*)([^\s].*)([[:space:]]*)\\fR)RX",QRegularExpression::DotMatchesEverythingOption|QRegularExpression::InvertedGreedinessOption),QString("%1_%2_%3").arg("\\1").arg("\\2").arg("\\3"));
-reform=reform.replace(QRegularExpression(R"RX(\\fI([[:space:]]*)([^\s].*)([[:space:]]*)\\f[RP])RX",QRegularExpression::DotMatchesEverythingOption|QRegularExpression::InvertedGreedinessOption),QString("_\\2_"));
+							reform=reform.replace(QRegularExpression(R"RX(\\fI([[:space:]]*)([^\s].*)([[:space:]]*)\\f[RP])RX",QRegularExpression::DotMatchesEverythingOption|QRegularExpression::InvertedGreedinessOption),QString("_\\2_"));
+							reform=reform.replace(QRegularExpression(R"RX(\\fB([[:space:]]*)([^\s].*)([[:space:]]*)\\f[RP])RX",QRegularExpression::DotMatchesEverythingOption|QRegularExpression::InvertedGreedinessOption),QString("**\\2**"));
 
-//reform=reform.replace(QRegularExpression(R"RX(\\fB([[:space:]]*)([^\s].*)([[:space:]]*)\\fR)RX",QRegularExpression::DotMatchesEverythingOption|QRegularExpression::InvertedGreedinessOption),QString("%1**%2**%3").arg("\\1").arg("\\2").arg("\\3"));
-reform=reform.replace(QRegularExpression(R"RX(\\fB([[:space:]]*)([^\s].*)([[:space:]]*)\\f[RP])RX",QRegularExpression::DotMatchesEverythingOption|QRegularExpression::InvertedGreedinessOption),QString("**\\2**"));
-							//reform=reform.replace("\n ","\f\t");
-
-reform=reform.replace("\n","\n\n");
-									//reform=reform.replace(QRegularExpression("\\\\fI(.*)\\\\fR",QRegularExpression::DotMatchesEverythingOption|QRegularExpression::InvertedGreedinessOption),QString("__%1__").arg("\\1"));
-				//	QTextStream(stderr)<<reform<<Qt::endl;
+							reform=reform.replace("\n","\n\n");
 								
 							te=new QTextEdit;
 							te->setAcceptRichText(true);

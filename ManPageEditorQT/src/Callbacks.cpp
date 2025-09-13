@@ -41,9 +41,6 @@ qDebug()<<mc;
 						}
 				}
 				break;
-			case NEWEDMENUITEM:
-			//	this->newEditor(NEWEDMENUITEM);
-				break;
 
 			case SAVEMENUITEM:
 				if(this->currentFilePath.isEmpty()==true)
@@ -67,11 +64,6 @@ qDebug()<<mc;
 			//	this->printDocument();
 				break;
 			case CLOSEMENUITEM:
-				this->closeTabs();
-				//this->closingAllTabs=false;
-				//this->closeTab(-1);
-				break;
-			case CLOSEALLMENUITEM:
 				this->closeTabs();
 				break;
 			case QUITMENUITEM:
@@ -122,10 +114,13 @@ qDebug()<<mc;
 	switch(mc->getMenuID())
 		{
 			case BOLDMENUITEM:
+				this->doBold();
 				break;
 			case ITALICMENUITEM:
+				this->doItalic();
 				break;
 			case CLEARMENUITEM:
+				this->doClear();
 				break;
 		}
 }

@@ -30,7 +30,6 @@ int main(int argc, char **argv)
 	app.setApplicationName("ManPageEditorQT");
 
 	mpclass=new ManPageEditorQT(&app);
-    mpclass->splash=new QSplashScreen(pixmap,Qt::FramelessWindowHint|Qt::X11BypassWindowManagerHint);
 
 	if(argc>1)
 		mpclass->mpConv->importManpage(argv[1]);

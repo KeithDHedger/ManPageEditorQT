@@ -198,6 +198,14 @@ void ManPageEditorQT::initApp(void)
 	this->readConfigs();
 	this->buildMainGui();
 
+	QObject::connect(this->mainNotebook,&QTabWidget::tabCloseRequested,[this](int index)
+		{
+			QTextEdit	*te=this->getDocumentForTab(index);
+			this->mainNotebook->removeTab(index);
+			delete te;
+		});
+
+
 //	this->buildPrefsWindow();
 
 //	this->buildFindReplace();
@@ -218,9 +226,6 @@ void ManPageEditorQT::initApp(void)
 //	QObject::connect(this->spellCheckMenuItem,SIGNAL(triggered()),this,SLOT(doOddMenuItems()));
 //	this->buildSpellCheckerGUI();
 //#endif
-//
-//
-//	this->recentFiles->updateRecents();
 //
 	r=this->prefs.value("app/geometry",QVariant(QRect(50,50,1024,768))).value<QRect>();
 	this->mainWindow->setGeometry(r);
@@ -273,61 +278,6 @@ QTextEdit* ManPageEditorQT::getDocumentForTab(int tabnum)
 		return(qobject_cast<QTextEdit*>(this->mainNotebook->widget(tabnum)));
 }
 
-//bool ManPageEditorQT::saveFile(QString filepath)
-//{
-//	for(int j=0;j<this->mainNotebook->count();j++)
-//		{
-//			QTextEdit			*te=getDocumentForTab(j);
-//			QTextDocumentWriter	writer(QString("%1/%2-%3").arg(this->tmpFolderName).arg(j).arg(this->mainNotebook->tabText(j)));
-//			writer.setFormat("markdown"); 
-//   			writer.write(te->document());
-//		}
-////	QTextEdit			*te=getDocumentForTab(this->mainNotebook->currentIndex());
-////	QTextDocumentWriter	writer(filepath);
-////	writer.setFormat("markdown"); 
-////    bool success = writer.write(te->document());
-//	//QString mdstr=te->toMarkdown(QTextDocument::MarkdownDialectCommonMark);
-////	QTextStream(stdout)<<mdstr<<Qt::endl;
-////	QString htmlstr=te->toHtml();
-////	QTextStream(stdout)<<htmlstr<<Qt::endl;
-////
-////	QString str=te->toPlainText();
-////	QTextStream(stdout)<<str<<Qt::endl;
-//
-//	return(false);	
-//}
-
-//bool ManPageEditorQT::saveFileAs(void)
-//{
-//	QString	filepath;
-//	filepath=QFileDialog::getSaveFileName(nullptr,"Save File",this->lastSaveDir,"",nullptr,QFileDialog::HideNameFilterDetails);
-//	if(filepath.isEmpty()==false)
-//		{
-//			this->saveFile(filepath);
-//		}
-//	return(false);	
-//}
-//
-//
-//bool ManPageEditorQT::openFile(QString filepath,bool addtorecents)
-//{
-//	QString		content;
-//	QFile		file(filepath);
-//	bool			retval;
-//
-//	this->te=new QTextEdit;
-//	retval=file.open(QIODevice::Text | QIODevice::ReadOnly);
-//	if(retval==true)
-//		{
-//			content=QString::fromUtf8(file.readAll());
-//			this->te->setMarkdown(content);
-//		}
-//	this->te->setAcceptRichText(true);
-//	this->mainNotebook->addTab(this->te,QFileInfo(filepath).baseName());
-//
-//	return(false);	
-//}
-
 QString ManPageEditorQT::openFileDialog(QString title,QString dir)
 {
 	QString	filepath="";
@@ -341,8 +291,6 @@ void ManPageEditorQT::writeExitData(void)
 	QRect rf;
 
 //editor
-//	if(this->forceDefaultGeom==false)
-	//this->prefs.setValue("app/geometry",this->mainWindow->frameGeometry());
 	rg=this->mainWindow->geometry();
 	rf=this->mainWindow->frameGeometry();
 	rf.setHeight(rf.height()-(rf.height()-rg.height()));
@@ -351,44 +299,19 @@ void ManPageEditorQT::writeExitData(void)
 	this->prefs.setValue("editor/lastsavedir",this->lastSaveDir);
 	this->prefs.setValue("editor/lastloaddir",this->lastLoadDir);
 
-//	this->prefs.setValue("editor/funcsort",this->prefsFunctionMenuLayout);
-//	this->prefs.setValue("editor/prefsdepth",this->prefsDepth);
 //	this->prefs.setValue("editor/toolbarlayout",this->prefsToolBarLayout);
 //	this->prefs.setValue("editor/maxtabchars",this->prefsMaxTabChars);
-//	this->prefs.setValue("editor/maxfuncchars",this->prefsMaxMenuChars);
 //	this->prefs.setValue("editor/terminalcommand",this->prefsTerminalCommand);
-//	this->prefs.setValue("editor/rootcommand",this->prefsRootCommand);
-//	this->prefs.setValue("editor/toolbarlayout",this->prefsToolBarLayout);
-//	this->prefs.setValue("editor/qtdocdir",this->prefsQtDocDir);
-//	this->prefs.setValue("editor/noopendup",this->prefsNoOpenduplicate);
-//	this->prefs.setValue("editor/nowarnings",this->prefsNoWarnings);
-//	this->prefs.setValue("editor/maxrecents",this->recentFiles->maxFiles);
 //	this->prefs.setValue("editor/printcommand",this->prefsPrintCommand);
 	
 //document
 //	this->prefs.setValue("document/indent",this->prefsIndent);
 //	this->prefs.setValue("document/wrap",this->prefsLineWrap);
 //	this->prefs.setValue("document/tabwidth",this->prefsTabWidth);
-//	this->prefs.setValue("document/syntaxhilighting",this->prefsSyntaxHilighting);
 //	this->prefs.setValue("document/font",this->prefsDocumentFont);
-//	this->prefs.setValue("document/showlinenumbers",this->prefsShowLineNumbers);
-//	this->prefs.setValue("document/highlightline",this->prefsHighLightline);
-//	this->prefs.setValue("document/autoshowcompletions",this->prefsAutoShowCompletions);
-//	this->prefs.setValue("document/autoshowminchars",this->autoShowMinChars);
-
-//theme
-//	this->prefs.setValue("theme/style",this->prefStyleName);
-//	this->prefs.setValue("theme/hilitelinecol",this->prefsHiLiteLineColor);
-//	this->prefs.setValue("theme/bmhilitecol",this->prefsBookmarkHiLiteColor);
 
 //application
-//	this->prefs.setValue("app/prefsmenustylestring",this->prefsMenuStyleString);
-//	this->prefs.setValue("app/msgtimer",this->prefsMsgTimer);
-//	this->prefs.setValue("app/usesingle",this->prefsUseSingle);
-//	this->prefs.setValue("app/bekind",this->prefsNagScreen);
-//	this->prefs.setValue("app/toolsopgeometry",this->toolOutputWindow->geometry());
 //	this->prefs.setValue("app/shortcuts",this->defaultShortCutsList);
-//	this->prefs.setValue("app/onexitsavesession",this->onExitSaveSession);
 
 //find
 //	this->setSearchPrefs();
@@ -409,54 +332,24 @@ void ManPageEditorQT::writeExitData(void)
 
 void ManPageEditorQT::readConfigs(void)
 {
-/*
-	this->prefs.setValue("app/geometry",this->mainWindow->geometry());
-	this->prefs.setValue("editor/lastsavedir",this->lastSaveDir);
-	this->prefs.setValue("editor/lastloaddir",this->lastLoadDir);
-*/
 //editor
 	this->lastSaveDir=this->prefs.value("editor/lastsavedir","").toString();
 	this->lastLoadDir=this->prefs.value("editor/lastloaddir","").toString();
 
-//	this->prefsFunctionMenuLayout=this->prefs.value("editor/funcsort",4).toInt();
-//	this->prefsDepth=this->prefs.value("editor/prefsdepth",1).toInt();
 //	this->prefsToolBarLayout=this->prefs.value("editor/toolbarlayout","NSOsURsBWsFGsE9ELEDEE").toString();
 //	this->prefsMaxTabChars=this->prefs.value("editor/maxtabchars",20).toInt();
-//	this->prefsMaxMenuChars=this->prefs.value("editor/maxfuncchars",64).toInt();
 //	this->prefsTerminalCommand=this->prefs.value("editor/terminalcommand","xterm -e").toString();
-//	this->prefsRootCommand=this->prefs.value("editor/rootcommand","gtksu -- env QTWEBENGINE_DISABLE_SANDBOX=1 env QT_QPA_PLATFORMTHEME=qt5ct ").toString();
-//	this->prefsQtDocDir=this->prefs.value("editor/qtdocdir","/usr/share/doc/qt5").toString();
-//	this->prefsNoOpenduplicate=this->prefs.value("editor/noopendup",QVariant(bool(true))).value<bool>();
-//	this->prefsNoWarnings=this->prefs.value("editor/nowarnings",QVariant(bool(false))).value<bool>();
-//	this->recentFiles->maxFiles=this->prefs.value("editor/maxrecents",10).toInt();
 //	this->prefsPrintCommand=this->prefs.value("editor/printcommand","").toString();
 
 //document
-//	this->prefsHighLightline=this->prefs.value("document/highlightline",QVariant(bool(true))).value<bool>();
-//	this->prefsShowLineNumbers=this->prefs.value("document/showlinenumbers",QVariant(bool(true))).value<bool>();
 //	this->prefsDocumentFont=this->prefs.value("document/font",QVariant(QFont("Monospace",10))).value<QFont>();
-//	this->prefsSyntaxHilighting=this->prefs.value("document/syntaxhilighting",QVariant(bool(true))).value<bool>();
 //	this->prefsTabWidth=this->prefs.value("document/tabwidth",4).toInt();
 //	this->prefsLineWrap=this->prefs.value("document/wrap",QVariant(bool(true))).value<bool>();
 //	this->prefsIndent=this->prefs.value("document/indent",QVariant(bool(true))).value<bool>();
-//	this->prefsAutoShowCompletions=this->prefs.value("document/autoshowcompletions",QVariant(bool(true))).value<bool>();
-//	this->autoShowMinChars=this->prefs.value("document/autoshowminchars",6).toInt();
-//
-////theme
-//	this->prefStyleName=this->prefs.value("theme/style","default").toString();
-//	this->prefStyleNameHold=this->prefStyleName;
-//	this->prefsHiLiteLineColor=this->prefs.value("theme/hilitelinecol",QVariant(QColor(0xff,0xff,0xff,0x40))).value<QColor>();
-//	this->prefsBookmarkHiLiteColor=this->prefs.value("theme/bmhilitecol",QVariant(QColor(0,0,0,0x40))).value<QColor>();
-//
+
 ////application
-//	this->prefsMenuStyleString=this->prefs.value("app/prefsmenustylestring","QMenu{menu-scrollable: true;padding: 0px;margin: 0px}").toString();
-//	this->prefsMsgTimer=this->prefs.value("app/msgtimer",1000).toInt();
-//	this->prefsUseSingle=this->prefs.value("app/usesingle",QVariant(bool(true))).value<bool>();
-//	this->prefsNagScreen=this->prefs.value("app/bekind",QVariant(bool(false))).value<bool>();
 //	this->defaultShortCutsList=this->prefs.value("app/shortcuts",QVariant(QStringList({"Ctrl+H","Ctrl+Y","Ctrl+?","Ctrl+K","Ctrl+Shift+H","Ctrl+D","Ctrl+Shift+D","Ctrl+L","Ctrl+M","Ctrl+Shift+M","Ctrl+@","Ctrl+'","Ctrl+Shift+C"}))).toStringList();
-//	this->onExitSaveSession=this->prefs.value("app/onexitsavesession",QVariant(bool(true))).value<bool>();
-//	this->disabledPlugins=this->prefs.value("app/disabledplugins").toStringList();
-//
+
 ////find
 //	this->findList=this->prefs.value("find/findlist").toStringList();
 //	this->replaceList=this->prefs.value("find/replacelist").toStringList();
@@ -483,6 +376,116 @@ bool ManPageEditorQT::closeTabs(void)
 		}
 	return(true);
 }
+
+QString ManPageEditorQT::buildProperties(QString thstr)
+{
+	QString	propstr=thstr;
+	QDialog propsdialog;
+
+
+	return(propstr);
+}
+
+QString ManPageEditorQT::getProperties(QString thstr)
+{
+	QString				propstr=thstr;
+	QRegularExpression	regex(R"foo("([^"]*)")foo");
+	QStringList			substrings;
+
+	QRegularExpressionMatchIterator it=regex.globalMatch(propstr);
+	while(it.hasNext())
+		{
+			QRegularExpressionMatch match=it.next();
+			substrings<<match.captured(1);
+		}
+
+	this->pageProperties.manString=propstr;
+	this->pageProperties.name=substrings.at(0);
+	this->pageProperties.section=substrings.at(1);
+	this->pageProperties.version=substrings.at(2);
+	this->pageProperties.author=substrings.at(3);
+	this->pageProperties.catagory=substrings.at(4);
+
+	return(propstr);
+}
+
+void ManPageEditorQT::doBold(void)
+{
+	QTextEdit		*te=this->getDocumentForTab(this->mainNotebook->currentIndex());
+	QTextCharFormat	fmt;
+
+	fmt.setFontWeight(QFont::Bold);			
+	te->mergeCurrentCharFormat(fmt);			
+}
+
+void ManPageEditorQT::doItalic(void)
+{
+	QTextEdit		*te=this->getDocumentForTab(this->mainNotebook->currentIndex());
+	QTextCharFormat	fmt;
+
+	fmt.setFontUnderline(true);			
+	te->mergeCurrentCharFormat(fmt);			
+}
+
+void ManPageEditorQT::doClear(void)
+{
+	QTextEdit		*te=this->getDocumentForTab(this->mainNotebook->currentIndex());
+	QTextCharFormat	fmt;
+
+	fmt.setFontWeight(QFont::Normal);			
+	fmt.setFontUnderline(false);			
+	te->mergeCurrentCharFormat(fmt);			
+}
+
+/*
+QTextCharFormat fmt;
+    fmt.setFontItalic(actionTextItalic->isChecked());
+    mergeFormatOnWordOrSelection(fmt);
+*/
+//manProps
+// .TH "myprogram" "1" "0.0.0" "Me" "My set of programs"
+
+//	formReturnStruct	prefs;
+//	QWidget					*hbox;
+//	QHBoxLayout				*hlayout;
+//	QVBoxLayout				*docvlayout=new QVBoxLayout;
+//
+//	prefs.theDialog=new QDialog();
+//
+//	this->data->theDialog=prefs.theDialog;//TODO//
+//	for(int j=0;j<items.size();j++)
+//		{
+//			hbox=new QWidget;
+//			hlayout=new QHBoxLayout;
+//			hlayout->setContentsMargins(0,0,0,0);
+//			hbox->setLayout(hlayout);
+//			hlayout->addWidget(new QLabel(items.at(j)),0,Qt::AlignLeft);
+//			prefs.boxes[j]=new QLineEdit(nullptr);
+//
+//			hlayout->addWidget(prefs.boxes[j],1,Qt::AlignRight);
+//			docvlayout->addWidget(hbox);
+//		}
+//
+//	docvlayout->addWidget(this->data->bb);
+//	docvlayout->setContentsMargins(MARGINS,MARGINS,MARGINS,MARGINS);
+//
+//	prefs.theDialog->setLayout(docvlayout);
+//	prefs.theDialog->setWindowTitle(this->data->title);
+//
+//	if(this->data->customSize==true)
+//		prefs.theDialog->resize(this->data->adjustBoxSize(256,-1));
+//	return(prefs);
+
+
+
+
+
+
+
+
+
+
+
 
 
 

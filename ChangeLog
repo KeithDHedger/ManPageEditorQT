@@ -1,5 +1,10 @@
 0.0.5
-fixed saveing/restoreing window position/size.
+Added clear.
+Added italic/undeline.
+Added bold.
+Code clean.
+Done close tab.
+Fixed saveing/restoreing window position/size.
 Redone save file.
 Fixed emphasised text ending/starting in spaces
 Fixed export emphasised text embeded in string.

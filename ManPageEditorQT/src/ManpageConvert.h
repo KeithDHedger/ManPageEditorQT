@@ -33,6 +33,7 @@ class ManpageConvertClass
 		void				exportManpage(QString filepath);
 
 	private:
+		QString			manString=R"foo("myprogram" "1" "0.0.0" "Me" "My set of programs")foo";
 		ManPageEditorQT *mainClass=NULL;
 };
 

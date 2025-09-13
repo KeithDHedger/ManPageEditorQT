@@ -57,13 +57,23 @@ class ManpageConvertClass;
 #include <QCompleter>
 #include <QObject>
 
-//#include "config.h"
+struct manProps
+{
+	QString manString=R"foo("myprogram" "1" "0.0.0" "Me" "My set of programs")foo";
+	QString name="myprogram";
+	QString section="1";
+	QString version="0.0.0";
+	QString author="Me";
+	QString catagory="My set of programs";
+};
 
 #include "ManPageEditorQT.h"
 #include "QT_notebook.h"
 #include "QT_menuitem.h"
 #include "Callbacks.h"
 #include "ManpageConvert.h"
+
+
 
 extern ManPageEditorQT	*mpclass;
 
