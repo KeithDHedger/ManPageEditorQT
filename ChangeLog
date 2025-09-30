@@ -1,4 +1,7 @@
 0.0.5
+Fixed getting properties from manpage.
+Open now closes current doc 1st.
+Done manpage properties.
 Added build for qt5, (use USEQTVERSION=5 ./autogen.sh --prefix=/usr ).
 Done preview ( uses xterm ).
 Added clear.

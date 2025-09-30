@@ -29,11 +29,12 @@ class ManpageConvertClass
 		ManpageConvertClass(ManPageEditorQT *mainclass);
 		~ManpageConvertClass();
 
+		QString			manString=R"foo("myprogram" "1" "0.0.0" "Me" "My set of programs")foo";
+
 		void				importManpage(QString filepath);
 		void				exportManpage(QString filepath);
 
 	private:
-		QString			manString=R"foo("myprogram" "1" "0.0.0" "Me" "My set of programs")foo";
 		ManPageEditorQT	*mainClass=NULL;
 };
 

@@ -59,14 +59,18 @@ void ManpageConvertClass::exportManpage(QString filepath)
 			td=td.replace("&amp;","&");
 			td=td.replace("\\\"","\\\\\"");
 			td=td.replace(QRegularExpression(".* href=\"(.*)\"><.*"),"\\1");
+td=td.replace("<br />","<br>");
 
 			if(ss.at(j).contains(QRegularExpression(".*<p.*\\\">(.*)</p>.*",QRegularExpression::InvertedGreedinessOption))==true)
 				{
 					td=td.replace(QRegularExpression(".*<p.*\\\">(.*)</p>.*",QRegularExpression::InvertedGreedinessOption),"\\1");
 					td=td.replace("</body></html>","");
-					td=td.replace(QRegularExpression(R"RX(<span style=" text-decoration: underline;">([^<]*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fI\\1\\fR");
-					td=td.replace(QRegularExpression(R"RX(<span style=" text-decoration: italic;">([^<]*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fI\\1\\fR");
+					
+					//td=td.replace(QRegularExpression(R"RX(<span style=" text-decoration: underline;">([^<]*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fI\\1\\fR");
+					td=td.replace(QRegularExpression(R"RX(<span style=" font-style:italic;">([^<]*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fI\\1\\fR");
 					td=td.replace(QRegularExpression(R"RX(<span style=\" font-weight:.*;\">([^<]*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fB\\1\\fR");
+td=td.replace("<br>","\n.br\n");
+					QTextStream(stderr)<<td<<Qt::endl;
 					htmlpage+=td+"\n.br\n";
 				}
 		}
@@ -103,27 +107,61 @@ void ManpageConvertClass::importManpage(QString filepath)
 						}
 					else
 						{
-							QStringList	lines=sections.at(j).split("\n");
-							QString		name=QString(lines.at(0)).replace(QRegularExpression("^.*\"(.*)\".*$"),"\\1").trimmed();
 							QString		reform="";
+							QString		thissection=sections.at(j);
+							thissection=thissection.replace(QRegularExpression("\n{2,}"),"\n.br\n");
+							thissection=thissection.replace("\n","\f ");
+							QStringList	lines=thissection.split("\f");
+							QString		name=QString(lines.at(0)).replace(QRegularExpression("^.*\"(.*)\".*$"),"\\1").trimmed();
 							QString		thisline="";
+							bool			startindent=false;
+							QString	htmlstr="";
 
-							reform=sections.at(j);
-							reform=reform.replace(QRegularExpression("^(.*)\\n",QRegularExpression::InvertedGreedinessOption|QRegularExpression::DotMatchesEverythingOption),"");
-							reform=reform.replace(".br","  \n");
-							reform=reform.replace("<","\\<");
-							reform=reform.replace("\n ","\f ");
-							reform=reform.replace("\n","  \n");
-							reform=reform.replace("\n\t","\f\t");
+							for(int k=1;k<lines.size();k++)
+								{
+									if(lines.at(k)=="\n")
+										continue;
+									reform=lines.at(k);
+									reform=reform.replace("<","&lt;");
+									reform=reform.replace(">","&gt;");
+									reform=reform.replace(".br","<br>");
+									reform=reform.replace(QRegularExpression(R"RX(^ \.B[[:space:]]+(.*)$)RX"),QString("<b>\\1</b>"));
+									reform=reform.replace(QRegularExpression(R"RX(^ \.I[[:space:]]+(.*)$)RX"),QString("<i>\\1</i>"));
+									reform=reform.replace(QRegularExpression(R"RX(^ \.LP.*$)RX"),QString("<div><br></div>"));
+									if(reform.startsWith(" .IP")==true)
+										{
+											if(startindent==true)
+												{
+													htmlstr+="</div>";
+													startindent=false;
+												}
+											else
+												{
+													htmlstr+="<div style=\"margin-left: 40px\">";
+													startindent=true;
+												}
+											continue;										
+										}
+							
+									reform=reform.replace(QRegularExpression(R"RX(\\fI([[:space:]]*)([^\s].*)([[:space:]]*)\\f[RP])RX",QRegularExpression::InvertedGreedinessOption),QString("<i>\\2</i>"));
+									reform=reform.replace(QRegularExpression(R"RX(\\fB([[:space:]]*)([^\s].*)([[:space:]]*)\\f[RP])RX",QRegularExpression::InvertedGreedinessOption),QString("<b>\\2</b>"));
 
-							reform=reform.replace(QRegularExpression(R"RX(\\fI([[:space:]]*)([^\s].*)([[:space:]]*)\\f[RP])RX",QRegularExpression::DotMatchesEverythingOption|QRegularExpression::InvertedGreedinessOption),QString("<u>\\2</u>"));
-							reform=reform.replace(QRegularExpression(R"RX(\\fB([[:space:]]*)([^\s].*)([[:space:]]*)\\f[RP])RX",QRegularExpression::DotMatchesEverythingOption|QRegularExpression::InvertedGreedinessOption),QString("<b>\\2</b>"));
-
-							reform=reform.replace("\n","\n\n");
-								
+									reform=reform.replace(QRegularExpression("^[[:space:]]([[:space:]]+.*)"),"<span>\\1</span>");
+									htmlstr+=reform;
+								}
+							htmlstr.replace(QRegularExpression("<br>[[:space:]]*<br>"),"<br>");
+							htmlstr=htmlstr.replace("<br><br>","<br>");
+							htmlstr=htmlstr.replace("<br> <br> <br>","<br><br>");
+							htmlstr=htmlstr.replace("<br><div","<div");
+							htmlstr=htmlstr.replace(" <br> <div","<div");
+							htmlstr.replace(QRegularExpression("^ <br> "),"");
+							if(startindent==true)
+								htmlstr+="</div>";
+							htmlstr="<style>span {white-space: pre-wrap;}</style>"+htmlstr;
+							
 							te=new QTextEdit;
 							te->setAcceptRichText(true);
-							te->setMarkdown(reform);
+							te->setHtml(htmlstr);
 							this->mainClass->mainNotebook->addTab(te,name);
 						}
 				}

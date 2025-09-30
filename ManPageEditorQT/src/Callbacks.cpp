@@ -35,6 +35,7 @@ qDebug()<<mc;
 					filepath=QFileDialog::getOpenFileName(nullptr,"Open File",this->lastLoadDir,"",nullptr,QFileDialog::HideNameFilterDetails);
 					if(filepath.isEmpty()==false)
 						{
+							this->closeTabs();
 							this->lastLoadDir=QFileInfo(filepath).dir().absolutePath();
 							this->currentFilePath=filepath;
 							this->mpConv->importManpage(filepath);
@@ -62,6 +63,9 @@ qDebug()<<mc;
 
 			case PREVIEWMENUITEM:
 				this->doPreView();
+				break;
+			case PROPSMENUITEM:
+				this->buildProperties("xx");
 				break;
 
 			case PRINTMENUITEM:

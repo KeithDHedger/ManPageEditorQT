@@ -109,7 +109,8 @@ void ManPageEditorQT::buildMainGui(void)
 
 //preview
 	this->previewMenuItem=this->makeMenuItemClass(FILEMENU,"Preview",0,"edit-find",PREVIEWMENUITEM);
-
+//property
+	this->propsMenuItem=this->makeMenuItemClass(FILEMENU,"Properties",0,"preferences-system",PROPSMENUITEM);
 
 //printfile
 	this->printMenuItem=this->makeMenuItemClass(FILEMENU,"Print",QKeySequence::Print,"document-print",PRINTMENUITEM);
@@ -381,34 +382,170 @@ bool ManPageEditorQT::closeTabs(void)
 	return(true);
 }
 
+/*
+formReturnStruct FormsClass::formsDialog(QStringList items)
+{
+	formReturnStruct	prefs;
+	QWidget					*hbox;
+	QHBoxLayout				*hlayout;
+	QVBoxLayout				*docvlayout=new QVBoxLayout;
+
+	prefs.theDialog=new QDialog();
+
+	this->data->theDialog=prefs.theDialog;//TODO//
+	for(int j=0;j<items.size();j++)
+		{
+			hbox=new QWidget;
+			hlayout=new QHBoxLayout;
+			hlayout->setContentsMargins(0,0,0,0);
+			hbox->setLayout(hlayout);
+			hlayout->addWidget(new QLabel(items.at(j)),0,Qt::AlignLeft);
+			prefs.boxes[j]=new QLineEdit(nullptr);
+
+			hlayout->addWidget(prefs.boxes[j],1,Qt::AlignRight);
+			docvlayout->addWidget(hbox);
+		}
+
+	docvlayout->addWidget(this->data->bb);
+	docvlayout->setContentsMargins(MARGINS,MARGINS,MARGINS,MARGINS);
+
+	prefs.theDialog->setLayout(docvlayout);
+	prefs.theDialog->setWindowTitle(this->data->title);
+
+	if(this->data->customSize==true)
+		prefs.theDialog->resize(this->data->adjustBoxSize(256,-1));
+	return(prefs);
+}
+*/
+/*
+struct manProps
+{
+	QString manString=R"foo("myprogram" "1" "0.0.0" "Me" "My set of programs")foo";
+	QString name="myprogram";
+	QString section="1";
+	QString version="0.0.0";
+	QString author="Me";
+	QString catagory="My set of programs";
+};
+	QHash<int,QLineEdit*>	boxes;
+
+*/
 QString ManPageEditorQT::buildProperties(QString thstr)
 {
-	QString	propstr=thstr;
-	QDialog propsdialog;
+	QString			propstr=thstr;
+	QDialog			propsdialog;
+	QWidget			*hbox;
+	QHBoxLayout		*hlayout;
+	QVBoxLayout		*docvlayout=new QVBoxLayout;
+	QString			data="";
+	QDialogButtonBox	*buttonBox=NULL;
+	QFrame			separator(nullptr);
 
+	const char	*propname[5]={"Name","Section","Version","Author","Catagory"};
+	this->propBoxes.clear();
+	for(int j=0;j<5;j++)
+		{
+			hbox=new QWidget;
+			hlayout=new QHBoxLayout;
+			hlayout->setContentsMargins(0,0,0,0);
+			hbox->setLayout(hlayout);
+			hlayout->addWidget(new QLabel(propname[j]),0,Qt::AlignLeft);
+			switch(j)
+				{
+					case 0:
+						data=this->pageProperties.name;
+						break;
+					case 1:
+						data=this->pageProperties.section;
+						break;
+					case 2:
+						data=this->pageProperties.version;
+						break;
+					case 3:
+						data=this->pageProperties.author;
+						break;
+					case 4:
+						data=this->pageProperties.catagory;
+						break;
+				}
+			this->propBoxes.push_back(new QLineEdit(data));
+			hlayout->addWidget(this->propBoxes[j],1,Qt::AlignRight);
+			docvlayout->addWidget(hbox);
+		}
 
+	separator.setFrameStyle(QFrame::Sunken | QFrame::HLine);
+	docvlayout->addWidget(&separator);
+      
+	buttonBox=new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
+	docvlayout->addWidget(buttonBox);
+	QObject::connect(buttonBox,&QDialogButtonBox::accepted,[&propsdialog]()
+		{
+			propsdialog.done(0);
+		});
+	QObject::connect(buttonBox,&QDialogButtonBox::rejected,[&propsdialog]()
+		{
+			propsdialog.done(1);
+		});
+
+	docvlayout->setContentsMargins(MARGINS,MARGINS,MARGINS,MARGINS);
+	propsdialog.setLayout(docvlayout);
+	propsdialog.setWindowTitle("Page Properties");
+	int ret=propsdialog.exec();
+	delete buttonBox;
+	if(ret==0)
+		{
+	QTextStream(stderr)<<ret<<Qt::endl;
+			this->pageProperties.name=propBoxes.at(0)->text();
+			this->pageProperties.section=propBoxes.at(1)->text();;
+			this->pageProperties.version=propBoxes.at(2)->text();;
+			this->pageProperties.author=propBoxes.at(3)->text();;
+			this->pageProperties.catagory=propBoxes.at(4)->text();;
+			this->pageProperties.manString=QString("\"%1\" \"%2\" \"%3\" \"%4\" \"%5\"").arg(propBoxes.at(0)->text()).arg(propBoxes.at(1)->text()).arg(propBoxes.at(2)->text()).arg(propBoxes.at(3)->text()).arg(propBoxes.at(4)->text());
+			this->mpConv->manString=".TH "+this->pageProperties.manString;
+		}
 	return(propstr);
 }
 
 QString ManPageEditorQT::getProperties(QString thstr)
 {
-	QString				propstr=thstr;
-	QRegularExpression	regex(R"foo("([^"]*)")foo");
-	QStringList			substrings;
-
-	QRegularExpressionMatchIterator it=regex.globalMatch(propstr);
-	while(it.hasNext())
-		{
-			QRegularExpressionMatch match=it.next();
-			substrings<<match.captured(1);
-		}
+	QString		propstr=thstr;
+	wordexp_t	p;
+	char			**w=NULL;
+	int			wordexpret=0;
 
 	this->pageProperties.manString=propstr;
-	this->pageProperties.name=substrings.at(0);
-	this->pageProperties.section=substrings.at(1);
-	this->pageProperties.version=substrings.at(2);
-	this->pageProperties.author=substrings.at(3);
-	this->pageProperties.catagory=substrings.at(4);
+	this->pageProperties.name="";
+	this->pageProperties.section="";
+	this->pageProperties.version="";
+	this->pageProperties.author="";
+	this->pageProperties.catagory="";
+	wordexpret=wordexp(thstr.trimmed().toStdString().c_str(),&p,WRDE_NOCMD);
+	if(wordexpret==0)
+		{
+			w=p.we_wordv;
+			for (size_t i=0;i<p.we_wordc;i++)
+				{
+					switch(i)
+						{
+							case 1:
+								this->pageProperties.name=w[i];
+								break;
+							case 2:
+								this->pageProperties.section=w[i];
+								break;
+							case 3:
+								this->pageProperties.version=w[i];
+								break;
+							case 4:
+								this->pageProperties.author=w[i];
+								break;
+							case 5:
+								this->pageProperties.catagory=w[i];
+								break;
+						}
+				}
+			wordfree(&p);
+		}
 
 	return(propstr);
 }
@@ -430,11 +567,11 @@ void ManPageEditorQT::doItalic(void)
 	QTextEdit		*te=this->getDocumentForTab(this->mainNotebook->currentIndex());
 	QTextCharFormat	fmt;
 
-	fmt.setFontWeight(QFont::Normal);			
-	fmt.setFontUnderline(false);			
+	fmt.setFontWeight(QFont::Normal);
+	fmt.setFontItalic(false);
 
-	fmt.setFontUnderline(true);	
-	te->mergeCurrentCharFormat(fmt);			
+	fmt.setFontItalic(true);
+	te->mergeCurrentCharFormat(fmt);
 }
 
 void ManPageEditorQT::doClear(void)
@@ -444,6 +581,7 @@ void ManPageEditorQT::doClear(void)
 
 	fmt.setFontWeight(QFont::Normal);			
 	fmt.setFontUnderline(false);			
+	fmt.setFontItalic(false);			
 	te->mergeCurrentCharFormat(fmt);			
 }
 
@@ -452,40 +590,6 @@ void ManPageEditorQT::doPreView(void)
 	this->mpConv->exportManpage(this->tmpFolderName+"/preview");
 	QProcess::execute("xterm",QStringList()<<"-hold"<<"-e"<<"man "+this->tmpFolderName+"/preview");
 }
-
-//manProps
-// .TH "myprogram" "1" "0.0.0" "Me" "My set of programs"
-
-//	formReturnStruct	prefs;
-//	QWidget					*hbox;
-//	QHBoxLayout				*hlayout;
-//	QVBoxLayout				*docvlayout=new QVBoxLayout;
-//
-//	prefs.theDialog=new QDialog();
-//
-//	this->data->theDialog=prefs.theDialog;//TODO//
-//	for(int j=0;j<items.size();j++)
-//		{
-//			hbox=new QWidget;
-//			hlayout=new QHBoxLayout;
-//			hlayout->setContentsMargins(0,0,0,0);
-//			hbox->setLayout(hlayout);
-//			hlayout->addWidget(new QLabel(items.at(j)),0,Qt::AlignLeft);
-//			prefs.boxes[j]=new QLineEdit(nullptr);
-//
-//			hlayout->addWidget(prefs.boxes[j],1,Qt::AlignRight);
-//			docvlayout->addWidget(hbox);
-//		}
-//
-//	docvlayout->addWidget(this->data->bb);
-//	docvlayout->setContentsMargins(MARGINS,MARGINS,MARGINS,MARGINS);
-//
-//	prefs.theDialog->setLayout(docvlayout);
-//	prefs.theDialog->setWindowTitle(this->data->title);
-//
-//	if(this->data->customSize==true)
-//		prefs.theDialog->resize(this->data->adjustBoxSize(256,-1));
-//	return(prefs);
 
 #if 0
 void ManPageEditorQT::switchPage(int index)

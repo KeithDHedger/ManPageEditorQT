@@ -26,7 +26,7 @@
 enum {FILEMENU=0x4000,EDITMENU,FORMATMENU,HELPMENU,NOMENU};
 
 //file
-enum {NEWMENUITEM=0x8000,OPENMENUITEM,SAVEMENUITEM,SAVEASMENUITEM,PRINTMENUITEM,CLOSEMENUITEM,PREVIEWMENUITEM,QUITMENUITEM};
+enum {NEWMENUITEM=0x8000,OPENMENUITEM,SAVEMENUITEM,SAVEASMENUITEM,PRINTMENUITEM,CLOSEMENUITEM,PROPSMENUITEM,PREVIEWMENUITEM,QUITMENUITEM};
 //edit
 enum {UNDOMENUITEM=0x9000,REDOMENUITEM,UNDOALLMENUITEM,REDOALLMENUITEM,EDSEP1,CUTMENUITEM,COPYMENUITEM,PASTEMENUITEM,DELETEMENUITEM,EDSEP2,SELECTALLMENUITEM,EDSEP3,FINDMENUITEM,FINDNEXTMENUITEM,EDSEP4,EDSEP5,PREFSMENUITEM};
 //format
@@ -110,6 +110,7 @@ class ManPageEditorQT : public QObject
 		MenuItemClass				*saveAsMenuItem;
 		MenuItemClass				*printMenuItem;
 		MenuItemClass				*previewMenuItem;
+		MenuItemClass				*propsMenuItem;
 		MenuItemClass				*closeMenuItem;
 
 //edit menu
@@ -146,13 +147,13 @@ class ManPageEditorQT : public QObject
 
 //document vars
 		struct manProps				pageProperties;
+		QVector<QLineEdit*>			propBoxes;
 //document functions
 		QString						buildProperties(QString thstr=R"foo(.TH "myprogram" "1" "0.0.0" "Me" "My set of programs")foo");
 		QString						getProperties(QString thstr);
 		void							doBold(void);
 		void							doItalic(void);
 		void							doClear(void);
-
 		void							doPreView(void);
 
 //prefswindow

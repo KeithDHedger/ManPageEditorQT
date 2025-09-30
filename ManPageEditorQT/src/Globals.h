@@ -53,11 +53,20 @@ class ManpageConvertClass;
 #include <QRegularExpression>
 #include <QTextDocument>
 #include <QProcess>
+#include <QLabel>
+#include <QFrame>
+#include <QDialogButtonBox>
 #include <QDebug>
 
 #include <QSettings>
 #include <QCompleter>
 #include <QObject>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <wordexp.h>
+
+#define MARGINS 4
 
 struct manProps
 {
