@@ -1,4 +1,5 @@
 0.0.5
+Done .TP,.IP,.EX,.EE,.SM ...
 Fixed getting properties from manpage.
 Open now closes current doc 1st.
 Done manpage properties.

@@ -41,14 +41,16 @@ void ManpageConvertClass::exportManpage(QString filepath)
 	for(int j=0;j<this->mainClass->mainNotebook->count();j++)
 		{
 			QTextEdit	*te=this->mainClass->getDocumentForTab(j);
-			thtml+="\n.SH \""+this->mainClass->mainNotebook->tabText(j)+"\"\n";
+			thtml+="\n"+te->statusTip()+"\n";
 			thtml+=te->toHtml();
 		}
-
+//QTextStream(stderr)<<thtml<<Qt::endl;
 	ss=thtml.split("\n");
 	for(int j=0;j<ss.size();j++)
 		{
 			if(ss.at(j).startsWith(".SH"))
+				htmlpage+=ss.at(j)+"\n.br\n";
+			if(ss.at(j).startsWith(".SS"))
 				htmlpage+=ss.at(j)+"\n.br\n";
 
 			td=QString(ss.at(j));
@@ -70,7 +72,7 @@ td=td.replace("<br />","<br>");
 					td=td.replace(QRegularExpression(R"RX(<span style=" font-style:italic;">([^<]*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fI\\1\\fR");
 					td=td.replace(QRegularExpression(R"RX(<span style=\" font-weight:.*;\">([^<]*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fB\\1\\fR");
 td=td.replace("<br>","\n.br\n");
-					QTextStream(stderr)<<td<<Qt::endl;
+					//QTextStream(stderr)<<td<<Qt::endl;
 					htmlpage+=td+"\n.br\n";
 				}
 		}
@@ -98,7 +100,9 @@ void ManpageConvertClass::importManpage(QString filepath)
 			this->mainClass->lastLoadDir=QFileInfo(filepath).dir().absolutePath();
 			this->mainClass->currentFilePath=filepath;
 			content=QString::fromUtf8(file.readAll());
-			sections=content.split(QRegularExpression("\\.SH[[:space:]]*",QRegularExpression::DotMatchesEverythingOption|QRegularExpression::InvertedGreedinessOption),Qt::SkipEmptyParts);
+			content=content.replace(QRegularExpression("^(.SS.*)$",QRegularExpression::MultilineOption|QRegularExpression::DotMatchesEverythingOption|QRegularExpression::InvertedGreedinessOption),"\\1\n@@issubsection@@\n");
+			
+			sections=content.split(QRegularExpression("\\.S[HS][[:space:]]*",QRegularExpression::DotMatchesEverythingOption|QRegularExpression::InvertedGreedinessOption),Qt::SkipEmptyParts);
 			for(int j=0;j<sections.size();j++)
 				{
 					if(j==0)
@@ -113,21 +117,59 @@ void ManpageConvertClass::importManpage(QString filepath)
 							thissection=thissection.replace("\n","\f ");
 							QStringList	lines=thissection.split("\f");
 							QString		name=QString(lines.at(0)).replace(QRegularExpression("^.*\"(.*)\".*$"),"\\1").trimmed();
+							int			skipsub=1;
 							QString		thisline="";
 							bool			startindent=false;
-							QString	htmlstr="";
+							QString		htmlstr="";
+							QString		origname=name;
 
-							for(int k=1;k<lines.size();k++)
+							if(lines.at(1)==" @@issubsection@@")
 								{
+									name=name.toLower();
+									skipsub=2;
+								}
+							else
+								name=name.toUpper();
+
+							for(int k=skipsub;k<lines.size();k++)
+								{
+									int spaces=40;
 									if(lines.at(k)=="\n")
 										continue;
 									reform=lines.at(k);
 									reform=reform.replace("<","&lt;");
 									reform=reform.replace(">","&gt;");
-									reform=reform.replace(".br","<br>");
-									reform=reform.replace(QRegularExpression(R"RX(^ \.B[[:space:]]+(.*)$)RX"),QString("<b>\\1</b>"));
-									reform=reform.replace(QRegularExpression(R"RX(^ \.I[[:space:]]+(.*)$)RX"),QString("<i>\\1</i>"));
+									reform=reform.replace(QRegularExpression("^ .if . (.*)",QRegularExpression::InvertedGreedinessOption),"\\1<br>");
+									reform=reform.replace("\\-","-");
+									reform=reform.replace(" .SM","");
+									QString t=reform;
+									if(t.startsWith(" .TP "))
+										{
+											t=t.replace(QRegularExpression(" .TP (.*)"),"\\1");
+											if(t.toInt()>0)
+												spaces=t.toInt()*8;
+											reform=" .IP";
+											startindent=false;
+										}
+									if(t==(" .TP"))
+										reform=" .br";
+									reform=reform.replace(QRegularExpression(R"RX(^ \.BR[[:space:]]+(.*)$)RX"),QString("<b> \\1 </b>"));
+									reform=reform.replace(".br","<br>",Qt::CaseInsensitive);
+									reform=reform.replace(QRegularExpression(R"RX(^ \.B[[:space:]]+(.*)$)RX"),QString("<b> \\1 </b>"));
+									reform=reform.replace(QRegularExpression(R"RX(^ \.I[[:space:]]+(.*)$)RX"),QString("<i> \\1 </i>"));
+									reform=reform.replace(QRegularExpression(R"RX(^ \.IR[[:space:]]+(.*)$)RX"),QString("<i> \\1 </i>"));
 									reform=reform.replace(QRegularExpression(R"RX(^ \.LP.*$)RX"),QString("<div><br></div>"));
+									reform=reform.replace(QRegularExpression(R"RX(^ \.LP.*$)RX"),QString("<div><br></div>"));
+									reform=reform.replace(QRegularExpression(R"RX(^ \.PP.*$)RX"),QString("<div><br></div>"));
+									reform=reform.replace(QRegularExpression(R"RX(^ \.P.*$)RX"),QString("<div><br></div>"));
+									reform=reform.replace(QRegularExpression(R"RX(^ \.EX.*$)RX")," .IP");
+									//reform=reform.replace(QRegularExpression(R"RX(^ \.EE.*$)RX")," .IP");
+									if(reform.startsWith(" .EE")==true)
+										{
+											htmlstr+="</div>";
+											startindent=false;	
+										}
+
 									if(reform.startsWith(" .IP")==true)
 										{
 											if(startindent==true)
@@ -137,14 +179,24 @@ void ManpageConvertClass::importManpage(QString filepath)
 												}
 											else
 												{
-													htmlstr+="<div style=\"margin-left: 40px\">";
+													htmlstr+="<div style=\"margin-left: "+QString("%1").arg(spaces)+"px\">";
 													startindent=true;
 												}
 											continue;										
 										}
-							
+
+reform=reform.replace(QRegularExpression(R"RX(^ \..*$)RX"),QString(""));
+									
 									reform=reform.replace(QRegularExpression(R"RX(\\fI([[:space:]]*)([^\s].*)([[:space:]]*)\\f[RP])RX",QRegularExpression::InvertedGreedinessOption),QString("<i>\\2</i>"));
 									reform=reform.replace(QRegularExpression(R"RX(\\fB([[:space:]]*)([^\s].*)([[:space:]]*)\\f[RP])RX",QRegularExpression::InvertedGreedinessOption),QString("<b>\\2</b>"));
+
+
+									reform=reform.replace(QRegularExpression(R"RX(^ \\fI)RX"),QString("<i>"));
+									reform=reform.replace(QRegularExpression(R"RX(^ \\fB)RX"),QString("<b>"));
+									reform=reform.replace(QRegularExpression(R"RX(^ \\f[RP])RX"),QString("</b></i>"));
+
+
+
 
 									reform=reform.replace(QRegularExpression("^[[:space:]]([[:space:]]+.*)"),"<span>\\1</span>");
 									htmlstr+=reform;
@@ -162,6 +214,11 @@ void ManpageConvertClass::importManpage(QString filepath)
 							te=new QTextEdit;
 							te->setAcceptRichText(true);
 							te->setHtml(htmlstr);
+							if(skipsub==1)
+								te->setStatusTip(".SH "+origname);
+							else
+								te->setStatusTip(".SS "+origname);
+							//QTextStream(stderr)<<htmlstr<<Qt::endl;
 							this->mainClass->mainNotebook->addTab(te,name);
 						}
 				}
