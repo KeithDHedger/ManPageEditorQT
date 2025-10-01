@@ -42,9 +42,9 @@ void ManpageConvertClass::exportManpage(QString filepath)
 		{
 			QTextEdit	*te=this->mainClass->getDocumentForTab(j);
 			thtml+="\n"+te->statusTip()+"\n";
-			thtml+=te->toHtml();
+			thtml+=te->toHtml()+"\n";
 		}
-//QTextStream(stderr)<<thtml<<Qt::endl;
+
 	ss=thtml.split("\n");
 	for(int j=0;j<ss.size();j++)
 		{
@@ -62,6 +62,8 @@ void ManpageConvertClass::exportManpage(QString filepath)
 			td=td.replace("\\\"","\\\\\"");
 			td=td.replace(QRegularExpression(".* href=\"(.*)\"><.*"),"\\1");
 td=td.replace("<br />","<br>");
+			if(td.contains(QRegularExpression("margin-left:..px;")))
+				htmlpage+="\n.IP\n";
 
 			if(ss.at(j).contains(QRegularExpression(".*<p.*\\\">(.*)</p>.*",QRegularExpression::InvertedGreedinessOption))==true)
 				{
@@ -70,13 +72,13 @@ td=td.replace("<br />","<br>");
 					
 					//td=td.replace(QRegularExpression(R"RX(<span style=" text-decoration: underline;">([^<]*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fI\\1\\fR");
 					td=td.replace(QRegularExpression(R"RX(<span style=" font-style:italic;">([^<]*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fI\\1\\fR");
-					td=td.replace(QRegularExpression(R"RX(<span style=\" font-weight:.*;\">([^<]*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fB\\1\\fR");
-td=td.replace("<br>","\n.br\n");
-					//QTextStream(stderr)<<td<<Qt::endl;
+					td=td.replace(QRegularExpression(R"RX(<span style=" font-weight:.*;">([^<]*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fB\\1\\fR");
+
+					td=td.replace("<br>","\n.br\n");
 					htmlpage+=td+"\n.br\n";
 				}
 		}
-//<span style=" font-style:italic;">STRING_ARG</span>
+
 	QFile data(filepath);
 	if(data.open(QFile::WriteOnly|QFile::Truncate))
 		{
