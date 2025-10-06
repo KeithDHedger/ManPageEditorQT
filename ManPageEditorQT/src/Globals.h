@@ -21,50 +21,12 @@
 #ifndef _GLOBALS_
 #define _GLOBALS_
 
+#include "qtincs.h"
+
 class NoteBookClass;
 class ManPageEditorQT;
 class MenuItemClass;
 class ManpageConvertClass;
-
-#include <QApplication>
-#include <QMessageBox>
-#include <QGuiApplication>
-#include <QWidget>
-#include <QMainWindow>
-#include <QShortcut>
-#include <QCommandLineParser>
-#include <QSplashScreen>
-#include <QTabWidget>
-#include <QAction>
-#include <QToolBar>
-#include <QToolButton>
-#include <QPushButton>
-#include <QTabBar>
-#include <QMenuBar>
-#include <QMenu>
-#include <QMenuBar>
-#include <QStatusBar>
-#include <QDialog>
-#include <QFileDialog>
-#include <QTextEdit>
-#include <QTextDocumentWriter>
-#include <QLineEdit>
-#include <QHBoxLayout>
-#include <QRegularExpression>
-#include <QTextDocument>
-#include <QProcess>
-#include <QLabel>
-#include <QFrame>
-#include <QDialogButtonBox>
-#include <QDebug>
-
-#include <QSettings>
-#include <QCompleter>
-#include <QObject>
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <wordexp.h>
 
 #define MARGINS 4
 
@@ -83,8 +45,6 @@ struct manProps
 #include "QT_menuitem.h"
 #include "Callbacks.h"
 #include "ManpageConvert.h"
-
-
 
 extern ManPageEditorQT	*mpclass;
 

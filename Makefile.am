@@ -1,10 +1,8 @@
 
-
-
 SUBDIRS = ManPageEditorQT/app
 
 remake:
-	$(shell ./remakesourcelist)
+	RECOMPILEHEADER=1 ./remakesourcelist
 
 distclean-local:
 	rm -rf ManPageEditorQT/src/.deps

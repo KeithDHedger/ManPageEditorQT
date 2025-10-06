@@ -4,9 +4,6 @@ include ../sources
 
 manpageeditorqt_SOURCES = $(COMMONSRC)
 
-qtbasiceditor_CFLAGS = -O3
-qtbasiceditor_CXXFLAGS = -O3
-
 pixfilesdir = $(pkgdatadir)/pixmaps
 pixfiles_DATA = ../resources/pixmaps/*
 
