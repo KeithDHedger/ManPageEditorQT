@@ -31,59 +31,26 @@ ManpageConvertClass::ManpageConvertClass(ManPageEditorQT *mainclass)
 
 void ManpageConvertClass::exportManpage(QString filepath)
 {
-	QString		htmlpage="";
-	QString		thtml="";
-	QStringList	ss;
-	QString		td;
+	QString		prevpage=this->mainClass->getProperties(this->manString);
 
-	htmlpage=this->mainClass->getProperties(this->manString);
-	htmlpage+="\n";
+	prevpage+="\n";
 	for(int j=0;j<this->mainClass->mainNotebook->count();j++)
 		{
 			QTextEdit	*te=this->mainClass->getDocumentForTab(j);
-			thtml+="\n"+te->statusTip()+"\n";
-			thtml+=te->toHtml()+"\n";
+			prevpage+=te->statusTip()+"\n";
+			prevpage+=te->toMarkdown();
 		}
 
-	ss=thtml.split("\n");
-	for(int j=0;j<ss.size();j++)
-		{
-			if(ss.at(j).startsWith(".SH"))
-				htmlpage+=ss.at(j)+"\n.br\n";
-			if(ss.at(j).startsWith(".SS"))
-				htmlpage+=ss.at(j)+"\n.br\n";
-
-			td=QString(ss.at(j));
-			td=td.replace("\f","");
-			td=td.replace("&gt;",">");
-			td=td.replace("&lt;","<");
-			td=td.replace("&quot;","\"");
-			td=td.replace("&amp;","&");
-			td=td.replace("\\\"","\\\\\"");
-			td=td.replace(QRegularExpression(".* href=\"(.*)\"><.*"),"\\1");
-td=td.replace("<br />","<br>");
-			if(td.contains(QRegularExpression("margin-left:..px;")))
-				htmlpage+="\n.IP\n";
-
-			if(ss.at(j).contains(QRegularExpression(".*<p.*\\\">(.*)</p>.*",QRegularExpression::InvertedGreedinessOption))==true)
-				{
-					td=td.replace(QRegularExpression(".*<p.*\\\">(.*)</p>.*",QRegularExpression::InvertedGreedinessOption),"\\1");
-					td=td.replace("</body></html>","");
-					
-					//td=td.replace(QRegularExpression(R"RX(<span style=" text-decoration: underline;">([^<]*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fI\\1\\fR");
-					td=td.replace(QRegularExpression(R"RX(<span style=" font-style:italic;">([^<]*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fI\\1\\fR");
-					td=td.replace(QRegularExpression(R"RX(<span style=" font-weight:.*;">([^<]*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fB\\1\\fR");
-
-					td=td.replace("<br>","\n.br\n");
-					htmlpage+=td+"\n.br\n";
-				}
-		}
+	prevpage=prevpage.replace("\n\n","\n.br\n");
+	prevpage=prevpage.replace(QRegularExpression(R"RX(^```)RX",QRegularExpression::InvertedGreedinessOption|QRegularExpression::MultilineOption),"");
+	prevpage=prevpage.replace(QRegularExpression(R"RX(\*\*(.*)\*\*)RX",QRegularExpression::InvertedGreedinessOption),"\\fB\\1\\fR");
+	prevpage=prevpage.replace(QRegularExpression(R"RX(\*(.*)\*)RX",QRegularExpression::InvertedGreedinessOption),"\\fI\\1\\fR");
 
 	QFile data(filepath);
 	if(data.open(QFile::WriteOnly|QFile::Truncate))
 		{
 			QTextStream out(&data);
-			out<<htmlpage;
+			out<<prevpage;
 			data.close();
 		}
 }
@@ -95,6 +62,10 @@ void ManpageConvertClass::importManpage(QString filepath)
 	QString		content;
 	QStringList	sections;
 	bool			retval;
+	QString		htmlstr="<pre>";
+	char			buffer[2048]= {0,};
+	char			commandBuffer[2048]= {0,};
+	FILE*		fp;
 
 	retval=file.open(QIODevice::Text | QIODevice::ReadOnly);
 	if(retval==true)
@@ -102,127 +73,63 @@ void ManpageConvertClass::importManpage(QString filepath)
 			this->mainClass->lastLoadDir=QFileInfo(filepath).dir().absolutePath();
 			this->mainClass->currentFilePath=filepath;
 			content=QString::fromUtf8(file.readAll());
-			content=content.replace(QRegularExpression("^(.SS.*)$",QRegularExpression::MultilineOption|QRegularExpression::DotMatchesEverythingOption|QRegularExpression::InvertedGreedinessOption),"\\1\n@@issubsection@@\n");
-			
-			sections=content.split(QRegularExpression("\\.S[HS][[:space:]]*",QRegularExpression::DotMatchesEverythingOption|QRegularExpression::InvertedGreedinessOption),Qt::SkipEmptyParts);
-			for(int j=0;j<sections.size();j++)
+
+			sprintf(commandBuffer,"cat %s| sed -n '/^.TH/p'",filepath.toStdString().c_str());
+			content="";
+			fp=popen(commandBuffer,"r");
+			if(fp!=NULL)
 				{
-					if(j==0)
+					while(fgets((char*)&buffer[0],2048,fp))
+						content+=buffer;
+					pclose(fp);
+				}
+			this->manString=this->mainClass->getProperties(content);
+
+			sprintf(commandBuffer,"echo -e '\n.SH \"\"'|cat '%s' -|sed 's/^\\(\\.S[Hh]\\) \\(.*\\)/\\n@SECTION@--\\2--\\n\\1 \\2/g;s/^\\(\\.S[Ss]\\) \\(.*\\)/\\n@section@++\\2++\\n\\1 \\2/g'|GROFF_SGR=1 MANWIDTH=2000 MAN_KEEP_FORMATTING=1 man -l --no-justification --no-hyphenation -|ul|head -n -4",filepath.toStdString().c_str());
+
+			content="";
+			fp=popen(commandBuffer,"r");
+			if(fp!=NULL)
+				{
+					while(fgets((char*)&buffer[0],2048,fp))
+						content+=buffer;
+					pclose(fp);
+				}
+			
+			sections=content.split(QRegularExpression("@SECTION@|@section@",QRegularExpression::DotMatchesEverythingOption|QRegularExpression::InvertedGreedinessOption),Qt::KeepEmptyParts);
+
+			for(int j=1;j<sections.size();j++)
+				{
+					htmlstr="";
+					QString tstr=sections.at(j);
+					QStringList lines=sections.at(j).split("\n");
+					QString name=lines.at(0);
+					bool issub=false;
+					if(name.startsWith("++")==true)
+						issub=true;
+					QString cname=QString(name).replace(QRegularExpression(R"RX((\+\+|--)(.*)(\+\+|--))RX"),"\\2");
+					cname.replace(QRegularExpression("^\"|\"$"),"");
+					htmlstr="";
+					for (int k=3;k<lines.count();k++)
 						{
-							this->manString=this->mainClass->getProperties(sections.at(0));
+							QString buf=lines.at(k);
+							buf.remove(0,7);
+							htmlstr+=buf+"\n";
 						}
+					htmlstr="<pre>"+htmlstr;
+					htmlstr=htmlstr.replace(QRegularExpression(R"RX(\x1b\[1m(.*)\e\[m)RX",QRegularExpression::InvertedGreedinessOption),"<b>\\1</b>");
+					htmlstr=htmlstr.replace(QRegularExpression(R"RX(\x1b\[4m(.*)\e\[m)RX",QRegularExpression::InvertedGreedinessOption),"<i>\\1</i>");
+					htmlstr=htmlstr.replace(QRegularExpression(R"RX(\x1b\[1m)RX"),"");
+					htmlstr=htmlstr.replace(QRegularExpression(R"RX(\x1b\[m)RX"),"");					
+					htmlstr+="</pre>\n";
+					te=new QTextEdit;
+					te->setAcceptRichText(true);
+					te->setHtml(htmlstr);
+					this->mainClass->mainNotebook->addTab(te,cname);
+					if(issub==false)
+						te->setStatusTip(".SH "+cname);
 					else
-						{
-							QString		reform="";
-							QString		thissection=sections.at(j);
-							thissection=thissection.replace(QRegularExpression("\n{2,}"),"\n.br\n");
-							thissection=thissection.replace("\n","\f ");
-							QStringList	lines=thissection.split("\f");
-							QString		name=QString(lines.at(0)).replace(QRegularExpression("^.*\"(.*)\".*$"),"\\1").trimmed();
-							int			skipsub=1;
-							QString		thisline="";
-							bool			startindent=false;
-							QString		htmlstr="";
-							QString		origname=name;
-
-							if(lines.at(1)==" @@issubsection@@")
-								{
-									name=name.toLower();
-									skipsub=2;
-								}
-							else
-								name=name.toUpper();
-
-							for(int k=skipsub;k<lines.size();k++)
-								{
-									int spaces=40;
-									if(lines.at(k)=="\n")
-										continue;
-									reform=lines.at(k);
-									reform=reform.replace("<","&lt;");
-									reform=reform.replace(">","&gt;");
-									reform=reform.replace(QRegularExpression("^ .if . (.*)",QRegularExpression::InvertedGreedinessOption),"\\1<br>");
-									reform=reform.replace("\\-","-");
-									reform=reform.replace(" .SM","");
-									QString t=reform;
-									if(t.startsWith(" .TP "))
-										{
-											t=t.replace(QRegularExpression(" .TP (.*)"),"\\1");
-											if(t.toInt()>0)
-												spaces=t.toInt()*8;
-											reform=" .IP";
-											startindent=false;
-										}
-									if(t==(" .TP"))
-										reform=" .br";
-									reform=reform.replace(QRegularExpression(R"RX(^ \.BR[[:space:]]+(.*)$)RX"),QString("<b> \\1 </b>"));
-									reform=reform.replace(".br","<br>",Qt::CaseInsensitive);
-									reform=reform.replace(QRegularExpression(R"RX(^ \.B[[:space:]]+(.*)$)RX"),QString("<b> \\1 </b>"));
-									reform=reform.replace(QRegularExpression(R"RX(^ \.I[[:space:]]+(.*)$)RX"),QString("<i> \\1 </i>"));
-									reform=reform.replace(QRegularExpression(R"RX(^ \.IR[[:space:]]+(.*)$)RX"),QString("<i> \\1 </i>"));
-									reform=reform.replace(QRegularExpression(R"RX(^ \.LP.*$)RX"),QString("<div><br></div>"));
-									reform=reform.replace(QRegularExpression(R"RX(^ \.LP.*$)RX"),QString("<div><br></div>"));
-									reform=reform.replace(QRegularExpression(R"RX(^ \.PP.*$)RX"),QString("<div><br></div>"));
-									reform=reform.replace(QRegularExpression(R"RX(^ \.P.*$)RX"),QString("<div><br></div>"));
-									reform=reform.replace(QRegularExpression(R"RX(^ \.EX.*$)RX")," .IP");
-									//reform=reform.replace(QRegularExpression(R"RX(^ \.EE.*$)RX")," .IP");
-									if(reform.startsWith(" .EE")==true)
-										{
-											htmlstr+="</div>";
-											startindent=false;	
-										}
-
-									if(reform.startsWith(" .IP")==true)
-										{
-											if(startindent==true)
-												{
-													htmlstr+="</div>";
-													startindent=false;
-												}
-											else
-												{
-													htmlstr+="<div style=\"margin-left: "+QString("%1").arg(spaces)+"px\">";
-													startindent=true;
-												}
-											continue;										
-										}
-
-reform=reform.replace(QRegularExpression(R"RX(^ \..*$)RX"),QString(""));
-									
-									reform=reform.replace(QRegularExpression(R"RX(\\fI([[:space:]]*)([^\s].*)([[:space:]]*)\\f[RP])RX",QRegularExpression::InvertedGreedinessOption),QString("<i>\\2</i>"));
-									reform=reform.replace(QRegularExpression(R"RX(\\fB([[:space:]]*)([^\s].*)([[:space:]]*)\\f[RP])RX",QRegularExpression::InvertedGreedinessOption),QString("<b>\\2</b>"));
-
-
-									reform=reform.replace(QRegularExpression(R"RX(^ \\fI)RX"),QString("<i>"));
-									reform=reform.replace(QRegularExpression(R"RX(^ \\fB)RX"),QString("<b>"));
-									reform=reform.replace(QRegularExpression(R"RX(^ \\f[RP])RX"),QString("</b></i>"));
-
-
-
-
-									reform=reform.replace(QRegularExpression("^[[:space:]]([[:space:]]+.*)"),"<span>\\1</span>");
-									htmlstr+=reform;
-								}
-							htmlstr.replace(QRegularExpression("<br>[[:space:]]*<br>"),"<br>");
-							htmlstr=htmlstr.replace("<br><br>","<br>");
-							htmlstr=htmlstr.replace("<br> <br> <br>","<br><br>");
-							htmlstr=htmlstr.replace("<br><div","<div");
-							htmlstr=htmlstr.replace(" <br> <div","<div");
-							htmlstr.replace(QRegularExpression("^ <br> "),"");
-							if(startindent==true)
-								htmlstr+="</div>";
-							htmlstr="<style>span {white-space: pre-wrap;}</style>"+htmlstr;
-							
-							te=new QTextEdit;
-							te->setAcceptRichText(true);
-							te->setHtml(htmlstr);
-							if(skipsub==1)
-								te->setStatusTip(".SH "+origname);
-							else
-								te->setStatusTip(".SS "+origname);
-							//QTextStream(stderr)<<htmlstr<<Qt::endl;
-							this->mainClass->mainNotebook->addTab(te,name);
-						}
+						te->setStatusTip(".SS "+cname);
 				}
 		}
 }

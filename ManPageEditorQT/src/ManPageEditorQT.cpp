@@ -494,12 +494,11 @@ QString ManPageEditorQT::buildProperties(QString thstr)
 	delete buttonBox;
 	if(ret==0)
 		{
-	QTextStream(stderr)<<ret<<Qt::endl;
 			this->pageProperties.name=propBoxes.at(0)->text();
-			this->pageProperties.section=propBoxes.at(1)->text();;
-			this->pageProperties.version=propBoxes.at(2)->text();;
-			this->pageProperties.author=propBoxes.at(3)->text();;
-			this->pageProperties.catagory=propBoxes.at(4)->text();;
+			this->pageProperties.section=propBoxes.at(1)->text();
+			this->pageProperties.version=propBoxes.at(2)->text();
+			this->pageProperties.author=propBoxes.at(3)->text();
+			this->pageProperties.catagory=propBoxes.at(4)->text();
 			this->pageProperties.manString=QString("\"%1\" \"%2\" \"%3\" \"%4\" \"%5\"").arg(propBoxes.at(0)->text()).arg(propBoxes.at(1)->text()).arg(propBoxes.at(2)->text()).arg(propBoxes.at(3)->text()).arg(propBoxes.at(4)->text());
 			this->mpConv->manString=".TH "+this->pageProperties.manString;
 		}
@@ -520,6 +519,7 @@ QString ManPageEditorQT::getProperties(QString thstr)
 	this->pageProperties.author="";
 	this->pageProperties.catagory="";
 	wordexpret=wordexp(thstr.trimmed().toStdString().c_str(),&p,WRDE_NOCMD);
+
 	if(wordexpret==0)
 		{
 			w=p.we_wordv;
