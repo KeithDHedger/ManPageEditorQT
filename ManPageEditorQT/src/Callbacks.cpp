@@ -23,7 +23,6 @@
 void ManPageEditorQT::doFileMenuItems(MenuItemClass *mc)
 {
 	//MenuItemClass	*mc=qobject_cast<MenuItemClass*>(sender());
-qDebug()<<mc;
 	switch(mc->getMenuID())
 		{
 //file menu
@@ -83,7 +82,6 @@ qDebug()<<mc;
 
 void ManPageEditorQT::doEditMenuItems(MenuItemClass *mc)
 {
-qDebug()<<mc;
 	switch(mc->getMenuID())
 		{
 			case UNDOMENUITEM:
@@ -118,10 +116,10 @@ qDebug()<<mc;
 
 void ManPageEditorQT::doFormatMenuItems(MenuItemClass *mc)
 {
-qDebug()<<mc;
 	switch(mc->getMenuID())
 		{
 			case BOLDMENUITEM:
+				this->doClear();
 				this->doBold();
 				break;
 			case ITALICMENUITEM:
@@ -135,12 +133,28 @@ qDebug()<<mc;
 
 void ManPageEditorQT::doHelpMenuItems(MenuItemClass *mc)
 {
-qDebug()<<mc;
 	switch(mc->getMenuID())
 		{
 			case ABOUTMENUITEM:
+				{
+					QString			content;
+					QFile			licencefile(DATADIR "/docs/gpl-3.0.txt");
+					bool				retval;
+					AboutBoxClass	about(this->mainWindow,DATADIR "/pixmaps/" PACKAGE ".png");
+
+					retval=licencefile.open(QIODevice::Text | QIODevice::ReadOnly);
+					if(retval==true)
+						{
+							content=QString::fromUtf8(licencefile.readAll());
+							licencefile.close();
+							about.setLicence(content);
+						}
+					about.setAuthors(defaultauthors);
+					about.runAbout();
+				}
 				break;
 			case ABOUTQTMENUITEM:
+				QMessageBox::aboutQt(nullptr);
 				break;
 			case HELPMENUITEM:
 				break;
@@ -149,37 +163,36 @@ qDebug()<<mc;
 
 void ManPageEditorQT::doLiveSearch(const QString text)
 {
-	qDebug()<<"doLiveSearch";
-//	DocumentClass	*doc=this->getDocumentForTab(-1);
-//	bool			retval;
-//	QTextCursor		savetc=doc->textCursor();
-//
-//	if(this->application->queryKeyboardModifiers()==Qt::ShiftModifier)
-//		{
-//			QTextCursor tc=doc->textCursor();
-//			tc.movePosition(QTextCursor::Left,QTextCursor::MoveAnchor,text.length());
-//			doc->setTextCursor(tc);
-//			retval=doc->find(text,QTextDocument::FindBackward);
-//			if(retval==false)
-//				{
-//					QTextCursor tc=doc->textCursor();
-//					tc.movePosition(QTextCursor::End,QTextCursor::MoveAnchor);
-//					doc->setTextCursor(tc);
-//					retval=doc->find(text,QTextDocument::FindBackward);
-//				}
-//		}
-//	else
-//		{
-//			QTextCursor savetc=doc->textCursor();
-//			retval=doc->find(text);
-//			if(retval==false)
-//				{
-//					QTextCursor tc=doc->textCursor();
-//					tc.movePosition(QTextCursor::Start,QTextCursor::MoveAnchor);
-//					doc->setTextCursor(tc);
-//					retval=doc->find(text);
-//				}
-//		}
-//	if(retval==false)
-//		doc->setTextCursor(savetc);
+	QTextEdit	*doc=this->getDocumentForTab(-1);
+	bool			retval;
+	QTextCursor	savetc=doc->textCursor();
+
+	if(this->application->queryKeyboardModifiers()==Qt::ShiftModifier)
+		{
+			QTextCursor tc=doc->textCursor();
+			tc.movePosition(QTextCursor::Left,QTextCursor::MoveAnchor,text.length());
+			doc->setTextCursor(tc);
+			retval=doc->find(text,QTextDocument::FindBackward);
+			if(retval==false)
+				{
+					QTextCursor tc=doc->textCursor();
+					tc.movePosition(QTextCursor::End,QTextCursor::MoveAnchor);
+					doc->setTextCursor(tc);
+					retval=doc->find(text,QTextDocument::FindBackward);
+				}
+		}
+	else
+		{
+			QTextCursor savetc=doc->textCursor();
+			retval=doc->find(text);
+			if(retval==false)
+				{
+					QTextCursor tc=doc->textCursor();
+					tc.movePosition(QTextCursor::Start,QTextCursor::MoveAnchor);
+					doc->setTextCursor(tc);
+					retval=doc->find(text);
+				}
+		}
+	if(retval==false)
+		doc->setTextCursor(savetc);
 }

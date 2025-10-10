@@ -82,7 +82,7 @@ MenuItemClass* ManPageEditorQT::makeMenuItemClass(int mainmenu,const QString nam
 
 void ManPageEditorQT::buildMainGui(void)
 {
-	MenuItemClass	*menuItemSink;
+	//MenuItemClass	*menuItemSink;
 
 	this->mainNotebook=new NoteBookClass(this);
 	this->menuBar=new QMenuBar;
@@ -123,7 +123,7 @@ void ManPageEditorQT::buildMainGui(void)
 	this->fileMenu->addSeparator();
 
 //quit
-	menuItemSink=this->makeMenuItemClass(FILEMENU,"Quit",QKeySequence::Quit,"application-exit",QUITMENUITEM);
+	this->makeMenuItemClass(FILEMENU,"Quit",QKeySequence::Quit,"application-exit",QUITMENUITEM);
 
 //edit menu
 	this->editMenu=new QMenu("&Edit");
@@ -149,7 +149,7 @@ void ManPageEditorQT::buildMainGui(void)
 	this->editMenu->addSeparator();
 
 //prefs
-	menuItemSink=this->makeMenuItemClass(EDITMENU,"Preferences",0,"preferences-desktop",PREFSMENUITEM);
+	this->makeMenuItemClass(EDITMENU,"Preferences",0,"preferences-desktop",PREFSMENUITEM);
 
 //format menu
 	this->formatMenu=new QMenu("&Formating");
@@ -163,12 +163,12 @@ void ManPageEditorQT::buildMainGui(void)
 	this->menuBar->addMenu(this->helpMenu);
 //
 //about
-	menuItemSink=this->makeMenuItemClass(HELPMENU,"About",0,"help-about",ABOUTMENUITEM);
+	this->makeMenuItemClass(HELPMENU,"About",0,"help-about",ABOUTMENUITEM);
 //aboutqt
-	menuItemSink=this->makeMenuItemClass(HELPMENU,"About QT",0,"help-about",ABOUTQTMENUITEM);
+	this->makeMenuItemClass(HELPMENU,"About QT",0,"help-about",ABOUTQTMENUITEM);
 
 //help
-	menuItemSink=this->makeMenuItemClass(HELPMENU,"Help",0,"help-contents",HELPMENUITEM);
+	this->makeMenuItemClass(HELPMENU,"Help",0,"help-contents",HELPMENUITEM);
 
 	this->setUpToolBar();
 	this->mainWindow->setMenuBar(qobject_cast<QMenuBar*>(this->menuBar));
@@ -180,7 +180,8 @@ void ManPageEditorQT::buildMainGui(void)
 // 	this->statusBar=this->mainWindow->statusBar();
  //	this->statusBar->addWidget(this->statusText);
 }
-
+//#include <sys/stat.h>
+//#include <sys/types.h>
 void ManPageEditorQT::initApp(void)
 {
 	char		tmpfoldertemplate[]="/tmp/ManPageEditorQT-XXXXXX";
@@ -266,8 +267,14 @@ void ManPageEditorQT::setUpToolBar(void)
 //livesearch
 	this->liveSearchWidget=new QLineEdit;
 	this->liveSearchWidget->setToolTip("Live Search");
-	QObject::connect(this->liveSearchWidget,SIGNAL(textChanged(QString)),this,SLOT(doLiveSearch(QString)));
-	QObject::connect(this->liveSearchWidget,SIGNAL(returnPressed()),this,SLOT(doLiveSearch()));
+	QObject::connect(this->liveSearchWidget,&QLineEdit::textChanged,[this](QString text)
+		{
+			this->doLiveSearch(text);
+		});
+	QObject::connect(this->liveSearchWidget,&QLineEdit::returnPressed,[this]()
+		{
+			this->doLiveSearch(this->liveSearchWidget->text());
+		});
 	hbox->addWidget(this->liveSearchWidget,1);
 
 	hbox->addStretch(0);

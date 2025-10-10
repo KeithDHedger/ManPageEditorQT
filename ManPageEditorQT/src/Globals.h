@@ -22,7 +22,9 @@
 #define _GLOBALS_
 
 #include "qtincs.h"
+#include "internet.h"
 
+class AboutBoxClass;
 class NoteBookClass;
 class ManPageEditorQT;
 class MenuItemClass;
@@ -40,6 +42,7 @@ struct manProps
 	QString catagory="My set of programs";
 };
 
+#include "QT_AboutBox.h"
 #include "ManPageEditorQT.h"
 #include "QT_notebook.h"
 #include "QT_menuitem.h"

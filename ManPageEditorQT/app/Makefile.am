@@ -10,6 +10,13 @@ pixfiles_DATA = ../resources/pixmaps/*
 scriptfilesdir = $(pkgdatadir)/scripts
 scriptfiles_SCRIPTS = ../resources/scripts/README
 
+helpfilesdir = $(pkgdatadir)/help
+helpfiles_DATA = ../resources/help/*
+
+
+docfilesdir = $(pkgdatadir)/docs
+docfiles_DATA = ../resources/docs/*
+
 bin_PROGRAMS = manpageeditorqt
 
 man1_MANS = ../resources/man/manpageeditorqt.1

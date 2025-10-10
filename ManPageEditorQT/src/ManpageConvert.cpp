@@ -31,20 +31,49 @@ ManpageConvertClass::ManpageConvertClass(ManPageEditorQT *mainclass)
 
 void ManpageConvertClass::exportManpage(QString filepath)
 {
-	QString		prevpage=this->mainClass->getProperties(this->manString);
+	QString	prevpage=this->mainClass->getProperties(this->manString);
 
 	prevpage+="\n";
+
 	for(int j=0;j<this->mainClass->mainNotebook->count();j++)
 		{
 			QTextEdit	*te=this->mainClass->getDocumentForTab(j);
-			prevpage+=te->statusTip()+"\n";
-			prevpage+=te->toMarkdown();
+			prevpage+="\n"+te->statusTip()+"\n";
+			QStringList ss=te->toHtml().split("\n");
+			for(int j=0;j<ss.size();j++)
+				{
+					if(ss.at(j).startsWith("<p style="))
+						{
+							QString res1=ss.at(j);
+
+							res1=res1.replace(QRegularExpression(R"RX(<br.*/>)RX",QRegularExpression::InvertedGreedinessOption),"\n.br\n");
+							res1=res1.replace(QRegularExpression(R"RX(&quot;)RX",QRegularExpression::InvertedGreedinessOption),"\"");
+							res1=res1.replace(QRegularExpression(R"RX(&lt;)RX",QRegularExpression::InvertedGreedinessOption),"<");
+							res1=res1.replace(QRegularExpression(R"RX(&gt;)RX",QRegularExpression::InvertedGreedinessOption),">");
+
+							res1=res1.replace(QRegularExpression(R"RX(<span style=" font-weight:700;">(.*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fB\\1\\fR");
+							res1=res1.replace(QRegularExpression(R"RX(<span style=" font-style:italic;">(.*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fI\\1\\fR");
+							res1=res1.replace(QRegularExpression(R"RX(<span style=" font-family:'Monospace';">(.*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\1");
+
+							res1=res1.replace(QRegularExpression(R"RX(<p style="-qt-paragraph-type:empty; .*">)RX",QRegularExpression::InvertedGreedinessOption),"");
+
+							res1=res1.replace(QRegularExpression(R"RX(<p style=" margin-top.* -qt-block-indent:0; text-indent:0px;">(.*)</p>)RX",QRegularExpression::InvertedGreedinessOption),"\\1");	
+							res1=res1.replace(QRegularExpression(R"RX(<span style=" font-family:'Monospace'; font-weight:700;">(.*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fB\\1\\fR");
+							res1=res1.replace(QRegularExpression(R"RX(<span style=" font-family:'Monospace'; font-style:italic;">(.*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fI\\1\\fR");
+
+							prevpage+=res1+"\n.br\n";
+						}
+				}
 		}
 
-	prevpage=prevpage.replace("\n\n","\n.br\n");
-	prevpage=prevpage.replace(QRegularExpression(R"RX(^```)RX",QRegularExpression::InvertedGreedinessOption|QRegularExpression::MultilineOption),"");
-	prevpage=prevpage.replace(QRegularExpression(R"RX(\*\*(.*)\*\*)RX",QRegularExpression::InvertedGreedinessOption),"\\fB\\1\\fR");
-	prevpage=prevpage.replace(QRegularExpression(R"RX(\*(.*)\*)RX",QRegularExpression::InvertedGreedinessOption),"\\fI\\1\\fR");
+	prevpage=prevpage.replace(QRegularExpression(R"RX(\\fR)RX",QRegularExpression::InvertedGreedinessOption|QRegularExpression::MultilineOption),R"RX(\\fR)RX");
+	prevpage=prevpage.replace(QRegularExpression(R"RX(\\\")RX",QRegularExpression::InvertedGreedinessOption|QRegularExpression::MultilineOption),R"RX(\\")RX");
+	prevpage=prevpage.replace(QRegularExpression(R"RX(\\\$)RX",QRegularExpression::InvertedGreedinessOption|QRegularExpression::MultilineOption),R"RX($)RX");
+	prevpage=prevpage.replace(QRegularExpression(R"RX(([^\\])\\\\fR)RX",QRegularExpression::InvertedGreedinessOption|QRegularExpression::MultilineOption),"\\1\\fR");
+	prevpage=prevpage.replace(QRegularExpression(R"RX(<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">)RX",QRegularExpression::InvertedGreedinessOption|QRegularExpression::MultilineOption),"");
+	prevpage=prevpage.replace(QRegularExpression(R"RX(<p style=" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">)RX",QRegularExpression::InvertedGreedinessOption),"");
+	prevpage=prevpage.replace(QRegularExpression(R"RX(</p>)RX",QRegularExpression::InvertedGreedinessOption),"");
+	prevpage=prevpage.replace(QRegularExpression(R"RX(</body></html>)RX",QRegularExpression::InvertedGreedinessOption),"");
 
 	QFile data(filepath);
 	if(data.open(QFile::WriteOnly|QFile::Truncate))
@@ -62,7 +91,7 @@ void ManpageConvertClass::importManpage(QString filepath)
 	QString		content;
 	QStringList	sections;
 	bool			retval;
-	QString		htmlstr="<pre>";
+	QString		htmlstr;
 	char			buffer[2048]= {0,};
 	char			commandBuffer[2048]= {0,};
 	FILE*		fp;
@@ -100,7 +129,6 @@ void ManpageConvertClass::importManpage(QString filepath)
 
 			for(int j=1;j<sections.size();j++)
 				{
-					htmlstr="";
 					QString tstr=sections.at(j);
 					QStringList lines=sections.at(j).split("\n");
 					QString name=lines.at(0);
@@ -115,21 +143,24 @@ void ManpageConvertClass::importManpage(QString filepath)
 							QString buf=lines.at(k);
 							buf.remove(0,7);
 							htmlstr+=buf+"\n";
+							htmlstr=htmlstr.replace("<","&lt;");
+							htmlstr=htmlstr.replace(">","&gt;");
 						}
-					htmlstr="<pre>"+htmlstr;
+					htmlstr="<style> pre {white-space: pre-wrap;word-wrap: break-word;overflow-x: auto;}</style>\n<pre>"+htmlstr;
 					htmlstr=htmlstr.replace(QRegularExpression(R"RX(\x1b\[1m(.*)\e\[m)RX",QRegularExpression::InvertedGreedinessOption),"<b>\\1</b>");
 					htmlstr=htmlstr.replace(QRegularExpression(R"RX(\x1b\[4m(.*)\e\[m)RX",QRegularExpression::InvertedGreedinessOption),"<i>\\1</i>");
 					htmlstr=htmlstr.replace(QRegularExpression(R"RX(\x1b\[1m)RX"),"");
-					htmlstr=htmlstr.replace(QRegularExpression(R"RX(\x1b\[m)RX"),"");					
+					htmlstr=htmlstr.replace(QRegularExpression(R"RX(\x1b\[m)RX"),"");
 					htmlstr+="</pre>\n";
+
 					te=new QTextEdit;
-					te->setAcceptRichText(true);
 					te->setHtml(htmlstr);
 					this->mainClass->mainNotebook->addTab(te,cname);
 					if(issub==false)
 						te->setStatusTip(".SH "+cname);
 					else
 						te->setStatusTip(".SS "+cname);
+					te->setLineWrapMode(QTextEdit::WidgetWidth);
 				}
 		}
 }

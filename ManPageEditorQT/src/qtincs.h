@@ -32,6 +32,8 @@
 #include <QFrame>
 #include <QDialogButtonBox>
 #include <QDebug>
+#include <QPlainTextEdit>
+#include <QTextBrowser>
 
 #include <QSettings>
 #include <QCompleter>
