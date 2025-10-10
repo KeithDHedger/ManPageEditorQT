@@ -1,22 +1,22 @@
 /*
  *
- * ©K. D. Hedger. Thu 23 Dec 20:37:00 GMT 2021 keithdhedger@gmail.com
+ * ©K. D. Hedger. Fri 10 Oct 16:51:35 BST 2025 keithdhedger@gmail.com
 
- * This file (QT_menuitem.cpp) is part of KKEditQT.
+ * This file (QT_menuitem.cpp) is part of ManPageEditorQT.
 
- * KKEditQT is free software: you can redistribute it and/or modify
+ * ManPageEditorQT is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
 
- * KKEditQT is distributed in the hope that it will be useful,
+ * ManPageEditorQT is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
 
  * You should have received a copy of the GNU General Public License
- * along with KKEditQT.  If not, see <http://www.gnu.org/licenses/>.
- */
+ * along with ManPageEditorQT.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #include "Globals.h"
 
