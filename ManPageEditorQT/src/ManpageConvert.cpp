@@ -51,14 +51,14 @@ void ManpageConvertClass::exportManpage(QString filepath)
 							res1=res1.replace(QRegularExpression(R"RX(&lt;)RX",QRegularExpression::InvertedGreedinessOption),"<");
 							res1=res1.replace(QRegularExpression(R"RX(&gt;)RX",QRegularExpression::InvertedGreedinessOption),">");
 
-							res1=res1.replace(QRegularExpression(R"RX(<span style=" font-weight:700;">(.*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fB\\1\\fR");
+							res1=res1.replace(QRegularExpression(R"RX(<span style=" font-weight:.*;">(.*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fB\\1\\fR");
 							res1=res1.replace(QRegularExpression(R"RX(<span style=" font-style:italic;">(.*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fI\\1\\fR");
 							res1=res1.replace(QRegularExpression(R"RX(<span style=" font-family:'Monospace';">(.*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\1");
 
 							res1=res1.replace(QRegularExpression(R"RX(<p style="-qt-paragraph-type:empty; .*">)RX",QRegularExpression::InvertedGreedinessOption),"");
 
 							res1=res1.replace(QRegularExpression(R"RX(<p style=" margin-top.* -qt-block-indent:0; text-indent:0px;">(.*)</p>)RX",QRegularExpression::InvertedGreedinessOption),"\\1");	
-							res1=res1.replace(QRegularExpression(R"RX(<span style=" font-family:'Monospace'; font-weight:700;">(.*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fB\\1\\fR");
+							res1=res1.replace(QRegularExpression(R"RX(<span style=" font-family:'Monospace'; font-weight:.*;">(.*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fB\\1\\fR");
 							res1=res1.replace(QRegularExpression(R"RX(<span style=" font-family:'Monospace'; font-style:italic;">(.*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fI\\1\\fR");
 
 							prevpage+=res1+"\n.br\n";
