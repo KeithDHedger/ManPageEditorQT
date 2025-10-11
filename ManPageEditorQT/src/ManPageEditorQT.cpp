@@ -92,28 +92,28 @@ void ManPageEditorQT::buildMainGui(void)
 	this->menuBar->addMenu(this->fileMenu);
 
 //new
-	this->newMenuItem=this->makeMenuItemClass(FILEMENU,"New",QKeySequence::New,"document-new",NEWMENUITEM);
+	this->newMenuItem=this->makeMenuItemClass(FILEMENU,"New Section",QKeySequence::New,"document-new",NEWMENUITEM);
 
 //open
-	this->openMenuItem=this->makeMenuItemClass(FILEMENU,"Open",QKeySequence::Open,"document-open",OPENMENUITEM);
+	this->openMenuItem=this->makeMenuItemClass(FILEMENU,"Open Manpage",QKeySequence::Open,"document-open",OPENMENUITEM);
 
 	this->fileMenu->addSeparator();
 
 //save
-	this->saveMenuItem=this->makeMenuItemClass(FILEMENU,"Save",QKeySequence::Save,"document-save",SAVEMENUITEM);
+	this->saveMenuItem=this->makeMenuItemClass(FILEMENU,"Save Manpage",QKeySequence::Save,"document-save",SAVEMENUITEM);
 
 //savas
-	this->saveAsMenuItem=this->makeMenuItemClass(FILEMENU,"Save As",QKeySequence("Ctrl+Shift+S"),"document-save-as",SAVEASMENUITEM);
+	this->saveAsMenuItem=this->makeMenuItemClass(FILEMENU,"Save Manpage As",QKeySequence("Ctrl+Shift+S"),"document-save-as",SAVEASMENUITEM);
 
 	this->fileMenu->addSeparator();
 
 //preview
-	this->previewMenuItem=this->makeMenuItemClass(FILEMENU,"Preview",0,"edit-find",PREVIEWMENUITEM);
+	this->previewMenuItem=this->makeMenuItemClass(FILEMENU,"Preview Manpage",0,"edit-find",PREVIEWMENUITEM);
 //property
-	this->propsMenuItem=this->makeMenuItemClass(FILEMENU,"Properties",0,"preferences-system",PROPSMENUITEM);
+	this->propsMenuItem=this->makeMenuItemClass(FILEMENU,"Manpage Properties",0,"preferences-system",PROPSMENUITEM);
 
 //printfile
-	this->printMenuItem=this->makeMenuItemClass(FILEMENU,"Print",QKeySequence::Print,"document-print",PRINTMENUITEM);
+	this->printMenuItem=this->makeMenuItemClass(FILEMENU,"Print Manpage",QKeySequence::Print,"document-print",PRINTMENUITEM);
 
 	this->fileMenu->addSeparator();
 
@@ -204,11 +204,22 @@ void ManPageEditorQT::initApp(void)
 	this->readConfigs();
 	this->buildMainGui();
 
+	this->mainNotebook->setContextMenuPolicy(Qt::CustomContextMenu);
 	QObject::connect(this->mainNotebook,&QTabWidget::tabCloseRequested,[this](int index)
 		{
 			QTextEdit	*te=this->getDocumentForTab(index);
 			this->mainNotebook->removeTab(index);
 			delete te;
+		});
+	QObject::connect(this->mainNotebook,&QTabWidget::customContextMenuRequested,[this](const QPoint p)
+		{
+			QTextEdit	*te=this->getDocumentForTab(-1);
+			QString		ss=te->statusTip();
+			bool			issub=false;
+			if(ss.startsWith(".SS"))
+				issub=true;
+			ss=ss.sliced(4);
+			this->buildSectionProps(ss,issub,false);
 		});
 
 
@@ -386,6 +397,7 @@ bool ManPageEditorQT::closeTabs(void)
 			this->mainNotebook->removeTab(0);
 			delete te;
 		}
+	this->mpConv->manString=mpclass->getProperties();
 	return(true);
 }
 
@@ -555,6 +567,88 @@ QString ManPageEditorQT::getProperties(QString thstr)
 		}
 
 	return(propstr);
+}
+
+void ManPageEditorQT::buildSectionProps(QString s,bool issubsec,bool create)
+{
+	QDialog			propsdialog;
+	QWidget			*hbox;
+	QHBoxLayout		*hlayout;
+	QVBoxLayout		*docvlayout=new QVBoxLayout;
+	QDialogButtonBox	*buttonBox=NULL;
+	QFrame			separator(nullptr);
+	QLineEdit		*nameedit;
+	QCheckBox		*subchk;
+	const char		*propname[]={"Name","Is Sub-Section"};
+
+	hbox=new QWidget;
+	hlayout=new QHBoxLayout;
+	hlayout->setContentsMargins(0,0,0,0);
+	hbox->setLayout(hlayout);
+	hlayout->addWidget(new QLabel(propname[0]),0,Qt::AlignLeft);
+	nameedit=new QLineEdit();
+	nameedit->setPlaceholderText(s);
+	hlayout->addWidget(nameedit,1,Qt::AlignRight);
+	docvlayout->addWidget(hbox);
+
+	hbox=new QWidget;
+	hlayout=new QHBoxLayout;
+	hlayout->setContentsMargins(0,0,0,0);
+	hbox->setLayout(hlayout);
+	subchk=new QCheckBox(propname[1]);
+	subchk->setChecked(issubsec);
+	hlayout->addWidget(subchk,1,Qt::AlignLeft);
+	docvlayout->addWidget(hbox);
+
+	separator.setFrameStyle(QFrame::Sunken | QFrame::HLine);
+	docvlayout->addWidget(&separator);
+      
+	buttonBox=new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
+	docvlayout->addWidget(buttonBox);
+	QObject::connect(buttonBox,&QDialogButtonBox::accepted,[&propsdialog]()
+		{
+			propsdialog.done(0);
+		});
+	QObject::connect(buttonBox,&QDialogButtonBox::rejected,[&propsdialog]()
+		{
+			propsdialog.done(1);
+		});
+
+	docvlayout->setContentsMargins(MARGINS,MARGINS,MARGINS,MARGINS);
+	propsdialog.setLayout(docvlayout);
+	propsdialog.setWindowTitle("Section Properties");
+	int ret=propsdialog.exec();
+	delete buttonBox;
+	if(ret==0)
+		{
+			QTextEdit *te;
+			if(create==true)
+				te=new QTextEdit;
+			else
+				te=this->getDocumentForTab(-1);
+
+			QString tabname=nameedit->text();
+			if(tabname.isEmpty()==true)
+				tabname=nameedit->placeholderText();
+		
+			if(subchk->isChecked()==false)
+				{
+					if(create==true)
+						this->mainNotebook->insertTab(this->mainNotebook->currentIndex()+1,te,tabname.trimmed().toUpper());
+					else
+						this->mainNotebook->setTabText(this->mainNotebook->currentIndex(),tabname.trimmed().toUpper());
+					te->setStatusTip(".SH "+tabname.trimmed());
+				}
+			else
+				{
+					if(create==true)
+						this->mainNotebook->insertTab(this->mainNotebook->currentIndex()+1,te,tabname.trimmed().toLower());
+					else
+						this->mainNotebook->setTabText(this->mainNotebook->currentIndex(),tabname.trimmed().toLower());
+					te->setStatusTip(".SS "+tabname.trimmed());
+				}
+			te->setLineWrapMode(QTextEdit::WidgetWidth);
+		}
 }
 
 void ManPageEditorQT::doBold(void)

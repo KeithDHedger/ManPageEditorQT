@@ -82,7 +82,7 @@ class ManPageEditorQT : public QObject
 		void							setAppShortcuts(void);
 //		void							setToolbarSensitive(void);
 		void							writeExitData(void);
-
+		
 //editor vars
 		QStatusBar					*statusBar;
 		QLabel						*statusText;
@@ -150,7 +150,9 @@ class ManPageEditorQT : public QObject
 		QVector<QLineEdit*>			propBoxes;
 //document functions
 		QString						buildProperties(QString thstr=R"foo(.TH "myprogram" "1" "0.0.0" "Me" "My set of programs")foo");
-		QString						getProperties(QString thstr);
+		QString						getProperties(QString thstr=R"foo(.TH "myprogram" "1" "0.0.0" "Me" "My set of programs")foo");
+		void							buildSectionProps(QString s,bool issubsec,bool create);
+
 		void							doBold(void);
 		void							doItalic(void);
 		void							doClear(void);

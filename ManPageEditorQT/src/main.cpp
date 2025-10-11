@@ -30,7 +30,7 @@ int main(int argc, char **argv)
 	app.setApplicationName("ManPageEditorQT");
 
 	mpclass=new ManPageEditorQT(&app);
-
+	mpclass->mpConv->manString=mpclass->getProperties();
 	if(argc>1)
 		mpclass->mpConv->importManpage(argv[1]);
 	status=app.exec();

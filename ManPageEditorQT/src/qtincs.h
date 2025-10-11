@@ -34,6 +34,7 @@
 #include <QDebug>
 #include <QPlainTextEdit>
 #include <QTextBrowser>
+#include <QCheckBox>
 
 #include <QSettings>
 #include <QCompleter>

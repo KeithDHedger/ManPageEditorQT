@@ -1,4 +1,10 @@
 0.0.8
+Switch tab to newly created tab.
+New section inserts tab after current tab.
+Added context menu to tab to change section name and/or section type.
+Added 'New'.
+Correctly set page properties on startup.
+Updated app icon.
 Fixed exporting in qt5.
 User editing.
 Better import/export.

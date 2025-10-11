@@ -23,10 +23,13 @@
 void ManPageEditorQT::doFileMenuItems(MenuItemClass *mc)
 {
 	//MenuItemClass	*mc=qobject_cast<MenuItemClass*>(sender());
+qDebug()<<mc;
 	switch(mc->getMenuID())
 		{
 //file menu
 			case NEWMENUITEM:
+				this->buildSectionProps("NEW SECTION",false,true);
+				this->mainNotebook->setCurrentIndex(this->mainNotebook->currentIndex()+1);
 				break;
 			case OPENMENUITEM:
 				{
@@ -64,7 +67,7 @@ void ManPageEditorQT::doFileMenuItems(MenuItemClass *mc)
 				this->doPreView();
 				break;
 			case PROPSMENUITEM:
-				this->buildProperties("xx");
+				this->buildProperties("");
 				break;
 
 			case PRINTMENUITEM:
