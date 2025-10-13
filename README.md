@@ -15,6 +15,8 @@ USEQTVERSION=5 ./autogen.sh --prefix=/usr
 
 ```
 
-TODO  
+#### TODO
 Help pages.  
+Prefs.  
+Import system manpage by name.  
 
