@@ -24,15 +24,47 @@ int main(int argc, char **argv)
 {
 	int				status;
 	QApplication		app(argc,argv);
-	QPixmap			pixmap(DATADIR "/pixmaps/KKEditQT.png");
+
+	LFSTK_prefsClass	prefs(QString(PACKAGE_NAME).toLower().toStdString(),VERSION);
+	option			long_options[]=
+		{
+			{"text-size",required_argument,NULL,'s'},
+			{"as-underline",no_argument,NULL,'u'},
+			{0,0,0,0}
+		};
+
+	std::string	configfile=getenv("HOME");
+	configfile+="/.config/manpageeditqt.rc";
+
+	prefs.prefsMap=
+		{
+			{prefs.LFSTK_hashFromKey("as-underline"),{TYPEBOOL,"as-underline","Show italic as underline ( as most terminals do )","",false,0}},
+			{prefs.LFSTK_hashFromKey("text-size"),{TYPEINT,"text-size","Font size to use ( default 10 )","",false,10}},
+		};
+
+	prefs.LFSTK_loadVarsFromFile(configfile);
+	if(prefs.LFSTK_argsToPrefs(argc,argv,long_options,true)==false)
+		return(0);
 
 	app.setOrganizationName("KDHedger");
-	app.setApplicationName("ManPageEditorQT");
+	app.setApplicationName("PACKAGE_NAME");
 
 	mpclass=new ManPageEditorQT(&app);
 	mpclass->mpConv->manString=mpclass->getProperties();
-	if(argc>1)
-		mpclass->mpConv->importManpage(argv[1]);
+
+	if(prefs.LFSTK_getBool("as-underline")==true)
+		{
+			mpclass->italicMenuItem->setAppearance("stock_underline","Underline","Ctrl+U");
+			mpclass->useUnderline=true;
+		}
+
+	if(prefs.LFSTK_getInt("text-size")!=0)
+		mpclass->fontSize=prefs.LFSTK_getInt("text-size");
+
+	if(prefs.cliArgs.size()>0)
+		mpclass->mpConv->importManpage(prefs.cliArgs.at(0).c_str());
+
+
 	status=app.exec();
 
 	delete mpclass;

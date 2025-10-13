@@ -51,3 +51,10 @@ QString MenuItemClass::getMenuString(void)
 	return(this->menuString);
 }
 
+void MenuItemClass::setAppearance(QString iconname,QString actiontext,QString keys)
+{
+	this->setIcon(QIcon::fromTheme(iconname));
+	this->setText(actiontext);
+	this->setShortcut(QKeySequence::fromString(keys));
+}
+

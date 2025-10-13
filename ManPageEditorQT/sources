@@ -1,1 +1,1 @@
-COMMONSRC = ../src/Callbacks.cpp ../src/Globals.cpp ../src/ManPageEditorQT.cpp ../src/ManpageConvert.cpp ../src/QT_AboutBox.cpp ../src/QT_menuitem.cpp ../src/QT_notebook.cpp ../src/main.cpp
+COMMONSRC = ../src/Callbacks.cpp ../src/Globals.cpp ../src/LFSTKPrefsClass.cpp ../src/ManPageEditorQT.cpp ../src/ManpageConvert.cpp ../src/QT_AboutBox.cpp ../src/QT_menuitem.cpp ../src/QT_notebook.cpp ../src/main.cpp

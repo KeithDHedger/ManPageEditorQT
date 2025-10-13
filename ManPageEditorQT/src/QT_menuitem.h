@@ -34,6 +34,7 @@ class MenuItemClass : public QAction
 		unsigned int 	getMenuID(void);
 		void				setMenuString(QString str);
 		QString			getMenuString(void);
+		void				setAppearance(QString iconname,QString actiontext,QString keys);
 
 	private:
 		int				menuID;

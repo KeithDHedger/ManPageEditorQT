@@ -1,3 +1,20 @@
 # ManPageEditorQT
 A manpage editor for QT  
-Nothing to see here yet, move along ...
+I now consider this usable, but please make backups when changing man pages.  
+
+
+### Compile
+```
+
+For Qt6:
+./autogen.sh --prefix=/usr
+
+For Qt5:
+USEQTVERSION=5 ./autogen.sh --prefix=/usr
+
+
+```
+
+TODO  
+Help pages.  
+

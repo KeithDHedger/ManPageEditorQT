@@ -24,6 +24,7 @@
 #include "qtincs.h"
 #include "internet.h"
 
+class LFSTK_prefsClass;
 class AboutBoxClass;
 class NoteBookClass;
 class ManPageEditorQT;
@@ -42,6 +43,7 @@ struct manProps
 	QString catagory="My set of programs";
 };
 
+#include "LFSTKPrefsClass.h"
 #include "QT_AboutBox.h"
 #include "ManPageEditorQT.h"
 #include "QT_notebook.h"

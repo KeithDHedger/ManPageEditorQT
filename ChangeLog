@@ -1,4 +1,9 @@
 0.0.8
+Fixed setting icon/text when using -u option.
+Fix for qt5.
+Added show italic as underline option.
+Added text size option.
+Added cli args/config file (~/.config/manpageeditqt.rc)
 Switch tab to newly created tab.
 New section inserts tab after current tab.
 Added context menu to tab to change section name and/or section type.

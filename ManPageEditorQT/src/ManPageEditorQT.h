@@ -97,6 +97,9 @@ class ManPageEditorQT : public QObject
 		int							currentPage=0;
 		bool							closingAllTabs=false;
 
+		QString						fontName="Monospace";
+		int							fontSize=10;
+		bool							useUnderline=false;
 //editor functions
 //menubar
 		QMenuBar						*menuBar;

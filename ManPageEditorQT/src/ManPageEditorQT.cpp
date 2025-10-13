@@ -218,7 +218,7 @@ void ManPageEditorQT::initApp(void)
 			bool			issub=false;
 			if(ss.startsWith(".SS"))
 				issub=true;
-			ss=ss.sliced(4);
+			ss=ss.mid(4);
 			this->buildSectionProps(ss,issub,false);
 		});
 
@@ -587,7 +587,8 @@ void ManPageEditorQT::buildSectionProps(QString s,bool issubsec,bool create)
 	hbox->setLayout(hlayout);
 	hlayout->addWidget(new QLabel(propname[0]),0,Qt::AlignLeft);
 	nameedit=new QLineEdit();
-	nameedit->setPlaceholderText(s);
+	nameedit->setText(s);
+	nameedit->selectAll();
 	hlayout->addWidget(nameedit,1,Qt::AlignRight);
 	docvlayout->addWidget(hbox);
 
@@ -621,15 +622,16 @@ void ManPageEditorQT::buildSectionProps(QString s,bool issubsec,bool create)
 	delete buttonBox;
 	if(ret==0)
 		{
-			QTextEdit *te;
+			QTextEdit	*te;
+			QString		tabname=nameedit->text();
+
 			if(create==true)
-				te=new QTextEdit;
+				{
+					te=new QTextEdit;
+					te->setFont(QFont(this->fontName,this->fontSize));
+				}
 			else
 				te=this->getDocumentForTab(-1);
-
-			QString tabname=nameedit->text();
-			if(tabname.isEmpty()==true)
-				tabname=nameedit->placeholderText();
 		
 			if(subchk->isChecked()==false)
 				{
@@ -660,7 +662,8 @@ void ManPageEditorQT::doBold(void)
 	fmt.setFontUnderline(false);			
 
 	fmt.setFontWeight(QFont::Bold);			
-	te->mergeCurrentCharFormat(fmt);			
+	//te->mergeCurrentCharFormat(fmt);			
+	te->setCurrentCharFormat(fmt);			
 }
 
 void ManPageEditorQT::doItalic(void)
@@ -670,9 +673,14 @@ void ManPageEditorQT::doItalic(void)
 
 	fmt.setFontWeight(QFont::Normal);
 	fmt.setFontItalic(false);
+	fmt.setFontUnderline(false);
 
-	fmt.setFontItalic(true);
-	te->mergeCurrentCharFormat(fmt);
+	if(this->useUnderline==false)
+		fmt.setFontItalic(true);
+	else
+		fmt.setFontUnderline(true);
+	//te->mergeCurrentCharFormat(fmt);
+	te->setCurrentCharFormat(fmt);
 }
 
 void ManPageEditorQT::doClear(void)

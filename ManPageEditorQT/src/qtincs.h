@@ -44,4 +44,12 @@
 #include <stdlib.h>
 #include <wordexp.h>
 
+#include <map>
+#include <vector>
+#include <string>
+#include <string.h>
+#include <getopt.h>
+#include <iostream>
+#include <fstream>
+
 #endif

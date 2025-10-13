@@ -52,6 +52,7 @@ void ManpageConvertClass::exportManpage(QString filepath)
 							res1=res1.replace(QRegularExpression(R"RX(&gt;)RX",QRegularExpression::InvertedGreedinessOption),">");
 
 							res1=res1.replace(QRegularExpression(R"RX(<span style=" font-weight:.*;">(.*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fB\\1\\fR");
+							res1=res1.replace(QRegularExpression(R"RX(<span style=" text-decoration: underline;">(.*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fI\\1\\fR");
 							res1=res1.replace(QRegularExpression(R"RX(<span style=" font-style:italic;">(.*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fI\\1\\fR");
 							res1=res1.replace(QRegularExpression(R"RX(<span style=" font-family:'Monospace';">(.*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\1");
 
@@ -148,12 +149,16 @@ void ManpageConvertClass::importManpage(QString filepath)
 						}
 					htmlstr="<style> pre {white-space: pre-wrap;word-wrap: break-word;overflow-x: auto;}</style>\n<pre>"+htmlstr;
 					htmlstr=htmlstr.replace(QRegularExpression(R"RX(\x1b\[1m(.*)\e\[m)RX",QRegularExpression::InvertedGreedinessOption),"<b>\\1</b>");
-					htmlstr=htmlstr.replace(QRegularExpression(R"RX(\x1b\[4m(.*)\e\[m)RX",QRegularExpression::InvertedGreedinessOption),"<i>\\1</i>");
+					if(this->mainClass->useUnderline==false)
+						htmlstr=htmlstr.replace(QRegularExpression(R"RX(\x1b\[4m(.*)\e\[m)RX",QRegularExpression::InvertedGreedinessOption),"<i>\\1</i>");
+					else
+						htmlstr=htmlstr.replace(QRegularExpression(R"RX(\x1b\[4m(.*)\e\[m)RX",QRegularExpression::InvertedGreedinessOption),"<u>\\1</u>");
 					htmlstr=htmlstr.replace(QRegularExpression(R"RX(\x1b\[1m)RX"),"");
 					htmlstr=htmlstr.replace(QRegularExpression(R"RX(\x1b\[m)RX"),"");
 					htmlstr+="</pre>\n";
 
 					te=new QTextEdit;
+					te->setFont(QFont(this->mainClass->fontName,this->mainClass->fontSize));
 					te->setHtml(htmlstr);
 					this->mainClass->mainNotebook->addTab(te,cname);
 					if(issub==false)
