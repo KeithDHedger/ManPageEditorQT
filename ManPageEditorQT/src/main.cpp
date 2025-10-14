@@ -30,6 +30,7 @@ int main(int argc, char **argv)
 		{
 			{"text-size",required_argument,NULL,'s'},
 			{"as-underline",no_argument,NULL,'u'},
+			{"showsyspage",no_argument,NULL,'p'},
 			{0,0,0,0}
 		};
 
@@ -40,6 +41,7 @@ int main(int argc, char **argv)
 		{
 			{prefs.LFSTK_hashFromKey("as-underline"),{TYPEBOOL,"as-underline","Show italic as underline ( as most terminals do )","",false,0}},
 			{prefs.LFSTK_hashFromKey("text-size"),{TYPEINT,"text-size","Font size to use ( default 10 )","",false,10}},
+			{prefs.LFSTK_hashFromKey("showsyspage"),{TYPEBOOL,"showsyspage","Open system manpage dialog at start","",false,0}},
 		};
 
 	prefs.LFSTK_loadVarsFromFile(configfile);
@@ -60,6 +62,16 @@ int main(int argc, char **argv)
 
 	if(prefs.LFSTK_getInt("text-size")!=0)
 		mpclass->fontSize=prefs.LFSTK_getInt("text-size");
+
+	if(prefs.LFSTK_getBool("showsyspage")==true)
+		{
+			QString filepath;
+			filepath=mpclass->mpConv->buildOpenSystemPage();
+			if(filepath.isEmpty()==false)
+				{
+					mpclass->mpConv->importManpage(filepath);
+				}
+		}
 
 	if(prefs.cliArgs.size()>0)
 		mpclass->mpConv->importManpage(prefs.cliArgs.at(0).c_str());

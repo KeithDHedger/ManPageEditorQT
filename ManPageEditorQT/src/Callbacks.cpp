@@ -82,7 +82,19 @@ qDebug()<<mc;
 				break;
 			case PREFSMENUITEM:
 				//this->doPrefs();
-				break;		}
+				break;
+			case OPENSYSPAGEMENUITEM:
+				{
+					QString filepath;
+					filepath=this->mpConv->buildOpenSystemPage();
+					if(filepath.isEmpty()==false)
+						{
+							this->closeTabs();
+							this->mpConv->importManpage(filepath);
+						}
+				}
+				break;
+		}
 }
 
 void ManPageEditorQT::doEditMenuItems(MenuItemClass *mc)

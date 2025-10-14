@@ -29,6 +29,76 @@ ManpageConvertClass::ManpageConvertClass(ManPageEditorQT *mainclass)
 	this->mainClass=mainclass;
 }
 
+QString ManpageConvertClass::buildOpenSystemPage(void)
+{
+	QDialog			propsdialog;
+	QWidget			*hbox;
+	QHBoxLayout		*hlayout;
+	QVBoxLayout		*docvlayout=new QVBoxLayout;
+	QDialogButtonBox	*buttonBox=NULL;
+	QFrame			separator(nullptr);
+	QLineEdit		*nameedit;
+	QComboBox		*section;
+	const char		*propname[]={"Manpage","Section"};
+	FILE*			fp;
+
+	hbox=new QWidget;
+	hlayout=new QHBoxLayout;
+	hlayout->setContentsMargins(0,0,0,0);
+	hbox->setLayout(hlayout);
+	nameedit=new QLineEdit();
+	nameedit->setPlaceholderText(propname[0]);
+	hlayout->addWidget(nameedit);
+	docvlayout->addWidget(hbox);
+
+	hbox=new QWidget;
+	hlayout=new QHBoxLayout;
+	hlayout->setContentsMargins(0,0,0,0);
+	hbox->setLayout(hlayout);
+	section=new QComboBox();
+	section->addItems(QStringList()<<"1 Executable programs or shell commands"<<"2 System calls (functions provided by the kernel)"<<"3 Library calls (functions within program libraries)"<<"4 Special files (usually found in /dev)"<<"5 File formats and conventions eg /etc/passwd"<<"6 Games"<<"7 Miscellaneous, e.g. man(7), groff(7)"<<"8 System administration commands (usually only for root)"<<"9 Kernel routines [Non standard]");
+
+	hlayout->addWidget(section,1,Qt::AlignLeft);
+	docvlayout->addWidget(hbox);
+
+	separator.setFrameStyle(QFrame::Sunken | QFrame::HLine);
+	docvlayout->addWidget(&separator);
+      
+	buttonBox=new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
+	docvlayout->addWidget(buttonBox);
+	QObject::connect(buttonBox,&QDialogButtonBox::accepted,[&propsdialog]()
+		{
+			propsdialog.done(0);
+		});
+	QObject::connect(buttonBox,&QDialogButtonBox::rejected,[&propsdialog]()
+		{
+			propsdialog.done(1);
+		});
+
+	docvlayout->setContentsMargins(MARGINS,MARGINS,MARGINS,MARGINS);
+	propsdialog.setLayout(docvlayout);
+	propsdialog.setWindowTitle("Section Properties");
+	int ret=propsdialog.exec();
+	delete buttonBox;
+	if(ret==0)
+		{
+			QString	command;
+			QString	content="";
+			char		buffer[2048]={0,};
+			command=QString("man -s%2 -w %1 2>/dev/null").arg(nameedit->text()).arg(section->currentIndex()+1);
+
+			fp=popen(command.toStdString().c_str(),"r");
+			if(fp!=NULL)
+				{
+					while(fgets((char*)&buffer[0],2048,fp))
+						content+=buffer;
+					pclose(fp);
+				}
+			return(content.trimmed());
+		}
+	return("");
+}
+
 void ManpageConvertClass::exportManpage(QString filepath)
 {
 	QString	prevpage=this->mainClass->getProperties(this->manString);
