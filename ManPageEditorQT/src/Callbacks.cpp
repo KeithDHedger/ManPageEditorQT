@@ -80,39 +80,34 @@ qDebug()<<mc;
 				this->writeExitData();
 				QApplication::quit();
 				break;
-		}
+			case PREFSMENUITEM:
+				//this->doPrefs();
+				break;		}
 }
 
 void ManPageEditorQT::doEditMenuItems(MenuItemClass *mc)
 {
+	QTextEdit	*te=this->getDocumentForTab(this->mainNotebook->currentIndex());
 	switch(mc->getMenuID())
 		{
 			case UNDOMENUITEM:
-				//if(document!=NULL)
-					//document->undo();
+				te->undo();
 				break;
 			case REDOMENUITEM:
-				//if(document!=NULL)
-				//	document->redo();
+				te->redo();
 				break;
 			case CUTMENUITEM:
-				//if(document!=NULL)
-				//	document->cut();
+				te->cut();
 				break;
 			case COPYMENUITEM:
-				//if(document!=NULL)
-				//	document->copy();
+				te->copy();
 				break;
 			case PASTEMENUITEM:
-				//if(document!=NULL)
-				//	document->paste();
+				te->paste();
 				break;
 			case FINDMENUITEM:
 				//this->findReplaceDialog->show();
 			//	this->findReplaceDialog->activateWindow();
-				break;
-			case PREFSMENUITEM:
-				//this->doPrefs();
 				break;
 		}
 }

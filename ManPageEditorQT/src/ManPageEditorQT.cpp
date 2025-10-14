@@ -125,7 +125,10 @@ void ManPageEditorQT::buildMainGui(void)
 
 //close
 	this->closeMenuItem=this->makeMenuItemClass(FILEMENU,"Close",QKeySequence::Close,"window-close",CLOSEMENUITEM);
+	this->fileMenu->addSeparator();
 
+//prefs
+	this->makeMenuItemClass(FILEMENU,"Preferences",0,"preferences-desktop",PREFSMENUITEM);
 	this->fileMenu->addSeparator();
 
 //quit
@@ -153,9 +156,6 @@ void ManPageEditorQT::buildMainGui(void)
 	this->findMenuItem=this->makeMenuItemClass(EDITMENU,"Find",QKeySequence::Find,"edit-find",FINDMENUITEM);
 
 	this->editMenu->addSeparator();
-
-//prefs
-	this->makeMenuItemClass(EDITMENU,"Preferences",0,"preferences-desktop",PREFSMENUITEM);
 
 //format menu
 	this->formatMenu=new QMenu("&Formating");
