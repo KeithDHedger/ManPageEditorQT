@@ -27,6 +27,7 @@ class AboutBoxClass : public QObject
 {
 	public:
 		AboutBoxClass(QWidget* window,QString pixpath);
+		AboutBoxClass(void);
 		~AboutBoxClass();
 
 		void		runAbout(void);
@@ -35,6 +36,7 @@ class AboutBoxClass : public QObject
 		void		showLicence(void);
 		void		showCredits(void);
 		void		killAboutBox(void);
+		void		showHelp(void);
 
 	private:
 		QDialog	*aboutDialog;

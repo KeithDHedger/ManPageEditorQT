@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>ManPageEditorQT</title>
+	</head>
+	<body vlink="#551A8B" text="#000000" bgcolor="#cccccc" alink="#EE0000" link="#0000EE">
+		<div align="center"><span style="font-size:64px;"><b>Man Page Editor</b></span></div>
+		<hr width=100% size="2">
+		<div align="center">
+			<img src="mainwindow.png" alt="mainwindow.png" title="mainwindow"><br>
+			<hr width=100% size="2">
+			<b><span style="font-size:24px;">What it is and does</span></b><br>
+
+			I write a number of my own programs, and have always had a bit of a problem writing the manpage.<br>
+			This is the QT 5/6 version of my gtk 2/3 <a href="https://keithdhedger.github.io/pages/manpageeditor/manpageeditor.html">manpage editor</a>.<br>
+			<hr width=100% size="2">
+			<b><span style="font-size:48px;">Manual</span></b>
+			<hr width=100% size="2">
+
+			<a href="#filemenu">File Menu</a><br>
+			<a href="#toolbar">Tool Bar</a><br>
+			<a href="#prefs">Preferences</a><br>
+  			<a href="#properties">Properties</a><br>
+			<a href="#textformatting">Text Formatting</a><br>
+			<a href="#todo">ToDo</a><br>
+			<hr width=100% size="2">
+			<a name="filemenu"></a>
+
+			<b><span style="font-size:24px;"><u>File Menu</u></span></b><br>
+			<img src="filemenu.png" alt="File Menu" title="File Menu"><br>
+			New Manpage will create a new manpage.<br>
+			New Section adds a section to the manpage.<br>
+			<s>New From Template opens a template file installed in PREFIX/share/ManPageEditor/examples, you can change this template to suit your tastes or replace it with your own template, at some future stage I will add more templates and possibly add a template folder.</s><br>
+			Open opens a manpage file.<br>
+			<s>Open opens a system install manpage by name.</s><br>
+			Preview Manpage will preview the manpage in ( at the moment ) xterm, the terminal to be used will be set in prefs.<br>
+			Save/Save As/Print/Quit and Close are standard.<br>
+
+			<a name="toolbar"></a><br>
+			<b><span style="font-size:24px;"><u>Toolbar</u></span></b><br>
+			<img src="toolbar.png" alt="Toolbar" title="Toolbar"><br>
+			Pretty standard the entry box is a 'Live' search just start typing, press enter to go to the next match and shift+enter for the previous.<br><br>
+
+			<a name="prefs"></a>
+			<b><span style="font-size:24px;">Preferences</span></b><br>
+			TBD<br><br>
+
+			<a name="properties"></a>
+			<b><span style="font-size:24px;">Properties</span></b><br>
+			<img src="props.png" alt="Properties" title="Properties"><br>
+			Set the properties for the entire manpage.<br><br>
+			<img src="sectionopt.png" alt="sectionopts" title="sectionopts"><br>
+			Right clicking on a tab will bring up the section properties dialog allowing you to change the name of the section and/or the section type.<br>
+			Upper case tab names are main sections, lower case are sub sections, The tab case is for visual looks only the actual case of the section is what is typed in the 'Name' edit.<br>
+			It's usual for a main section to be all uppercase.<br><br>
+			
+			<a name="textformatting"></a>
+			<b><span style="font-size:24px;">Text Formatting</span></b><br>
+Simple text formatting is done via the 'Formatting' menu just select a piece of text and select bold/italic or clear, italic text tends to be shown in the terminal as underlined, this can be set in the prefs.<br>
+<s>See the example file in PREFIX/share/ManPageEditor/examples</s>.<br>
+			<br>
+
+			<a name="todo"></a>
+			<b><span style="font-size:24px;">ToDo</span></b><br>
+			More help.<br>
+			Prefs.<br>
+			Terminal command.<br>
+			Gzip pages.<br>
+			Highlight line.<br>
+			Wrap lines.<br>
+			<br>
+			Import system manpage by name.<br>
+			Spell check.<br>
+			Add template(s).<br>
+			Unzip page if needed.<br>
+			Handle .so directive in page.<br>
+			<br>
+		</div>
+	</body>
+</html>

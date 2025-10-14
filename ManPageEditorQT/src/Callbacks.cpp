@@ -134,6 +134,7 @@ void ManPageEditorQT::doFormatMenuItems(MenuItemClass *mc)
 		}
 }
 
+
 void ManPageEditorQT::doHelpMenuItems(MenuItemClass *mc)
 {
 	switch(mc->getMenuID())
@@ -159,7 +160,12 @@ void ManPageEditorQT::doHelpMenuItems(MenuItemClass *mc)
 			case ABOUTQTMENUITEM:
 				QMessageBox::aboutQt(nullptr);
 				break;
+
 			case HELPMENUITEM:
+				{
+					AboutBoxClass	about;
+					about.showHelp();
+				}
 				break;
 		}
 }

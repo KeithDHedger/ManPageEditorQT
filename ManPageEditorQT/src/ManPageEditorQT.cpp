@@ -91,11 +91,17 @@ void ManPageEditorQT::buildMainGui(void)
 	this->fileMenu=new QMenu("&File");
 	this->menuBar->addMenu(this->fileMenu);
 
+//new page
+	this->newMenuItem=this->makeMenuItemClass(FILEMENU,"New Manpage",QKeySequence::New,"document-new",NEWPAGEMENUITEM);
+
 //new
-	this->newMenuItem=this->makeMenuItemClass(FILEMENU,"New Section",QKeySequence::New,"document-new",NEWMENUITEM);
+	this->newMenuItem=this->makeMenuItemClass(FILEMENU,"New Section",0,"document-new",NEWMENUITEM);
 
 //open
 	this->openMenuItem=this->makeMenuItemClass(FILEMENU,"Open Manpage",QKeySequence::Open,"document-open",OPENMENUITEM);
+
+//import sys page
+	this->openSysPageMenuItem=this->makeMenuItemClass(FILEMENU,"Open Sysytem Manpage",0,"document-open",OPENSYSPAGEMENUITEM);
 
 	this->fileMenu->addSeparator();
 
@@ -154,9 +160,9 @@ void ManPageEditorQT::buildMainGui(void)
 //format menu
 	this->formatMenu=new QMenu("&Formating");
 	this->menuBar->addMenu(this->formatMenu);
-	this->boldMenuItem=this->makeMenuItemClass(FORMATMENU,"Bold",QKeySequence::fromString("Ctrl+B"),"stock_bold",BOLDMENUITEM);
-	this->italicMenuItem=this->makeMenuItemClass(FORMATMENU,"Italic",QKeySequence::fromString("Ctrl+I"),"stock_italic",ITALICMENUITEM);
-	this->clearMenuItem=this->makeMenuItemClass(FORMATMENU,"Clear",QKeySequence::fromString("Ctrl+R"),"stock_clear",CLEARMENUITEM);
+	this->boldMenuItem=this->makeMenuItemClass(FORMATMENU,"Bold",QKeySequence::fromString("Ctrl+B"),"format-text-bold",BOLDMENUITEM);
+	this->italicMenuItem=this->makeMenuItemClass(FORMATMENU,"Italic",QKeySequence::fromString("Ctrl+I"),"format-text-italic",ITALICMENUITEM);
+	this->clearMenuItem=this->makeMenuItemClass(FORMATMENU,"Clear",QKeySequence::fromString("Ctrl+R"),"edit-clear",CLEARMENUITEM);
 
 //help
 	this->helpMenu=new QMenu("&Help");

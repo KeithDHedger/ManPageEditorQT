@@ -356,7 +356,6 @@ bool LFSTK_prefsClass::LFSTK_argsToPrefs(int argc, char **argv,option longoption
 			return(false);
 		}
 
-
 	while(longoptions[ocnt].name!=0)
 		{
 			optstr+=longoptions[ocnt].val;
@@ -367,18 +366,11 @@ bool LFSTK_prefsClass::LFSTK_argsToPrefs(int argc, char **argv,option longoption
 					if(longoptions[ocnt].has_arg==optional_argument)
 						optstr+="::";
 				}
-			//else
-			//	optstr+="";
-					ocnt++;
+			ocnt++;
 		}
-
-
 
 	if(addhelp==true)
 		optstr+="?h";
-
-
-fprintf(stderr,">>%s<<\n",optstr.c_str());
 
 	while (1)
 		{

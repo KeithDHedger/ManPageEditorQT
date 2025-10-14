@@ -21,6 +21,8 @@
 #ifndef _GLOBALS_
 #define _GLOBALS_
 
+#include <QUrl>
+
 #include "qtincs.h"
 #include "internet.h"
 

@@ -132,6 +132,10 @@ void AboutBoxClass::showLicence(void)
 	delete this->licenceDialog;
 }
 
+AboutBoxClass::AboutBoxClass(void)
+{
+}
+
 AboutBoxClass::AboutBoxClass(QWidget* window,QString pixpath)
 {
 	QVBoxLayout	*vlayout=new QVBoxLayout;
@@ -195,4 +199,52 @@ AboutBoxClass::AboutBoxClass(QWidget* window,QString pixpath)
 
 	vlayout->addWidget(hbox);
 	this->aboutDialog->setLayout((QLayout*)vlayout);
+}
+
+void AboutBoxClass::showHelp(void)
+{
+	QDialog		helpdialog;
+	QTextBrowser	*te=new QTextBrowser;
+	QVBoxLayout	*docvlayout=new QVBoxLayout;
+	QHBoxLayout	*hlayout;
+	QPushButton	*button;
+
+	docvlayout->setContentsMargins(MARGINS,MARGINS,MARGINS,MARGINS);
+	docvlayout->addWidget(te);
+
+	te->setSource(QUrl::fromLocalFile(QString("%1/%2").arg(DATADIR).arg("docs/help.html")));
+	te->setOpenExternalLinks(true);
+	hlayout=new QHBoxLayout;
+//back
+
+	button=new QPushButton("&Back");
+	QObject::connect(button,&QPushButton::clicked,[te]()
+		{
+			te->backward();
+		});
+	hlayout->addWidget(button);
+//forward
+	button=new QPushButton("&Forward");
+	QObject::connect(button,&QPushButton::clicked,[te]()
+		{
+			te->forward();
+		});
+	hlayout->addWidget(button);
+	hlayout->addStretch();
+//close
+	button=new QPushButton("&Close");
+	QObject::connect(button,&QPushButton::clicked,[&helpdialog]()
+		{
+			helpdialog.close();
+		});
+	hlayout->addWidget(button);
+
+	docvlayout->addLayout(hlayout);
+
+	button->setIcon(QIcon::fromTheme("window-close"));
+	helpdialog.setLayout(docvlayout);
+	helpdialog.setWindowTitle(QString("%1 Help").arg(PACKAGE_NAME));
+	helpdialog.resize(880,660);
+	helpdialog.setModal(true);
+	helpdialog.exec();
 }

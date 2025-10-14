@@ -47,14 +47,14 @@ int main(int argc, char **argv)
 		return(0);
 
 	app.setOrganizationName("KDHedger");
-	app.setApplicationName("PACKAGE_NAME");
+	app.setApplicationName(PACKAGE_NAME);
 
 	mpclass=new ManPageEditorQT(&app);
 	mpclass->mpConv->manString=mpclass->getProperties();
 
 	if(prefs.LFSTK_getBool("as-underline")==true)
 		{
-			mpclass->italicMenuItem->setAppearance("stock_underline","Underline","Ctrl+U");
+			mpclass->italicMenuItem->setAppearance("format-text-underline","Underline","Ctrl+U");
 			mpclass->useUnderline=true;
 		}
 
