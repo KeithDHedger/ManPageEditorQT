@@ -6,5 +6,5 @@ Comment=
 Terminal=false
 Type=Application
 Categories=Development;Documentation;
-Icon=ManPageEditorQT.png
+Icon=ManPageEditorQT
 Exec=manpageeditorqt
