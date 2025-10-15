@@ -26,7 +26,7 @@
 enum {FILEMENU=0x4000,EDITMENU,FORMATMENU,HELPMENU,NOMENU};
 
 //file
-enum {NEWMENUITEM=0x8000,NEWPAGEMENUITEM,OPENMENUITEM,OPENSYSPAGEMENUITEM,SAVEMENUITEM,SAVEASMENUITEM,PRINTMENUITEM,CLOSEPAGEMENUITEM,PROPSMENUITEM,PREVIEWMENUITEM,QUITMENUITEM};
+enum {NEWMENUITEM=0x8000,NEWPAGEMENUITEM,OPENMENUITEM,OPENSYSPAGEMENUITEM,SAVEMENUITEM,SAVEASMENUITEM,CLOSEPAGEMENUITEM,PROPSMENUITEM,PREVIEWMENUITEM,QUITMENUITEM};
 //edit
 enum {UNDOMENUITEM=0x9000,REDOMENUITEM,UNDOALLMENUITEM,REDOALLMENUITEM,EDSEP1,CUTMENUITEM,COPYMENUITEM,PASTEMENUITEM,DELETEMENUITEM,EDSEP2,SELECTALLMENUITEM,EDSEP3,FINDMENUITEM,FINDNEXTMENUITEM,EDSEP4,EDSEP5,PREFSMENUITEM};
 //format
@@ -39,13 +39,6 @@ enum {FINDNEXT=1,FINDPREV,FINDREPLACE};
 
 //od enums
 enum {SPELLCHECKMENUITEM=0x2000,APPLYWORDBUTTON,IGNOREWORDBUTTON,ADDWORDBUTTON,CANCELSPELLCHECK,CANCELPREFS,DOLINEBOX,DOLIVESEARCH,DOAPISEARCH,DOQT5SEARCH,DOGTKSEARCH,DOCVIEWERGOHOME,TOOLSSAVE,TOOLSCANCEL,TOOLSDELETE,TOOLSSAVEAS,TOOLSEDIT};
-
-struct tabMenuStruct
-{
-	unsigned int		what;
-	const char		*label;
-	const char		*icon;
-};
 
 enum {FRCASE=0,FRUSEREGEX,FRREPLACEFIND,FRWRAP,FRALLFILES,FRHIGHLIGHTALL,FRREPLACEALL,FRSEARCHBACK,FRMAXSWITCHES};
 
@@ -73,7 +66,6 @@ class ManPageEditorQT : public QObject
 
 		QSettings					prefs;
 		QTextEdit*					getDocumentForTab(int tabnum);
-
 
 //app functions
 		void							initApp(void);
@@ -114,7 +106,6 @@ class ManPageEditorQT : public QObject
 		MenuItemClass				*openMenuItem;
 		MenuItemClass				*saveMenuItem;
 		MenuItemClass				*saveAsMenuItem;
-		MenuItemClass				*printMenuItem;
 		MenuItemClass				*previewMenuItem;
 		MenuItemClass				*propsMenuItem;
 		MenuItemClass				*closeMenuItem;
@@ -166,26 +157,7 @@ class ManPageEditorQT : public QObject
 
 //prefswindow
 //prefswindow vars
-//		QWidget						*prefsWidgets[MAXPREFSWIDGETS];
-//		QWidget						*prefsIntWidgets[MAXPREFSINTWIDGETS];
-//		QWidget						*prefsOtherWidgets[MAXPREFSOTHERWIDGETS];
-//		QGridLayout					*table;
-//		QDialog						*prefsWindow;
-//		QListWidget					*listWidget;
-//		QToolBar						*fromHBox;
-//		QAction						*tool[20];
-//		QDialog						*keyShortcutsWindow;
-//
 //prefswindow functions
-//		void							makePrefsCheck(int widgnum,const QString label,bool onoff,int posx,int posy);
-//		void							makePrefsDial(int widgnum,const QString label,int value,int minvalue,int maxvalue,int posy);
-//		void							addIcon(const char* icon,const char* data,int toolnumber,const char* tooltip);
-//		void							populateDnD(void);
-//		void							buildPrefsWindow(void);
-//		void							doPrefs(void);
-//		void							addIconToList(const char* name,int type);
-//		void							populateStore(void);
-//		void							resetKeyCombo(void);
 
 //find replace vars
 //		QWidget						*findReplaceDialog;
@@ -204,12 +176,6 @@ class ManPageEditorQT : public QObject
 //		void							buildFindReplace(void);
 //		void							doFindReplace(int response_id);
 
-//search vars
-//search functions
-
-////search functions
-//		void							setSearchPrefs(void);
-
 	protected:
 	private:
 		void							doFileMenuItems(MenuItemClass *mc);
@@ -218,7 +184,6 @@ class ManPageEditorQT : public QObject
 		void							doFormatMenuItems(MenuItemClass *mc);
 		void							doHelpMenuItems(MenuItemClass *mc);
 		bool							closeTabs(bool all);
-
 };
 
 #endif

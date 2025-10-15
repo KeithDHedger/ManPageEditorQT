@@ -41,11 +41,6 @@ class NoteBookClass : public QTabWidget
 		void			setScrollButtonStatus(int btnnum,bool enabled,bool visible);
 
 	protected:
-//dand
-	//	void			dragEnterEvent(QDragEnterEvent* event);
-	//	void			dropEvent(QDropEvent* event);
-	//	void			dragMoveEvent(QDragMoveEvent *event);
-
 //internals
 	private:
 		QToolButton	*scrollLeft;

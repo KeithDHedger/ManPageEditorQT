@@ -177,6 +177,11 @@ void ManpageConvertClass::importManpage(QString filepath)
 			this->mainClass->currentFilePath=filepath;
 			content=QString::fromUtf8(file.readAll());
 
+			if(content.startsWith(".so"))
+				{
+					this->importManpage(this->mainClass->lastLoadDir+"/../"+content.mid(4).trimmed());
+					return;
+				}
 			sprintf(commandBuffer,"cat %s| sed -n '/^.TH/p'",filepath.toStdString().c_str());
 			content="";
 			fp=popen(commandBuffer,"r");
@@ -186,6 +191,7 @@ void ManpageConvertClass::importManpage(QString filepath)
 						content+=buffer;
 					pclose(fp);
 				}
+
 			this->manString=this->mainClass->getProperties(content);
 
 			sprintf(commandBuffer,"echo -e '\n.SH \"\"'|cat '%s' -|sed 's/^\\(\\.S[Hh]\\) \\(.*\\)/\\n@SECTION@--\\2--\\n\\1 \\2/g;s/^\\(\\.S[Ss]\\) \\(.*\\)/\\n@section@++\\2++\\n\\1 \\2/g'|GROFF_SGR=1 MANWIDTH=2000 MAN_KEEP_FORMATTING=1 man -l --no-justification --no-hyphenation -|ul|head -n -4",filepath.toStdString().c_str());

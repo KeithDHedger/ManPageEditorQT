@@ -86,7 +86,6 @@ void AboutBoxClass::showCredits(void)
 void AboutBoxClass::killAboutBox(void)
 {
 	this->aboutDialog->close();
-	//delete this;
 }
 
 void AboutBoxClass::showLicence(void)

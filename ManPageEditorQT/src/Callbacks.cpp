@@ -57,6 +57,11 @@ qDebug()<<mc;
 				if(this->currentFilePath.isEmpty()==false)
 					{
 						this->mpConv->exportManpage(this->currentFilePath);
+						for(int j=0;j<this->mainNotebook->count();j++)
+							{
+								QTextEdit	*te=this->getDocumentForTab(j);
+								te->document()->setModified(false);
+							}
 						break;
 					}
 			case SAVEASMENUITEM:
@@ -70,6 +75,11 @@ qDebug()<<mc;
 							this->mpConv->exportManpage(filepath);
 						}
 				}
+				for(int j=0;j<this->mainNotebook->count();j++)
+					{
+						QTextEdit	*te=this->getDocumentForTab(j);
+						te->document()->setModified(false);
+					}
 				break;
 
 			case PREVIEWMENUITEM:
@@ -79,12 +89,10 @@ qDebug()<<mc;
 				this->buildProperties("");
 				break;
 
-			case PRINTMENUITEM:
-			//	this->printDocument();
-				break;
 			case CLOSEPAGEMENUITEM:
 				this->closeTabs(true);
 				break;
+
 			case QUITMENUITEM:
 				if(this->closeTabs(true)==true)
 					{
@@ -152,7 +160,6 @@ void ManPageEditorQT::doFormatMenuItems(MenuItemClass *mc)
 				break;
 		}
 }
-
 
 void ManPageEditorQT::doHelpMenuItems(MenuItemClass *mc)
 {

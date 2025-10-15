@@ -1,4 +1,7 @@
 0.1.0
+Done opening manpage starting with ".so ".
+Mark document dirty=false after save/saveas.
+Code clean.
 Fixed virgin save.
 Fixed closing tab or page if modified.
 Fixed tab text case.

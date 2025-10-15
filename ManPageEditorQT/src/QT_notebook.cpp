@@ -24,29 +24,6 @@ NoteBookClass::~NoteBookClass()
 {
 }
 
-#if 1
-//
-//void NoteBookClass::setScrollButtonStatus(int btnnum,bool enabled,bool visible)
-//{
-//	switch(btnnum)
-//		{
-//			case LEFTSCROLLBUTTON:
-//				this->scrollLeft->setVisible(visible);
-//				this->scrollLeft->setEnabled(enabled);
-//				break;
-//			case RIGHTSCROLLBUTTON:
-//				this->scrollRight->setVisible(visible);
-//				this->scrollRight->setEnabled(enabled);
-//				break;
-//			case BOTHSCROLLBUTTONS:
-//				this->scrollLeft->setVisible(visible);
-//				this->scrollRight->setVisible(visible);
-//				this->scrollLeft->setEnabled(enabled);
-//				this->scrollRight->setEnabled(enabled);
-//				break;
-//		}
-//}
-
 NoteBookClass::NoteBookClass(ManPageEditorQT *mpclass,QWidget *parent): QTabWidget(parent)
 {
 	QIcon		qicon;
@@ -104,42 +81,6 @@ NoteBookClass::NoteBookClass(ManPageEditorQT *mpclass,QWidget *parent): QTabWidg
 	this->setMovable(true);
 }
 
-//
-//void NoteBookClass::dragMoveEvent(QDragMoveEvent *event)
-//{
-//	int tabIndex=this->tabBar()->tabAt(event->pos());
-//	this->setCurrentIndex(tabIndex);
-//
-//	if((event->mimeData()->hasUrls()==true) || (event->mimeData()->hasText()))
-//		event->accept();
-//	else
-//		QTabWidget::dragMoveEvent(event);
-//}
-//
-//void NoteBookClass::dragEnterEvent(QDragEnterEvent* event)
-//{
-//	if((event->mimeData()->hasUrls()==true) || (event->mimeData()->hasText()))
-//		event->accept();
-//	else
-//		QTabWidget::dragEnterEvent(event);
-//}
-//
-//void NoteBookClass::dropEvent(QDropEvent* event)
-//{
-// 	if(event->mimeData()->hasUrls())
-//		{
-//			if(event->mimeData()->urls().isEmpty()==false)
-//				{
-//					for(int j=0;j<event->mimeData()->urls().count();j++)
-//						this->mainKKEditClass->openFile(event->mimeData()->urls().at(j).toLocalFile());
-//				}
-//			event->accept();
-//			return;
-//		}
-//
-//	QTabWidget::dropEvent(event);
-//}
-//
 void NoteBookClass::scrollTabsLeft(void)
 {
 	int	ctab=this->currentIndex()-1;
@@ -165,6 +106,3 @@ void NoteBookClass::scrollTabsRight(void)
 	else
 		this->setCurrentIndex(ctab);
 }
-//
-
-#endif
