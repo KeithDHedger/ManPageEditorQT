@@ -1,6 +1,13 @@
 0.1.0
+Fixed virgin save.
+Fixed closing tab or page if modified.
+Fixed tab text case.
+Fixed adding new section.
+Added 'Auto' to open system manpage.
+Cli option -p overides filepath on commandline.
+Added cli option -p to show open
 Fixed desktop file.
-Done open system manpage.
+Done open system manpage dialog on startup.
 Done edit menu.
 Added help.
 Now usable.

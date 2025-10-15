@@ -94,7 +94,7 @@ void ManPageEditorQT::buildMainGui(void)
 //new page
 	this->newMenuItem=this->makeMenuItemClass(FILEMENU,"New Manpage",QKeySequence::New,"document-new",NEWPAGEMENUITEM);
 
-//new
+//new section
 	this->newMenuItem=this->makeMenuItemClass(FILEMENU,"New Section",0,"document-new",NEWMENUITEM);
 
 //open
@@ -123,8 +123,8 @@ void ManPageEditorQT::buildMainGui(void)
 
 	this->fileMenu->addSeparator();
 
-//close
-	this->closeMenuItem=this->makeMenuItemClass(FILEMENU,"Close",QKeySequence::Close,"window-close",CLOSEMENUITEM);
+//close page
+	this->closeMenuItem=this->makeMenuItemClass(FILEMENU,"Close Manpage",QKeySequence::Close,"window-close",CLOSEPAGEMENUITEM);
 	this->fileMenu->addSeparator();
 
 //prefs
@@ -188,6 +188,29 @@ void ManPageEditorQT::buildMainGui(void)
 }
 //#include <sys/stat.h>
 //#include <sys/types.h>
+
+QTextEdit* ManPageEditorQT::makeNewTab(QString html,QString sectname,bool issub,int pos)
+{
+	QTextEdit*te=new QTextEdit;
+
+	te->setFont(QFont(this->fontName,this->fontSize));
+	te->setHtml(html);
+	if(issub==false)
+		{
+			this->mainNotebook->insertTab(pos,te,sectname.toUpper());
+			te->setStatusTip(".SH "+sectname);
+		}
+	else
+		{
+			this->mainNotebook->insertTab(pos,te,sectname.toLower());
+			te->setStatusTip(".SS "+sectname);
+		}
+	te->setLineWrapMode(QTextEdit::WidgetWidth);
+
+	return(te);
+}
+
+
 void ManPageEditorQT::initApp(void)
 {
 	char		tmpfoldertemplate[]="/tmp/ManPageEditorQT-XXXXXX";
@@ -214,6 +237,11 @@ void ManPageEditorQT::initApp(void)
 	QObject::connect(this->mainNotebook,&QTabWidget::tabCloseRequested,[this](int index)
 		{
 			QTextEdit	*te=this->getDocumentForTab(index);
+			if(te->document()->isModified()==true)
+				{
+					if(this->confirmClose(te)==false)
+						return;
+				}
 			this->mainNotebook->removeTab(index);
 			delete te;
 		});
@@ -395,14 +423,40 @@ void ManPageEditorQT::readConfigs(void)
 //	this->setAppShortcuts();	
 }
 
-bool ManPageEditorQT::closeTabs(void)
+bool ManPageEditorQT::confirmClose(QTextEdit *te)
 {
+	if(te->document()->isModified()==true)
+		{
+			if(QMessageBox::question(nullptr,"Document Modified","Document has been modified, please confirm close...")==QMessageBox::No)
+				return(false);
+		}
+	return(true);
+}
+
+
+bool ManPageEditorQT::closeTabs(bool all)
+{
+	bool docdirty=false;
+	for(int j=0;j<this->mainNotebook->count();j++)
+		{
+			QTextEdit	*te=this->getDocumentForTab(j);
+			if(te->document()->isModified()==true)
+				docdirty=true;
+		}
+
+	if(docdirty==true)
+		{
+			if(QMessageBox::question(nullptr,"Document Modified","Document has been modified, please confirm close...")==QMessageBox::No)
+				return(false);
+		}
+
 	while(this->mainNotebook->count()>0)
 		{
 			QTextEdit	*te=this->getDocumentForTab(0);
 			this->mainNotebook->removeTab(0);
 			delete te;
 		}
+
 	this->mpConv->manString=mpclass->getProperties();
 	return(true);
 }
@@ -631,31 +685,24 @@ void ManPageEditorQT::buildSectionProps(QString s,bool issubsec,bool create)
 			QTextEdit	*te;
 			QString		tabname=nameedit->text();
 
-			if(create==true)
+			if(create==false)
 				{
-					te=new QTextEdit;
-					te->setFont(QFont(this->fontName,this->fontSize));
-				}
-			else
-				te=this->getDocumentForTab(-1);
-		
-			if(subchk->isChecked()==false)
-				{
-					if(create==true)
-						this->mainNotebook->insertTab(this->mainNotebook->currentIndex()+1,te,tabname.trimmed().toUpper());
+					te=this->getDocumentForTab(-1);
+					if(subchk->isChecked()==false)
+						{
+							this->mainNotebook->setTabText(this->mainNotebook->currentIndex(),tabname.trimmed().toUpper());
+							te->setStatusTip(".SH "+tabname.trimmed());
+						}
 					else
-						this->mainNotebook->setTabText(this->mainNotebook->currentIndex(),tabname.trimmed().toUpper());
-					te->setStatusTip(".SH "+tabname.trimmed());
+						{
+							this->mainNotebook->setTabText(this->mainNotebook->currentIndex(),tabname.trimmed().toLower());
+							te->setStatusTip(".SS "+tabname.trimmed());
+						}
 				}
 			else
 				{
-					if(create==true)
-						this->mainNotebook->insertTab(this->mainNotebook->currentIndex()+1,te,tabname.trimmed().toLower());
-					else
-						this->mainNotebook->setTabText(this->mainNotebook->currentIndex(),tabname.trimmed().toLower());
-					te->setStatusTip(".SS "+tabname.trimmed());
+					this->makeNewTab("",tabname,subchk->isChecked(),this->mainNotebook->currentIndex()+1);
 				}
-			te->setLineWrapMode(QTextEdit::WidgetWidth);
 		}
 }
 

@@ -27,6 +27,12 @@ qDebug()<<mc;
 	switch(mc->getMenuID())
 		{
 //file menu
+			case NEWPAGEMENUITEM:
+				this->closeTabs(true);
+				this->mpConv->manString=mpclass->getProperties();
+				this->currentFilePath="";
+				break;
+
 			case NEWMENUITEM:
 				this->buildSectionProps("NEW SECTION",false,true);
 				this->mainNotebook->setCurrentIndex(this->mainNotebook->currentIndex()+1);
@@ -37,19 +43,22 @@ qDebug()<<mc;
 					filepath=QFileDialog::getOpenFileName(nullptr,"Open File",this->lastLoadDir,"",nullptr,QFileDialog::HideNameFilterDetails);
 					if(filepath.isEmpty()==false)
 						{
-							this->closeTabs();
-							this->lastLoadDir=QFileInfo(filepath).dir().absolutePath();
-							this->currentFilePath=filepath;
-							this->mpConv->importManpage(filepath);
+							if(this->closeTabs(true)==true)
+								{
+									this->lastLoadDir=QFileInfo(filepath).dir().absolutePath();
+									this->currentFilePath=filepath;
+									this->mpConv->importManpage(filepath);
+								}
 						}
 				}
 				break;
 
 			case SAVEMENUITEM:
-				if(this->currentFilePath.isEmpty()==true)
-					break;
-				this->mpConv->exportManpage(this->currentFilePath);
-				break;
+				if(this->currentFilePath.isEmpty()==false)
+					{
+						this->mpConv->exportManpage(this->currentFilePath);
+						break;
+					}
 			case SAVEASMENUITEM:
 				{
 					QString filepath;
@@ -73,12 +82,15 @@ qDebug()<<mc;
 			case PRINTMENUITEM:
 			//	this->printDocument();
 				break;
-			case CLOSEMENUITEM:
-				this->closeTabs();
+			case CLOSEPAGEMENUITEM:
+				this->closeTabs(true);
 				break;
 			case QUITMENUITEM:
-				this->writeExitData();
-				QApplication::quit();
+				if(this->closeTabs(true)==true)
+					{
+						this->writeExitData();
+						QApplication::quit();
+					}
 				break;
 			case PREFSMENUITEM:
 				//this->doPrefs();
@@ -89,8 +101,8 @@ qDebug()<<mc;
 					filepath=this->mpConv->buildOpenSystemPage();
 					if(filepath.isEmpty()==false)
 						{
-							this->closeTabs();
-							this->mpConv->importManpage(filepath);
+							if(this->closeTabs(true)==true)
+								this->mpConv->importManpage(filepath);
 						}
 				}
 				break;

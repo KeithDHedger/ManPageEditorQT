@@ -26,7 +26,7 @@
 enum {FILEMENU=0x4000,EDITMENU,FORMATMENU,HELPMENU,NOMENU};
 
 //file
-enum {NEWMENUITEM=0x8000,NEWPAGEMENUITEM,OPENMENUITEM,OPENSYSPAGEMENUITEM,SAVEMENUITEM,SAVEASMENUITEM,PRINTMENUITEM,CLOSEMENUITEM,PROPSMENUITEM,PREVIEWMENUITEM,QUITMENUITEM};
+enum {NEWMENUITEM=0x8000,NEWPAGEMENUITEM,OPENMENUITEM,OPENSYSPAGEMENUITEM,SAVEMENUITEM,SAVEASMENUITEM,PRINTMENUITEM,CLOSEPAGEMENUITEM,PROPSMENUITEM,PREVIEWMENUITEM,QUITMENUITEM};
 //edit
 enum {UNDOMENUITEM=0x9000,REDOMENUITEM,UNDOALLMENUITEM,REDOALLMENUITEM,EDSEP1,CUTMENUITEM,COPYMENUITEM,PASTEMENUITEM,DELETEMENUITEM,EDSEP2,SELECTALLMENUITEM,EDSEP3,FINDMENUITEM,FINDNEXTMENUITEM,EDSEP4,EDSEP5,PREFSMENUITEM};
 //format
@@ -82,7 +82,9 @@ class ManPageEditorQT : public QObject
 		void							setAppShortcuts(void);
 //		void							setToolbarSensitive(void);
 		void							writeExitData(void);
-		
+		bool							confirmClose(QTextEdit *te);
+		QTextEdit*					makeNewTab(QString html,QString sectname,bool issub,int pos=-1);
+
 //editor vars
 		QStatusBar					*statusBar;
 		QLabel						*statusText;
@@ -215,7 +217,7 @@ class ManPageEditorQT : public QObject
 		void							doEditMenuItems(MenuItemClass *mc);
 		void							doFormatMenuItems(MenuItemClass *mc);
 		void							doHelpMenuItems(MenuItemClass *mc);
-		bool							closeTabs(void);
+		bool							closeTabs(bool all);
 
 };
 

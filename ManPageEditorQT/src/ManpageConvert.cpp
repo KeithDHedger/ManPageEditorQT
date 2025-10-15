@@ -39,7 +39,7 @@ QString ManpageConvertClass::buildOpenSystemPage(void)
 	QFrame			separator(nullptr);
 	QLineEdit		*nameedit;
 	QComboBox		*section;
-	const char		*propname[]={"Manpage","Section"};
+	const char		*propname[]={"Manpage name","Section"};
 	FILE*			fp;
 
 	hbox=new QWidget;
@@ -56,7 +56,7 @@ QString ManpageConvertClass::buildOpenSystemPage(void)
 	hlayout->setContentsMargins(0,0,0,0);
 	hbox->setLayout(hlayout);
 	section=new QComboBox();
-	section->addItems(QStringList()<<"1 Executable programs or shell commands"<<"2 System calls (functions provided by the kernel)"<<"3 Library calls (functions within program libraries)"<<"4 Special files (usually found in /dev)"<<"5 File formats and conventions eg /etc/passwd"<<"6 Games"<<"7 Miscellaneous, e.g. man(7), groff(7)"<<"8 System administration commands (usually only for root)"<<"9 Kernel routines [Non standard]");
+	section->addItems(QStringList()<<"Auto"<<"1 Executable programs or shell commands"<<"2 System calls (functions provided by the kernel)"<<"3 Library calls (functions within program libraries)"<<"4 Special files (usually found in /dev)"<<"5 File formats and conventions eg /etc/passwd"<<"6 Games"<<"7 Miscellaneous, e.g. man(7), groff(7)"<<"8 System administration commands (usually only for root)"<<"9 Kernel routines [Non standard]");
 
 	hlayout->addWidget(section,1,Qt::AlignLeft);
 	docvlayout->addWidget(hbox);
@@ -77,7 +77,7 @@ QString ManpageConvertClass::buildOpenSystemPage(void)
 
 	docvlayout->setContentsMargins(MARGINS,MARGINS,MARGINS,MARGINS);
 	propsdialog.setLayout(docvlayout);
-	propsdialog.setWindowTitle("Section Properties");
+	propsdialog.setWindowTitle("Open System Manpage");
 	int ret=propsdialog.exec();
 	delete buttonBox;
 	if(ret==0)
@@ -85,7 +85,11 @@ QString ManpageConvertClass::buildOpenSystemPage(void)
 			QString	command;
 			QString	content="";
 			char		buffer[2048]={0,};
-			command=QString("man -s%2 -w %1 2>/dev/null").arg(nameedit->text()).arg(section->currentIndex()+1);
+
+			if(section->currentIndex()==0)
+				command=QString("man -w %1 2>/dev/null").arg(nameedit->text());
+			else
+				command=QString("man -s%2 -w %1 2>/dev/null").arg(nameedit->text()).arg(section->currentIndex());
 
 			fp=popen(command.toStdString().c_str(),"r");
 			if(fp!=NULL)
@@ -157,7 +161,6 @@ void ManpageConvertClass::exportManpage(QString filepath)
 
 void ManpageConvertClass::importManpage(QString filepath)
 {
-	QTextEdit	*te;
 	QFile		file(filepath);
 	QString		content;
 	QStringList	sections;
@@ -227,15 +230,7 @@ void ManpageConvertClass::importManpage(QString filepath)
 					htmlstr=htmlstr.replace(QRegularExpression(R"RX(\x1b\[m)RX"),"");
 					htmlstr+="</pre>\n";
 
-					te=new QTextEdit;
-					te->setFont(QFont(this->mainClass->fontName,this->mainClass->fontSize));
-					te->setHtml(htmlstr);
-					this->mainClass->mainNotebook->addTab(te,cname);
-					if(issub==false)
-						te->setStatusTip(".SH "+cname);
-					else
-						te->setStatusTip(".SS "+cname);
-					te->setLineWrapMode(QTextEdit::WidgetWidth);
+					this->mainClass->makeNewTab(htmlstr,cname,issub);
 				}
 		}
 }

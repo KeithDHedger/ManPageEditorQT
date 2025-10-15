@@ -72,10 +72,9 @@ int main(int argc, char **argv)
 					mpclass->mpConv->importManpage(filepath);
 				}
 		}
-
-	if(prefs.cliArgs.size()>0)
-		mpclass->mpConv->importManpage(prefs.cliArgs.at(0).c_str());
-
+	else
+		if(prefs.cliArgs.size()>0)
+			mpclass->mpConv->importManpage(prefs.cliArgs.at(0).c_str());
 
 	status=app.exec();
 
