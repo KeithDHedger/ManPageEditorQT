@@ -1,5 +1,6 @@
 0.1.0
 Done opening manpage starting with ".so ".
+Removed print menu.
 Mark document dirty=false after save/saveas.
 Code clean.
 Fixed virgin save.
