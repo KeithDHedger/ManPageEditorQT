@@ -24,44 +24,54 @@ int main(int argc, char **argv)
 {
 	int				status;
 	QApplication		app(argc,argv);
+	prefsClass		newprefs;
+	stringTuple		st;
+	boolTuple		bt;
 
 	LFSTK_prefsClass	prefs(QString(PACKAGE_NAME).toLower().toStdString(),VERSION);
 	option			long_options[]=
 		{
-			{"text-size",required_argument,NULL,'s'},
-			{"as-underline",no_argument,NULL,'u'},
 			{"showsyspage",no_argument,NULL,'p'},
 			{0,0,0,0}
 		};
 
-	std::string	configfile=getenv("HOME");
-	configfile+="/.config/manpageeditqt.rc";
-
 	prefs.prefsMap=
 		{
-			{prefs.LFSTK_hashFromKey("as-underline"),{TYPEBOOL,"as-underline","Show italic as underline ( as most terminals do )","",false,0}},
-			{prefs.LFSTK_hashFromKey("text-size"),{TYPEINT,"text-size","Font size to use ( default 10 )","",false,10}},
 			{prefs.LFSTK_hashFromKey("showsyspage"),{TYPEBOOL,"showsyspage","Open system manpage dialog at start","",false,0}},
 		};
 
-	prefs.LFSTK_loadVarsFromFile(configfile);
 	if(prefs.LFSTK_argsToPrefs(argc,argv,long_options,true)==false)
 		return(0);
 
 	app.setOrganizationName("KDHedger");
 	app.setApplicationName(PACKAGE_NAME);
+	app.setApplicationVersion(PACKAGE_VERSION);
 
 	mpclass=new ManPageEditorQT(&app);
 	mpclass->mpConv->manString=mpclass->getProperties();
 
-	if(prefs.LFSTK_getBool("as-underline")==true)
+	st=newprefs.getStringValue("main_font");
+	if(st.valid==true)
 		{
-			mpclass->italicMenuItem->setAppearance("format-text-underline","Underline","Ctrl+U");
-			mpclass->useUnderline=true;
+			QFont fnt;
+			fnt.fromString(st.value);
+			mpclass->fontName=fnt.family();
+			mpclass->fontSize=fnt.pointSize();
 		}
 
-	if(prefs.LFSTK_getInt("text-size")!=0)
-		mpclass->fontSize=prefs.LFSTK_getInt("text-size");
+	st=newprefs.getStringValue("teminal_command");
+	if(st.valid==true)
+		mpclass->terminalCommand=st.value;
+
+	bt=newprefs.getBoolValue("italic_as_underline");
+	if(bt.valid==true)
+		{
+			if(bt.value==true)
+				mpclass->italicMenuItem->setAppearance("format-text-underline","Underline","Ctrl+U");
+			else
+				mpclass->italicMenuItem->setAppearance("format-text-italic","Italic","Ctrl+I");
+			mpclass->useUnderline=bt.value;
+		}
 
 	if(prefs.LFSTK_getBool("showsyspage")==true)
 		{

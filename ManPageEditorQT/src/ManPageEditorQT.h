@@ -26,7 +26,7 @@
 enum {FILEMENU=0x4000,EDITMENU,FORMATMENU,HELPMENU,NOMENU};
 
 //file
-enum {NEWMENUITEM=0x8000,NEWPAGEMENUITEM,OPENMENUITEM,OPENSYSPAGEMENUITEM,SAVEMENUITEM,SAVEASMENUITEM,CLOSEPAGEMENUITEM,PROPSMENUITEM,PREVIEWMENUITEM,QUITMENUITEM};
+enum {NEWMENUITEM=0x8000,NEWPAGEMENUITEM,OPENMENUITEM,OPENSYSPAGEMENUITEM,OPENTEMPLATEMENUITEM,SAVEMENUITEM,SAVEASMENUITEM,CLOSEPAGEMENUITEM,PROPSMENUITEM,PREVIEWMENUITEM,QUITMENUITEM};
 //edit
 enum {UNDOMENUITEM=0x9000,REDOMENUITEM,UNDOALLMENUITEM,REDOALLMENUITEM,EDSEP1,CUTMENUITEM,COPYMENUITEM,PASTEMENUITEM,DELETEMENUITEM,EDSEP2,SELECTALLMENUITEM,EDSEP3,FINDMENUITEM,FINDNEXTMENUITEM,EDSEP4,EDSEP5,PREFSMENUITEM};
 //format
@@ -63,7 +63,7 @@ class ManPageEditorQT : public QObject
 		QString						lastSaveDir="";
 		QString						lastLoadDir="";
 		QString						currentFilePath="";
-
+		QString						terminalCommand="xterm -hold -e";
 		QSettings					prefs;
 		QTextEdit*					getDocumentForTab(int tabnum);
 
@@ -76,6 +76,7 @@ class ManPageEditorQT : public QObject
 		void							writeExitData(void);
 		bool							confirmClose(QTextEdit *te);
 		QTextEdit*					makeNewTab(QString html,QString sectname,bool issub,int pos=-1);
+		void							doPrefs(void);
 
 //editor vars
 		QStatusBar					*statusBar;
@@ -91,7 +92,7 @@ class ManPageEditorQT : public QObject
 		int							currentPage=0;
 		bool							closingAllTabs=false;
 
-		QString						fontName="Monospace";
+		QString						fontName="MonoSpace";
 		int							fontSize=10;
 		bool							useUnderline=false;
 //editor functions
@@ -103,6 +104,7 @@ class ManPageEditorQT : public QObject
 		QMenu						*fileMenu;
 		MenuItemClass				*newMenuItem;
 		MenuItemClass				*openSysPageMenuItem;
+		MenuItemClass				*openTemplateMenuItem;
 		MenuItemClass				*openMenuItem;
 		MenuItemClass				*saveMenuItem;
 		MenuItemClass				*saveAsMenuItem;

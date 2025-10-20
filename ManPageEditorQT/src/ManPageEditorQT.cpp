@@ -103,6 +103,9 @@ void ManPageEditorQT::buildMainGui(void)
 //import sys page
 	this->openSysPageMenuItem=this->makeMenuItemClass(FILEMENU,"Open Sysytem Manpage",0,"document-open",OPENSYSPAGEMENUITEM);
 
+//open Template
+	this->openTemplateMenuItem=this->makeMenuItemClass(FILEMENU,"Open Template",0,"document-open",OPENTEMPLATEMENUITEM);
+
 	this->fileMenu->addSeparator();
 
 //save
@@ -186,10 +189,17 @@ void ManPageEditorQT::buildMainGui(void)
 
 QTextEdit* ManPageEditorQT::makeNewTab(QString html,QString sectname,bool issub,int pos)
 {
-	QTextEdit*te=new QTextEdit;
+	QString		fh;
+	QTextEdit	*te=new QTextEdit;
+	QTextCursor	cursor(te->document());
 
+	cursor.select(QTextCursor::Document);
 	te->setFont(QFont(this->fontName,this->fontSize));
 	te->setHtml(html);
+	fh=te->toHtml();
+	fh=fh.replace("Monospace",this->fontName);
+	te->setHtml(fh);
+
 	if(issub==false)
 		{
 			this->mainNotebook->insertTab(pos,te,sectname.toUpper());
@@ -201,7 +211,6 @@ QTextEdit* ManPageEditorQT::makeNewTab(QString html,QString sectname,bool issub,
 			te->setStatusTip(".SS "+sectname);
 		}
 	te->setLineWrapMode(QTextEdit::WidgetWidth);
-
 	return(te);
 }
 
@@ -678,13 +687,88 @@ void ManPageEditorQT::doClear(void)
 	fmt.setFontWeight(QFont::Normal);			
 	fmt.setFontUnderline(false);			
 	fmt.setFontItalic(false);			
-	te->mergeCurrentCharFormat(fmt);			
+	te->setCurrentCharFormat(fmt);			
 }
 
 void ManPageEditorQT::doPreView(void)
 {
 	this->mpConv->exportManpage(this->tmpFolderName+"/preview");
-	QProcess::execute("xterm",QStringList()<<"-hold"<<"-e"<<"man "+this->tmpFolderName+"/preview");
+	QString pout;
+
+	pout=QString("%1 \"man '%2/preview'\"").arg(this->terminalCommand,this->tmpFolderName);
+	system(pout.toStdString().c_str());
+}
+
+void ManPageEditorQT::doPrefs(void)
+{
+	prefsClass	newprefs;
+
+	QDialogButtonBox::StandardButton	dbutton=(QDialogButtonBox::StandardButton)((int)QDialogButtonBox::Ok|(int)QDialogButtonBox::Cancel);
+
+	newprefs.paged=false;
+	newprefs.bb->setStandardButtons(dbutton);
+	newprefs.autoshowDialog=true;
+	newprefs.dialogPrefs.valid=false;
+
+	newprefs.createDialog("ManpageQT Prefs",QString("%1/%2").arg(DATADIR).arg("docs/prefs.config"));
+	if(newprefs.dialogPrefs.valid==true)
+		{
+			newprefs.saveCurrentPrefs();
+	
+			QTextEdit	*te;
+			prefsClass	newprefs;
+			stringTuple	st;
+			boolTuple	bt;
+			QString		fh;
+			QString		oldname=this->fontName;
+
+			st=newprefs.getStringValue("teminal_command");
+			if(st.valid==true)
+				mpclass->terminalCommand=st.value;
+
+			bt=newprefs.getBoolValue("italic_as_underline");
+			if(bt.valid==true)
+				{
+					if(bt.value==true)
+						mpclass->italicMenuItem->setAppearance("format-text-underline","Underline","Ctrl+U");
+					else
+						mpclass->italicMenuItem->setAppearance("format-text-italic","Italic","Ctrl+I");
+					mpclass->useUnderline=bt.value;
+				}
+
+			st=newprefs.getStringValue("main_font");
+			if(st.valid==true)
+				{
+					QFont fnt;
+					fnt.fromString(st.value);
+					this->fontName=fnt.family();
+					this->fontSize=fnt.pointSize();
+				}
+
+			for(int j=0;j<this->mainNotebook->count();j++)
+				{
+					te=this->getDocumentForTab(j);
+					fh=te->toHtml();
+					//QTextStream(stdout)<<fh<<Qt::endl;
+					QTextCursor	cursor(te->document());
+					cursor.select(QTextCursor::Document);
+					te->setFont(QFont(this->fontName,this->fontSize));
+					te->setHtml(fh);
+					fh=te->toHtml();
+					fh=fh.replace(oldname,this->fontName);
+					fh=fh.replace(QRegularExpression("font-size:(.*)pt",QRegularExpression::InvertedGreedinessOption),QString("font-size:%1pt").arg(this->fontSize));
+					if(mpclass->useUnderline==true)
+						{
+							fh=fh.replace(R"foo(<span style=" font-style:italic;">)foo",R"foo(<span style=" text-decoration: underline;">)foo");
+						}
+					else
+						{
+							fh=fh.replace(R"foo(<span style=" text-decoration: underline;">)foo",R"foo(<span style=" font-style:italic;">)foo");
+						}
+					te->setHtml(fh);
+				}
+		}
+	//newprefs.printCurrentPrefs();
 }
 
 #if 0

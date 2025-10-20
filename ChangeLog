@@ -1,4 +1,12 @@
 0.1.0
+Fixed cant save page at location ( brings up save dialog ).
+Done auto unzip manpages.
+Added template.
+Removed text-size opt to prefs.
+Removed use-underline opt to prefs.
+Added font config to prefs ( only affects font/size in main gui, NOT in manpage ).
+Added teminal command to prefs ( default "xterm -hold -e " ).
+Done prefs.
 Done opening manpage starting with ".so ".
 Removed print menu.
 Mark document dirty=false after save/saveas.

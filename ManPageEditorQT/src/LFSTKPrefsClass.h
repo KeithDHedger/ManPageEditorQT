@@ -18,8 +18,8 @@
  * along with LFSToolKit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _PREFSCLASS_
-#define _PREFSCLASS_
+#ifndef _LFSTKPREFSCLASS_
+#define _LFSTKPREFSCLASS_
 
 //#include <map>
 //#include <vector>

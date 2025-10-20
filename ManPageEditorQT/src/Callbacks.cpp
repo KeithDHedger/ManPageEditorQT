@@ -23,7 +23,7 @@
 void ManPageEditorQT::doFileMenuItems(MenuItemClass *mc)
 {
 	//MenuItemClass	*mc=qobject_cast<MenuItemClass*>(sender());
-qDebug()<<mc;
+//qDebug()<<mc;
 	switch(mc->getMenuID())
 		{
 //file menu
@@ -101,7 +101,7 @@ qDebug()<<mc;
 					}
 				break;
 			case PREFSMENUITEM:
-				//this->doPrefs();
+				this->doPrefs();
 				break;
 			case OPENSYSPAGEMENUITEM:
 				{
@@ -113,6 +113,13 @@ qDebug()<<mc;
 								this->mpConv->importManpage(filepath);
 						}
 				}
+				break;
+			case OPENTEMPLATEMENUITEM:
+				if(this->closeTabs(true)==true)
+					{
+						this->mpConv->importManpage(QString("%1/docs/template.1").arg(DATADIR));
+						this->currentFilePath="";
+					}
 				break;
 		}
 }

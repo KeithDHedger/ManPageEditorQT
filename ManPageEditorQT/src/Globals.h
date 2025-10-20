@@ -26,6 +26,7 @@
 #include "qtincs.h"
 #include "internet.h"
 
+class prefsClass;
 class LFSTK_prefsClass;
 class AboutBoxClass;
 class NoteBookClass;
@@ -46,6 +47,7 @@ struct manProps
 };
 
 #include "LFSTKPrefsClass.h"
+#include "prefsClass.h"
 #include "QT_AboutBox.h"
 #include "ManPageEditorQT.h"
 #include "QT_notebook.h"

@@ -133,8 +133,9 @@ void ManpageConvertClass::exportManpage(QString filepath)
 							res1=res1.replace(QRegularExpression(R"RX(<p style="-qt-paragraph-type:empty; .*">)RX",QRegularExpression::InvertedGreedinessOption),"");
 
 							res1=res1.replace(QRegularExpression(R"RX(<p style=" margin-top.* -qt-block-indent:0; text-indent:0px;">(.*)</p>)RX",QRegularExpression::InvertedGreedinessOption),"\\1");	
-							res1=res1.replace(QRegularExpression(R"RX(<span style=" font-family:'Monospace'; font-weight:.*;">(.*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fB\\1\\fR");
-							res1=res1.replace(QRegularExpression(R"RX(<span style=" font-family:'Monospace'; font-style:italic;">(.*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fI\\1\\fR");
+//							res1=res1.replace(QRegularExpression(R"RX(<span style=" font-family:'Monospace'; font-weight:.*;">(.*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fB\\1\\fR");
+//							res1=res1.replace(QRegularExpression(R"RX(<span style=" font-family:'Monospace'; font-style:italic;">(.*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fI\\1\\fR");
+//							res1=res1.replace(QRegularExpression(R"RX(<span style=" font-family:'Monospace'; text-decoration: underline;">(.*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fI\\1\\fR");
 
 							prevpage+=res1+"\n.br\n";
 						}
@@ -157,86 +158,121 @@ void ManpageConvertClass::exportManpage(QString filepath)
 			out<<prevpage;
 			data.close();
 		}
+	else
+		{
+			QString filepath;
+			filepath=QFileDialog::getSaveFileName(nullptr,"Save File",this->mainClass->lastSaveDir,"",nullptr,QFileDialog::HideNameFilterDetails);
+			if(filepath.isEmpty()==false)
+				{
+					this->mainClass->currentFilePath=filepath;
+					this->mainClass->lastSaveDir=QFileInfo(filepath).canonicalPath();
+					this->exportManpage(filepath);
+				}
+				
+			for(int j=0;j<this->mainClass->mainNotebook->count();j++)
+				{
+					QTextEdit	*te=this->mainClass->getDocumentForTab(j);
+					te->document()->setModified(false);
+				}
+		}
 }
 
 void ManpageConvertClass::importManpage(QString filepath)
 {
-	QFile		file(filepath);
+	QString adjfp=filepath;
+
+	if(filepath.endsWith(".gz"))
+		{
+			adjfp=QString("gunzip -c %1 > %2/adpage").arg(filepath).arg(this->mainClass->tmpFolderName);
+			system(adjfp.toStdString().c_str());
+			adjfp=this->mainClass->tmpFolderName+"/adpage";
+			this->mainClass->currentFilePath="";
+		}
+
+	QFile		file(adjfp);
 	QString		content;
 	QStringList	sections;
 	bool			retval;
 	QString		htmlstr;
-	char			buffer[2048]= {0,};
 	char			commandBuffer[2048]= {0,};
+	char			buffer[2048]= {0,};
 	FILE*		fp;
 
 	retval=file.open(QIODevice::Text | QIODevice::ReadOnly);
 	if(retval==true)
 		{
-			this->mainClass->lastLoadDir=QFileInfo(filepath).dir().absolutePath();
-			this->mainClass->currentFilePath=filepath;
+			this->mainClass->lastLoadDir=QFileInfo(adjfp).dir().absolutePath();
+			this->mainClass->currentFilePath=adjfp;
 			content=QString::fromUtf8(file.readAll());
-
+			file.close();
 			if(content.startsWith(".so"))
 				{
 					this->importManpage(this->mainClass->lastLoadDir+"/../"+content.mid(4).trimmed());
 					return;
 				}
-			sprintf(commandBuffer,"cat %s| sed -n '/^.TH/p'",filepath.toStdString().c_str());
-			content="";
-			fp=popen(commandBuffer,"r");
-			if(fp!=NULL)
+		}
+
+	if(filepath!=adjfp)
+		{
+			this->mainClass->lastLoadDir=QFileInfo(filepath).dir().absolutePath();
+			this->mainClass->currentFilePath="";
+		}
+
+	sprintf(commandBuffer,"cat %s| sed -n '/^.TH/p'",adjfp.toStdString().c_str());
+	content="";
+
+	fp=popen(commandBuffer,"r");
+	if(fp!=NULL)
+		{
+			while(fgets((char*)&buffer[0],2048,fp))
+				content+=buffer;
+			pclose(fp);
+		}
+
+	this->manString=this->mainClass->getProperties(content);
+
+	sprintf(commandBuffer,"echo -e '\n.SH \"\"'|cat '%s' -|sed 's/^\\(\\.S[Hh]\\) \\(.*\\)/\\n@SECTION@--\\2--\\n\\1 \\2/g;s/^\\(\\.S[Ss]\\) \\(.*\\)/\\n@section@++\\2++\\n\\1 \\2/g'|GROFF_SGR=1 MANWIDTH=2000 MAN_KEEP_FORMATTING=1 man -l --no-justification --no-hyphenation -|ul|head -n -4",adjfp.toStdString().c_str());
+
+	content="";
+	fp=popen(commandBuffer,"r");
+	if(fp!=NULL)
+		{
+			while(fgets((char*)&buffer[0],2048,fp))
+				content+=buffer;
+			pclose(fp);
+		}
+
+	sections=content.split(QRegularExpression("@SECTION@|@section@",QRegularExpression::DotMatchesEverythingOption|QRegularExpression::InvertedGreedinessOption),Qt::KeepEmptyParts);
+
+	for(int j=1;j<sections.size();j++)
+		{
+			QString tstr=sections.at(j);
+			QStringList lines=sections.at(j).split("\n");
+			QString name=lines.at(0);
+			bool issub=false;
+			if(name.startsWith("++")==true)
+				issub=true;
+			QString cname=QString(name).replace(QRegularExpression(R"RX((\+\+|--)(.*)(\+\+|--))RX"),"\\2");
+			cname.replace(QRegularExpression("^\"|\"$"),"");
+			htmlstr="";
+			for (int k=3;k<lines.count();k++)
 				{
-					while(fgets((char*)&buffer[0],2048,fp))
-						content+=buffer;
-					pclose(fp);
+					QString buf=lines.at(k);
+					buf.remove(0,7);
+					htmlstr+=buf+"\n";
+					htmlstr=htmlstr.replace("<","&lt;");
+					htmlstr=htmlstr.replace(">","&gt;");
 				}
+			htmlstr="<style> pre {white-space: pre-wrap;word-wrap: break-word;overflow-x: auto;}</style>\n<pre>"+htmlstr;
+			htmlstr=htmlstr.replace(QRegularExpression(R"RX(\x1b\[1m(.*)\e\[m)RX",QRegularExpression::InvertedGreedinessOption),"<b>\\1</b>");
+			if(this->mainClass->useUnderline==false)
+				htmlstr=htmlstr.replace(QRegularExpression(R"RX(\x1b\[4m(.*)\e\[m)RX",QRegularExpression::InvertedGreedinessOption),"<i>\\1</i>");
+			else
+				htmlstr=htmlstr.replace(QRegularExpression(R"RX(\x1b\[4m(.*)\e\[m)RX",QRegularExpression::InvertedGreedinessOption),"<u>\\1</u>");
+			htmlstr=htmlstr.replace(QRegularExpression(R"RX(\x1b\[1m)RX"),"");
+			htmlstr=htmlstr.replace(QRegularExpression(R"RX(\x1b\[m)RX"),"");
+			htmlstr+="</pre>\n";
 
-			this->manString=this->mainClass->getProperties(content);
-
-			sprintf(commandBuffer,"echo -e '\n.SH \"\"'|cat '%s' -|sed 's/^\\(\\.S[Hh]\\) \\(.*\\)/\\n@SECTION@--\\2--\\n\\1 \\2/g;s/^\\(\\.S[Ss]\\) \\(.*\\)/\\n@section@++\\2++\\n\\1 \\2/g'|GROFF_SGR=1 MANWIDTH=2000 MAN_KEEP_FORMATTING=1 man -l --no-justification --no-hyphenation -|ul|head -n -4",filepath.toStdString().c_str());
-
-			content="";
-			fp=popen(commandBuffer,"r");
-			if(fp!=NULL)
-				{
-					while(fgets((char*)&buffer[0],2048,fp))
-						content+=buffer;
-					pclose(fp);
-				}
-			
-			sections=content.split(QRegularExpression("@SECTION@|@section@",QRegularExpression::DotMatchesEverythingOption|QRegularExpression::InvertedGreedinessOption),Qt::KeepEmptyParts);
-
-			for(int j=1;j<sections.size();j++)
-				{
-					QString tstr=sections.at(j);
-					QStringList lines=sections.at(j).split("\n");
-					QString name=lines.at(0);
-					bool issub=false;
-					if(name.startsWith("++")==true)
-						issub=true;
-					QString cname=QString(name).replace(QRegularExpression(R"RX((\+\+|--)(.*)(\+\+|--))RX"),"\\2");
-					cname.replace(QRegularExpression("^\"|\"$"),"");
-					htmlstr="";
-					for (int k=3;k<lines.count();k++)
-						{
-							QString buf=lines.at(k);
-							buf.remove(0,7);
-							htmlstr+=buf+"\n";
-							htmlstr=htmlstr.replace("<","&lt;");
-							htmlstr=htmlstr.replace(">","&gt;");
-						}
-					htmlstr="<style> pre {white-space: pre-wrap;word-wrap: break-word;overflow-x: auto;}</style>\n<pre>"+htmlstr;
-					htmlstr=htmlstr.replace(QRegularExpression(R"RX(\x1b\[1m(.*)\e\[m)RX",QRegularExpression::InvertedGreedinessOption),"<b>\\1</b>");
-					if(this->mainClass->useUnderline==false)
-						htmlstr=htmlstr.replace(QRegularExpression(R"RX(\x1b\[4m(.*)\e\[m)RX",QRegularExpression::InvertedGreedinessOption),"<i>\\1</i>");
-					else
-						htmlstr=htmlstr.replace(QRegularExpression(R"RX(\x1b\[4m(.*)\e\[m)RX",QRegularExpression::InvertedGreedinessOption),"<u>\\1</u>");
-					htmlstr=htmlstr.replace(QRegularExpression(R"RX(\x1b\[1m)RX"),"");
-					htmlstr=htmlstr.replace(QRegularExpression(R"RX(\x1b\[m)RX"),"");
-					htmlstr+="</pre>\n";
-
-					this->mainClass->makeNewTab(htmlstr,cname,issub);
-				}
+			this->mainClass->makeNewTab(htmlstr,cname,issub);
 		}
 }
