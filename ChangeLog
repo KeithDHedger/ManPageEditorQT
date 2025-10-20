@@ -1,4 +1,5 @@
 0.1.0
+Added wrap lines to prefs ( default wrap ).
 Added highlight current line ( for no hilite set alpha to 0 in prefs ).
 Removed unneeded man page.
 Fixed cant save page at location ( brings up save dialog ).

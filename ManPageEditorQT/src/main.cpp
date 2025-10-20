@@ -77,6 +77,15 @@ int main(int argc, char **argv)
 			mpclass->useUnderline=bt.value;
 		}
 
+	bt=newprefs.getBoolValue("wrap_lines");
+		if(bt.valid==true)
+			{
+				if(bt.value==true)
+					mpclass->lineWrap=QTextEdit::WidgetWidth;
+				else
+					mpclass->lineWrap=QTextEdit::NoWrap;
+			}
+
 	if(prefs.LFSTK_getBool("showsyspage")==true)
 		{
 			QString filepath;

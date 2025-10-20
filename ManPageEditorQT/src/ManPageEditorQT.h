@@ -66,7 +66,7 @@ class ManPageEditorQT : public QObject
 		QString						terminalCommand="xterm -hold -e";
 		QString						hiliteColour="#80ffaa00";
 		QSettings					prefs;
-		QTextEdit*					getDocumentForTab(int tabnum);
+		QTextEdit::LineWrapMode		lineWrap=QTextEdit::WidgetWidth;
 
 //app functions
 		void							initApp(void);
@@ -77,6 +77,7 @@ class ManPageEditorQT : public QObject
 		void							writeExitData(void);
 		bool							confirmClose(QTextEdit *te);
 		QTextEdit*					makeNewTab(QString html,QString sectname,bool issub,int pos=-1);
+		QTextEdit*					getDocumentForTab(int tabnum);
 		void							doPrefs(void);
 
 //editor vars

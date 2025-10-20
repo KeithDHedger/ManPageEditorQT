@@ -210,7 +210,8 @@ QTextEdit* ManPageEditorQT::makeNewTab(QString html,QString sectname,bool issub,
 			this->mainNotebook->insertTab(pos,te,sectname.toLower());
 			te->setStatusTip(".SS "+sectname);
 		}
-	te->setLineWrapMode(QTextEdit::WidgetWidth);
+	te->setLineWrapMode(this->lineWrap);
+
 	QObject::connect(te,&QTextEdit::cursorPositionChanged,[this,te]()
 		{
 			QTextCursor						cursor=te->textCursor();
@@ -759,6 +760,15 @@ void ManPageEditorQT::doPrefs(void)
 					mpclass->useUnderline=bt.value;
 				}
 
+			bt=newprefs.getBoolValue("wrap_lines");
+			if(bt.valid==true)
+				{
+					if(bt.value==true)
+						this->lineWrap=QTextEdit::WidgetWidth;
+					else
+						this->lineWrap=QTextEdit::NoWrap;
+				}
+
 			st=newprefs.getStringValue("main_font");
 			if(st.valid==true)
 				{
@@ -771,6 +781,8 @@ void ManPageEditorQT::doPrefs(void)
 			for(int j=0;j<this->mainNotebook->count();j++)
 				{
 					te=this->getDocumentForTab(j);
+						te->setLineWrapMode(this->lineWrap);
+
 					fh=te->toHtml();
 					//QTextStream(stdout)<<fh<<Qt::endl;
 					QTextCursor	cursor(te->document());
@@ -789,6 +801,11 @@ void ManPageEditorQT::doPrefs(void)
 							fh=fh.replace(R"foo(<span style=" text-decoration: underline;">)foo",R"foo(<span style=" font-style:italic;">)foo");
 						}
 					te->setHtml(fh);
+
+	te->setLineWrapMode(this->lineWrap);
+
+
+
 				}
 		}
 	//newprefs.printCurrentPrefs();
