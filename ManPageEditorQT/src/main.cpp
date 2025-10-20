@@ -59,6 +59,10 @@ int main(int argc, char **argv)
 			mpclass->fontSize=fnt.pointSize();
 		}
 
+	st=newprefs.getStringValue("highlight_colour");
+	if(st.valid==true)
+		mpclass->hiliteColour=st.value;
+
 	st=newprefs.getStringValue("teminal_command");
 	if(st.valid==true)
 		mpclass->terminalCommand=st.value;

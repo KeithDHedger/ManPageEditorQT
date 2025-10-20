@@ -64,6 +64,7 @@ class ManPageEditorQT : public QObject
 		QString						lastLoadDir="";
 		QString						currentFilePath="";
 		QString						terminalCommand="xterm -hold -e";
+		QString						hiliteColour="#80ffaa00";
 		QSettings					prefs;
 		QTextEdit*					getDocumentForTab(int tabnum);
 

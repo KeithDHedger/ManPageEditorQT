@@ -211,6 +211,25 @@ QTextEdit* ManPageEditorQT::makeNewTab(QString html,QString sectname,bool issub,
 			te->setStatusTip(".SS "+sectname);
 		}
 	te->setLineWrapMode(QTextEdit::WidgetWidth);
+	QObject::connect(te,&QTextEdit::cursorPositionChanged,[this,te]()
+		{
+			QTextCursor						cursor=te->textCursor();
+			QTextCharFormat					format;
+			QList<QTextEdit::ExtraSelection>	extraSelections;
+			QTextEdit::ExtraSelection		selection;
+
+	        format.setBackground(QColor(this->hiliteColour)); // Set highlight color
+			// Highlight the current line
+			selection.format = format;
+			selection.cursor = cursor;
+			selection.cursor.clearSelection();
+			selection.cursor.movePosition(QTextCursor::StartOfBlock);
+			selection.cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
+			extraSelections.append(selection);
+
+			// Apply the highlight
+			te->setExtraSelections(extraSelections);
+		});
 	return(te);
 }
 
@@ -725,6 +744,10 @@ void ManPageEditorQT::doPrefs(void)
 			st=newprefs.getStringValue("teminal_command");
 			if(st.valid==true)
 				mpclass->terminalCommand=st.value;
+
+			st=newprefs.getStringValue("highlight_colour");
+				if(st.valid==true)
+					mpclass->hiliteColour=st.value;
 
 			bt=newprefs.getBoolValue("italic_as_underline");
 			if(bt.valid==true)
