@@ -15,8 +15,6 @@ docfiles_DATA = ../resources/docs/*
 
 bin_PROGRAMS = manpageeditorqt
 
-man1_MANS = ../resources/man/manpageeditorqt.1
-
 install-exec-hook:
 	install -D ../resources/pixmaps/ManPageEditorQT.png $(DESTDIR)${prefix}/share/pixmaps/ManPageEditorQT.png
 	install -D ../resources/pixmaps/ManPageEditorQT.desktop $(DESTDIR)${prefix}/share/applications/ManPageEditorQT.desktop

@@ -1,4 +1,5 @@
 0.1.0
+Removed unneeded man page.
 Fixed cant save page at location ( brings up save dialog ).
 Done auto unzip manpages.
 Added template.
