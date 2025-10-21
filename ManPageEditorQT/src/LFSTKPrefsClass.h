@@ -21,12 +21,6 @@
 #ifndef _LFSTKPREFSCLASS_
 #define _LFSTKPREFSCLASS_
 
-//#include <map>
-//#include <vector>
-//#include <string>
-//#include <string.h>
-//#include <getopt.h>
-
 enum dataType {TYPEINVALID,TYPESTRING,TYPEBOOL,TYPEINT};
 
 struct prefsData
