@@ -20,11 +20,7 @@ Help pages.
 
 	Prefs.  
 		Gzip pages.  
-		Highlight line.  
-		Wrap lines.  
 		
 
 Spell check.  
-Add template.  
-Unzip page if needed.  
 

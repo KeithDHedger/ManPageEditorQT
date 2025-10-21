@@ -73,13 +73,15 @@ void ManPageEditorQT::doFileMenuItems(MenuItemClass *mc)
 							this->currentFilePath=filepath;
 							this->lastSaveDir=QFileInfo(filepath).canonicalPath();
 							this->mpConv->exportManpage(filepath);
+							for(int j=0;j<this->mainNotebook->count();j++)
+								{
+									QTextEdit	*te=this->getDocumentForTab(j);
+									te->document()->setModified(false);
+								}
 						}
+					else
+						this->currentFilePath="";
 				}
-				for(int j=0;j<this->mainNotebook->count();j++)
-					{
-						QTextEdit	*te=this->getDocumentForTab(j);
-						te->document()->setModified(false);
-					}
 				break;
 
 			case PREVIEWMENUITEM:

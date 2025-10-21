@@ -32,12 +32,14 @@ int main(int argc, char **argv)
 	option			long_options[]=
 		{
 			{"showsyspage",no_argument,NULL,'p'},
+			{"opensyspage",required_argument,NULL,'s'},
 			{0,0,0,0}
 		};
 
 	prefs.prefsMap=
 		{
 			{prefs.LFSTK_hashFromKey("showsyspage"),{TYPEBOOL,"showsyspage","Open system manpage dialog at start","",false,0}},
+			{prefs.LFSTK_hashFromKey("opensyspage"),{TYPESTRING,"opensyspage","Open system manpage","",false,0}}
 		};
 
 	if(prefs.LFSTK_argsToPrefs(argc,argv,long_options,true)==false)
@@ -86,6 +88,27 @@ int main(int argc, char **argv)
 					mpclass->lineWrap=QTextEdit::NoWrap;
 			}
 
+	if(prefs.LFSTK_getString("opensyspage").empty()==false)
+		{
+			QString	command;
+			QString	content="";
+			char		buffer[2048]={0,};
+			FILE		*fp;
+
+			command=QString("man -w %1 2>/dev/null").arg(prefs.LFSTK_getCString("opensyspage"));
+			fp=popen(command.toStdString().c_str(),"r");
+			if(fp!=NULL)
+				{
+					while(fgets((char*)&buffer[0],2048,fp))
+						content+=buffer;
+					pclose(fp);
+				}
+			//return(content.trimmed());
+			mpclass->mpConv->importManpage(content.trimmed());
+		}
+	else
+		{
+
 	if(prefs.LFSTK_getBool("showsyspage")==true)
 		{
 			QString filepath;
@@ -98,7 +121,7 @@ int main(int argc, char **argv)
 	else
 		if(prefs.cliArgs.size()>0)
 			mpclass->mpConv->importManpage(prefs.cliArgs.at(0).c_str());
-
+}
 	status=app.exec();
 
 	delete mpclass;

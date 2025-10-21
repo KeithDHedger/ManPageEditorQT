@@ -103,7 +103,7 @@ QString ManpageConvertClass::buildOpenSystemPage(void)
 	return("");
 }
 
-void ManpageConvertClass::exportManpage(QString filepath)
+void ManpageConvertClass::exportManpage(QString filepath,bool nozip)
 {
 	QString	prevpage=this->mainClass->getProperties(this->manString);
 
@@ -154,9 +154,18 @@ void ManpageConvertClass::exportManpage(QString filepath)
 	QFile data(filepath);
 	if(data.open(QFile::WriteOnly|QFile::Truncate))
 		{
-			QTextStream out(&data);
+			prefsClass	newprefs;
+			boolTuple	bt;
+			QTextStream	out(&data);
 			out<<prevpage;
 			data.close();
+
+			bt=newprefs.getBoolValue("gzip_pages");
+			if((bt.valid==true) && (bt.value==true) && (nozip==false))
+				{
+					QString zipstr=QString("gzip '%1'").arg(filepath);
+					system(zipstr.toStdString().c_str());
+				}
 		}
 	else
 		{

@@ -712,7 +712,7 @@ void ManPageEditorQT::doClear(void)
 
 void ManPageEditorQT::doPreView(void)
 {
-	this->mpConv->exportManpage(this->tmpFolderName+"/preview");
+	this->mpConv->exportManpage(this->tmpFolderName+"/preview",true);
 	QString pout;
 
 	pout=QString("%1 \"man '%2/preview'\"").arg(this->terminalCommand,this->tmpFolderName);
