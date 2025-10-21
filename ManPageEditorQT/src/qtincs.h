@@ -25,7 +25,6 @@
 #include <QMessageBox>
 #include <QObject>
 #include <QPlainTextEdit>
-#include <QProcess>
 #include <QPushButton>
 #include <QRegularExpression>
 #include <QSettings>
@@ -53,5 +52,9 @@
 #include <vector>
 #include <wordexp.h>
 
+#include <sys/wait.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <iostream>
 
 #endif

@@ -1,3 +1,7 @@
+0.2.0
+Removed system and popen calls.
+Added runExternalProc class.
+
 0.1.0
 Done gzip page on save ( default don't zip ).
 Added wrap lines to prefs ( default wrap ).

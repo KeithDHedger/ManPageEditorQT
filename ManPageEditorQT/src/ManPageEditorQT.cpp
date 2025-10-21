@@ -280,7 +280,6 @@ void ManPageEditorQT::initApp(void)
 		});
 
 //TODO//
-//	this->buildPrefsWindow();
 
 //	this->buildFindReplace();
 //#ifdef _ASPELL_
@@ -379,14 +378,6 @@ void ManPageEditorQT::writeExitData(void)
 	this->prefs.setValue("editor/lastsavedir",this->lastSaveDir);
 	this->prefs.setValue("editor/lastloaddir",this->lastLoadDir);
 
-//	this->prefs.setValue("editor/toolbarlayout",this->prefsToolBarLayout);
-//	this->prefs.setValue("editor/maxtabchars",this->prefsMaxTabChars);
-//	this->prefs.setValue("editor/terminalcommand",this->prefsTerminalCommand);
-	
-//document
-//	this->prefs.setValue("document/wrap",this->prefsLineWrap);
-//	this->prefs.setValue("document/tabwidth",this->prefsTabWidth);
-
 //application
 
 //find
@@ -412,14 +403,7 @@ void ManPageEditorQT::readConfigs(void)
 	this->lastSaveDir=this->prefs.value("editor/lastsavedir","").toString();
 	this->lastLoadDir=this->prefs.value("editor/lastloaddir","").toString();
 
-//	this->prefsToolBarLayout=this->prefs.value("editor/toolbarlayout","NSOsURsBWsFGsE9ELEDEE").toString();
-//	this->prefsMaxTabChars=this->prefs.value("editor/maxtabchars",20).toInt();
-//	this->prefsTerminalCommand=this->prefs.value("editor/terminalcommand","xterm -e").toString();
-
 //document
-//	this->prefsTabWidth=this->prefs.value("document/tabwidth",4).toInt();
-//	this->prefsLineWrap=this->prefs.value("document/wrap",QVariant(bool(true))).value<bool>();
-
 ////application
 
 ////find
@@ -712,11 +696,10 @@ void ManPageEditorQT::doClear(void)
 
 void ManPageEditorQT::doPreView(void)
 {
-	this->mpConv->exportManpage(this->tmpFolderName+"/preview",true);
-	QString pout;
+	runExternalProcClass	rp;
 
-	pout=QString("%1 \"man '%2/preview'\"").arg(this->terminalCommand,this->tmpFolderName);
-	system(pout.toStdString().c_str());
+	this->mpConv->exportManpage(this->tmpFolderName+"/preview",true);
+	rp.runExternalCommands(QString("%1 \"man '%2/preview'\"").arg(this->terminalCommand,this->tmpFolderName).toStdString(),false,"/dev/null");
 }
 
 void ManPageEditorQT::doPrefs(void)
@@ -784,7 +767,6 @@ void ManPageEditorQT::doPrefs(void)
 						te->setLineWrapMode(this->lineWrap);
 
 					fh=te->toHtml();
-					//QTextStream(stdout)<<fh<<Qt::endl;
 					QTextCursor	cursor(te->document());
 					cursor.select(QTextCursor::Document);
 					te->setFont(QFont(this->fontName,this->fontSize));
@@ -793,22 +775,13 @@ void ManPageEditorQT::doPrefs(void)
 					fh=fh.replace(oldname,this->fontName);
 					fh=fh.replace(QRegularExpression("font-size:(.*)pt",QRegularExpression::InvertedGreedinessOption),QString("font-size:%1pt").arg(this->fontSize));
 					if(mpclass->useUnderline==true)
-						{
-							fh=fh.replace(R"foo(<span style=" font-style:italic;">)foo",R"foo(<span style=" text-decoration: underline;">)foo");
-						}
+						fh=fh.replace(R"foo(<span style=" font-style:italic;">)foo",R"foo(<span style=" text-decoration: underline;">)foo");
 					else
-						{
-							fh=fh.replace(R"foo(<span style=" text-decoration: underline;">)foo",R"foo(<span style=" font-style:italic;">)foo");
-						}
+						fh=fh.replace(R"foo(<span style=" text-decoration: underline;">)foo",R"foo(<span style=" font-style:italic;">)foo");
 					te->setHtml(fh);
-
-	te->setLineWrapMode(this->lineWrap);
-
-
-
+					te->setLineWrapMode(this->lineWrap);
 				}
 		}
-	//newprefs.printCurrentPrefs();
 }
 
 #if 0
@@ -945,32 +918,6 @@ void ManPageEditorQT::setToolbarSensitive(void)
 						break;
 				}
 		}
-}
-
-
-
-void ManPageEditorQT::runNoOutput(QString command,bool sync,bool asroot)
-{
-	QStringList	args;
-	QString		com;
-
-	if(asroot==false)
-		{
-			com="sh";
-			args<<"-c"<<QString("cd %1;%2").arg(this->toolsFolder).arg(command);
-		}
-	else
-		{
-			args=QProcess::splitCommand(this->prefsRootCommand);
-			com=args.at(0);
-			args.removeFirst();
-			args<<"sh"<<"-c"<<QString("cd %1;%2").arg(this->toolsFolder).arg(command);
-		}
-
-	if(sync==true)
-		QProcess::execute(com,args);
-	else
-		QProcess::startDetached(com,args);
 }
 
 #endif

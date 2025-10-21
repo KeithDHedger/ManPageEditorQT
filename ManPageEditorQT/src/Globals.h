@@ -26,6 +26,7 @@
 #include "qtincs.h"
 #include "internet.h"
 
+class runExternalProcClass;
 class prefsClass;
 class LFSTK_prefsClass;
 class AboutBoxClass;
@@ -47,6 +48,7 @@ struct manProps
 };
 
 #include "LFSTKPrefsClass.h"
+#include "runExternalProc.h"
 #include "prefsClass.h"
 #include "QT_AboutBox.h"
 #include "ManPageEditorQT.h"

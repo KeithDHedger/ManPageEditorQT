@@ -90,38 +90,29 @@ int main(int argc, char **argv)
 
 	if(prefs.LFSTK_getString("opensyspage").empty()==false)
 		{
-			QString	command;
-			QString	content="";
-			char		buffer[2048]={0,};
-			FILE		*fp;
+			std::string			sfp;
+			runExternalProcClass	rp;
 
-			command=QString("man -w %1 2>/dev/null").arg(prefs.LFSTK_getCString("opensyspage"));
-			fp=popen(command.toStdString().c_str(),"r");
-			if(fp!=NULL)
-				{
-					while(fgets((char*)&buffer[0],2048,fp))
-						content+=buffer;
-					pclose(fp);
-				}
-			//return(content.trimmed());
-			mpclass->mpConv->importManpage(content.trimmed());
+			rp.trimOP=true;
+			sfp=rp.runExternalCommands(QString("man -w %1").arg(prefs.LFSTK_getCString("opensyspage")).toStdString(),true);
+			mpclass->mpConv->importManpage(QString::fromStdString(sfp));;
 		}
 	else
 		{
-
-	if(prefs.LFSTK_getBool("showsyspage")==true)
-		{
-			QString filepath;
-			filepath=mpclass->mpConv->buildOpenSystemPage();
-			if(filepath.isEmpty()==false)
+			if(prefs.LFSTK_getBool("showsyspage")==true)
 				{
-					mpclass->mpConv->importManpage(filepath);
+					QString filepath;
+					filepath=mpclass->mpConv->buildOpenSystemPage();
+					if(filepath.isEmpty()==false)
+						mpclass->mpConv->importManpage(filepath);
+				}
+			else
+				{
+					if(prefs.cliArgs.size()>0)
+						mpclass->mpConv->importManpage(prefs.cliArgs.at(0).c_str());
 				}
 		}
-	else
-		if(prefs.cliArgs.size()>0)
-			mpclass->mpConv->importManpage(prefs.cliArgs.at(0).c_str());
-}
+
 	status=app.exec();
 
 	delete mpclass;

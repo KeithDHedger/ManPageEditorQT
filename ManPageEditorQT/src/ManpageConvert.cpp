@@ -40,7 +40,6 @@ QString ManpageConvertClass::buildOpenSystemPage(void)
 	QLineEdit		*nameedit;
 	QComboBox		*section;
 	const char		*propname[]={"Manpage name","Section"};
-	FILE*			fp;
 
 	hbox=new QWidget;
 	hlayout=new QHBoxLayout;
@@ -82,23 +81,18 @@ QString ManpageConvertClass::buildOpenSystemPage(void)
 	delete buttonBox;
 	if(ret==0)
 		{
-			QString	command;
-			QString	content="";
-			char		buffer[2048]={0,};
+			QString				command;
+			std::string			sfp;
+			runExternalProcClass	rp;
 
 			if(section->currentIndex()==0)
-				command=QString("man -w %1 2>/dev/null").arg(nameedit->text());
+				command=QString("man -w %1").arg(nameedit->text());
 			else
-				command=QString("man -s%2 -w %1 2>/dev/null").arg(nameedit->text()).arg(section->currentIndex());
+				command=QString("man -s%2 -w %1").arg(nameedit->text()).arg(section->currentIndex());
 
-			fp=popen(command.toStdString().c_str(),"r");
-			if(fp!=NULL)
-				{
-					while(fgets((char*)&buffer[0],2048,fp))
-						content+=buffer;
-					pclose(fp);
-				}
-			return(content.trimmed());
+			rp.trimOP=true;
+			sfp=rp.runExternalCommands(command.toStdString(),true);
+			return(QString::fromStdString(sfp));
 		}
 	return("");
 }
@@ -133,9 +127,6 @@ void ManpageConvertClass::exportManpage(QString filepath,bool nozip)
 							res1=res1.replace(QRegularExpression(R"RX(<p style="-qt-paragraph-type:empty; .*">)RX",QRegularExpression::InvertedGreedinessOption),"");
 
 							res1=res1.replace(QRegularExpression(R"RX(<p style=" margin-top.* -qt-block-indent:0; text-indent:0px;">(.*)</p>)RX",QRegularExpression::InvertedGreedinessOption),"\\1");	
-//							res1=res1.replace(QRegularExpression(R"RX(<span style=" font-family:'Monospace'; font-weight:.*;">(.*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fB\\1\\fR");
-//							res1=res1.replace(QRegularExpression(R"RX(<span style=" font-family:'Monospace'; font-style:italic;">(.*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fI\\1\\fR");
-//							res1=res1.replace(QRegularExpression(R"RX(<span style=" font-family:'Monospace'; text-decoration: underline;">(.*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fI\\1\\fR");
 
 							prevpage+=res1+"\n.br\n";
 						}
@@ -163,8 +154,8 @@ void ManpageConvertClass::exportManpage(QString filepath,bool nozip)
 			bt=newprefs.getBoolValue("gzip_pages");
 			if((bt.valid==true) && (bt.value==true) && (nozip==false))
 				{
-					QString zipstr=QString("gzip '%1'").arg(filepath);
-					system(zipstr.toStdString().c_str());
+					runExternalProcClass	rp;
+					rp.runExternalCommands(QString("gzip -f '%1'").arg(filepath).toStdString(),false,"/dev/null");
 				}
 		}
 	else
@@ -188,24 +179,22 @@ void ManpageConvertClass::exportManpage(QString filepath,bool nozip)
 
 void ManpageConvertClass::importManpage(QString filepath)
 {
-	QString adjfp=filepath;
+	QString				adjfp=filepath;
+	runExternalProcClass	rp;
 
 	if(filepath.endsWith(".gz"))
 		{
-			adjfp=QString("gunzip -c %1 > %2/adpage").arg(filepath).arg(this->mainClass->tmpFolderName);
-			system(adjfp.toStdString().c_str());
+			rp.runExternalCommands(QString("gunzip -c %1").arg(filepath).toStdString(),false,QString("%2/adpage").arg(this->mainClass->tmpFolderName).toStdString());
 			adjfp=this->mainClass->tmpFolderName+"/adpage";
 			this->mainClass->currentFilePath="";
 		}
 
-	QFile		file(adjfp);
-	QString		content;
-	QStringList	sections;
-	bool			retval;
-	QString		htmlstr;
-	char			commandBuffer[2048]= {0,};
-	char			buffer[2048]= {0,};
-	FILE*		fp;
+	QFile				file(adjfp);
+	QString				content;
+	QStringList			sections;
+	bool					retval;
+	QString				htmlstr;
+	std::string			sfp;
 
 	retval=file.open(QIODevice::Text | QIODevice::ReadOnly);
 	if(retval==true)
@@ -227,29 +216,18 @@ void ManpageConvertClass::importManpage(QString filepath)
 			this->mainClass->currentFilePath="";
 		}
 
-	sprintf(commandBuffer,"cat %s| sed -n '/^.TH/p'",adjfp.toStdString().c_str());
-	content="";
+	rp.trimOP=true;
+	sfp=rp.runExternalCommands(QString("cat %1| sed -n '/^.TH/p'").arg(adjfp).toStdString(),true);
 
-	fp=popen(commandBuffer,"r");
-	if(fp!=NULL)
-		{
-			while(fgets((char*)&buffer[0],2048,fp))
-				content+=buffer;
-			pclose(fp);
-		}
-
-	this->manString=this->mainClass->getProperties(content);
-
-	sprintf(commandBuffer,"echo -e '\n.SH \"\"'|cat '%s' -|sed 's/^\\(\\.S[Hh]\\) \\(.*\\)/\\n@SECTION@--\\2--\\n\\1 \\2/g;s/^\\(\\.S[Ss]\\) \\(.*\\)/\\n@section@++\\2++\\n\\1 \\2/g'|GROFF_SGR=1 MANWIDTH=2000 MAN_KEEP_FORMATTING=1 man -l --no-justification --no-hyphenation -|ul|head -n -4",adjfp.toStdString().c_str());
-
-	content="";
-	fp=popen(commandBuffer,"r");
-	if(fp!=NULL)
-		{
-			while(fgets((char*)&buffer[0],2048,fp))
-				content+=buffer;
-			pclose(fp);
-		}
+	this->manString=this->mainClass->getProperties(QString::fromStdString(sfp));
+	setenv("GROFF_SGR","1",1);
+	setenv("MANWIDTH","2000",1);
+	setenv("MAN_KEEP_FORMATTING","1",1);
+	sfp=rp.runExternalCommands(QString("echo -e '\n.SH \"\"'|cat '%1' -|sed 's/^\\(\\.S[Hh]\\) \\(.*\\)/\\n@SECTION@--\\2--\\n\\1 \\2/g;s/^\\(\\.S[Ss]\\) \\(.*\\)/\\n@section@++\\2++\\n\\1 \\2/g'|man -l --no-justification --no-hyphenation -|ul|head -n -4").arg(adjfp).toStdString(),true);
+	unsetenv("GROFF_SGR");
+	unsetenv("MANWIDTH");
+	unsetenv("MAN_KEEP_FORMATTING");
+	content=QString::fromStdString(sfp);
 
 	sections=content.split(QRegularExpression("@SECTION@|@section@",QRegularExpression::DotMatchesEverythingOption|QRegularExpression::InvertedGreedinessOption),Qt::KeepEmptyParts);
 
