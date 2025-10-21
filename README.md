@@ -18,9 +18,6 @@ USEQTVERSION=5 ./autogen.sh --prefix=/usr
 #### TODO
 Help pages.  
 
-	Prefs.  
-		Gzip pages.  
-		
 
 Spell check.  
 
