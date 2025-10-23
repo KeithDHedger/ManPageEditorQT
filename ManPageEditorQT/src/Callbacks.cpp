@@ -146,6 +146,11 @@ void ManPageEditorQT::doEditMenuItems(MenuItemClass *mc)
 			case PASTEMENUITEM:
 				te->paste();
 				break;
+
+			case SPELLCHECKMENUITEM:
+				this->spellCheckDoc(te);
+				break;
+
 			case FINDMENUITEM://TODO//
 				//this->findReplaceDialog->show();
 			//	this->findReplaceDialog->activateWindow();

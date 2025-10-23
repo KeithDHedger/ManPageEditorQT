@@ -63,7 +63,11 @@ int main(int argc, char **argv)
 
 	st=newprefs.getStringValue("highlight_colour");
 	if(st.valid==true)
-		mpclass->hiliteColour=st.value;
+		mpclass->lineHiliteColour=st.value;
+
+	st=newprefs.getStringValue("extra_highlight_colour");
+	if(st.valid==true)
+		mpclass->extraHiliteColour=st.value;
 
 	st=newprefs.getStringValue("teminal_command");
 	if(st.valid==true)

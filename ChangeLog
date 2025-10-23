@@ -1,4 +1,6 @@
 0.2.0
+Updated help.
+Done spellcheck.
 Removed system and popen calls.
 Added runExternalProc class.
 

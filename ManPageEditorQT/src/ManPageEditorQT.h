@@ -64,7 +64,8 @@ class ManPageEditorQT : public QObject
 		QString						lastLoadDir="";
 		QString						currentFilePath="";
 		QString						terminalCommand="xterm -hold -e";
-		QString						hiliteColour="#80ffaa00";
+		QString						lineHiliteColour="#80ffffff";
+		QString						extraHiliteColour="#80000000";
 		QSettings					prefs;
 		QTextEdit::LineWrapMode		lineWrap=QTextEdit::WidgetWidth;
 
@@ -79,6 +80,18 @@ class ManPageEditorQT : public QObject
 		QTextEdit*					makeNewTab(QString html,QString sectname,bool issub,int pos=-1);
 		QTextEdit*					getDocumentForTab(int tabnum);
 		void							doPrefs(void);
+//spell check
+		AspellConfig					*aspellConfig=NULL;
+		AspellSpeller				*spellChecker=0;
+		QDialog						*spellCheckGUI=NULL;
+		QComboBox					*wordDropBox;
+		QLabel						*infoLabel;
+		//MenuItemClass				*spellCheckMenuItem;
+		bool							returnWord=false;
+		QString						goodWord;
+		QString						badWord;
+		bool							cancelCheck=false;
+		void							spellCheckDoc(QTextEdit *te);
 
 //editor vars
 		QStatusBar					*statusBar;
@@ -121,6 +134,7 @@ class ManPageEditorQT : public QObject
 		MenuItemClass				*cutMenuItem;
 		MenuItemClass				*copyMenuItem;
 		MenuItemClass				*pasteMenuItem;
+		MenuItemClass				*spellCheckMenuItem;
 		MenuItemClass				*findMenuItem;
 
 //formating menu
@@ -188,6 +202,7 @@ class ManPageEditorQT : public QObject
 		void							doFormatMenuItems(MenuItemClass *mc);
 		void							doHelpMenuItems(MenuItemClass *mc);
 		bool							closeTabs(bool all);
+		void							hiliteLine(QTextEdit *te,QColor colour=QColor("#20000000"));
 };
 
 #endif

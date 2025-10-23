@@ -43,7 +43,11 @@ prefsClass::~prefsClass()
 	for(int j=0;j<this->dialogPrefs.fileBoxCnt;j++)
 		delete this->dialogPrefs.fileBoxes[j];
 
-	delete this->dialogPrefs.theDialog;
+	if(this->bb!=NULL)
+		delete this->bb;
+
+	if(this->dialogPrefs.theDialog!=NULL)
+		delete this->dialogPrefs.theDialog;
 }
 
 /**
@@ -209,11 +213,19 @@ stringTuple prefsClass::getEditValue(QString prefsname)
 
 comboTuple prefsClass::getComboValue(QString prefsname)
 {
-	QSettings defaults;
-
-	if(defaults.contains(prefsname))
-		return((comboTuple){defaults.value(prefsname).toString(),-1,true});				
-
+//	QSettings defaults;
+//
+//	if(defaults.contains(prefsname))
+//		return((comboTuple){defaults.value(prefsname).toString(),-1,true});				
+	if(this->dialogPrefs.valid==true)
+		{
+			int what=-1;
+			what=this->findByName(this->dialogPrefs.comboBoxesPrefsName,prefsname);
+			if(what!=-1)
+				{
+					return((comboTuple){this->dialogPrefs.comboBoxes[what]->currentText(),this->dialogPrefs.comboBoxes[what]->currentIndex(),true});
+				}
+		}
 	return((comboTuple){"",-1,false});
 }
 
@@ -320,15 +332,9 @@ void prefsClass::createDialog(QString title,QStringList items,QSize sze)
 	f.setFrameStyle(QFrame::HLine|QFrame::Plain);
 	this->dialogPrefs.theDialog=new QDialog();
 	this->dialogPrefs.theDialog->setWindowTitle(title);
-	this->dialogPrefs.theDialog->setGeometry(defaults.value(QString("%1_%2").arg(qApp->applicationName()).arg("prefsgeometry"),QRect(100,100,320,128)).toRect());
 
-	QSize tsze(this->dialogPrefs.theDialog->size());
-	if(sze.width()!=-1)
-		tsze.setWidth(sze.width());
-	if(sze.height()!=-1)
-		tsze.setHeight(sze.height());
-
-	this->dialogPrefs.theDialog->resize(tsze);
+	if(this->useSavedPrefs==true)
+		this->dialogPrefs.theDialog->setGeometry(defaults.value(QString("%1_%2").arg(qApp->applicationName()).arg("prefsgeometry"),QRect(100,100,320,128)).toRect());
 
 	if(this->paged==true)
 		{
@@ -709,7 +715,7 @@ void prefsClass::createDialog(QString title,QStringList items,QSize sze)
 			docvlayout->addWidget(hbox,1);
 		}
 
-	QObject::connect(this->bb,&QDialogButtonBox::clicked,[this](QAbstractButton *button)
+	QObject::connect(this->bb,&QDialogButtonBox::clicked,[this](QAbstractButton *button)//TODO//
 		{
 			switch(this->bb->standardButton(button))
 				{
@@ -717,29 +723,22 @@ void prefsClass::createDialog(QString title,QStringList items,QSize sze)
 						{
 							QSettings	defaults;
 							QRect		rf,rg;
-
-							rg=this->dialogPrefs.theDialog->geometry();
-							rf=this->dialogPrefs.theDialog->frameGeometry();
-							rf.setHeight(rf.height()-(rf.height()-rg.height()));
-							rf.setWidth(rf.width()-(rf.width()-rg.width()));
-							defaults.setValue(QString("%1_%2").arg(qApp->applicationName()).arg("prefsgeometry"),rf);
+							if(this->useSavedPrefs==true)
+								{
+									rg=this->dialogPrefs.theDialog->geometry();
+									rf=this->dialogPrefs.theDialog->frameGeometry();
+									rf.setHeight(rf.height()-(rf.height()-rg.height()));
+									rf.setWidth(rf.width()-(rf.width()-rg.width()));
+									defaults.setValue(QString("%1_%2").arg(qApp->applicationName()).arg("prefsgeometry"),rf);
+								}
 							this->dialogPrefs.theDialog->accept();
 							this->dialogPrefs.valid=true;
 						}
 						break;
-
-					case QDialogButtonBox::Apply:
-						{
-							this->dialogPrefs.valid=true;
-							this->printCurrentPrefs();
-						}			
-						break;
-
-					case QDialogButtonBox::Cancel:
-						this->dialogPrefs.theDialog->reject();
-						this->dialogPrefs.valid=false;
-						break;
 					default:
+						this->button=this->bb->standardButton(button);
+						this->dialogPrefs.theDialog->close();
+						this->dialogPrefs.valid=true;
 						break;
 				}
 		});
@@ -754,6 +753,13 @@ void prefsClass::createDialog(QString title,QStringList items,QSize sze)
 			mainvlayout->addWidget(this->bb);
 			mainvlayout->addSpacing(8);
 		}
+
+	QSize tsze(this->dialogPrefs.theDialog->sizeHint());
+	if(sze.width()!=-1)
+		tsze.setWidth(sze.width());
+	if(sze.height()!=-1)
+		tsze.setHeight(sze.height());
+	this->dialogPrefs.theDialog->resize(tsze);
 
 	if(this->autoshowDialog==true)
 		this->dialogPrefs.theDialog->exec();

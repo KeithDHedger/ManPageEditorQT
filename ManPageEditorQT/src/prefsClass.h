@@ -93,8 +93,10 @@ class prefsClass
 	QStringList				prefsNames;
 	bool						paged=false;
 	QString					opSep="\n";
-	QDialogButtonBox			*bb;
+	QDialogButtonBox			*bb=NULL;
 	bool						autoshowDialog=true;
+	bool						useSavedPrefs=true;
+	int						button=QDialogButtonBox::NoButton;
 
 	void						createDialog(QString title,QStringList items,QSize sze=QSize(-1,-1));
 	void						createDialog(QString title,QString filepath,QSize sze=QSize(-1,-1));
@@ -124,10 +126,11 @@ class prefsClass
 
 	int						findByName(QHash<int,QString> section,QString name);
 
+	QString					bestFontColour(QString colour);
+
 	protected:
 	private:
 		//unsigned long		hashFromKey(QString key);//TODO//
-		QString				bestFontColour(QString colour);
 };
 
 #endif

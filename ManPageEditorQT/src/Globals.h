@@ -23,6 +23,7 @@
 
 #include <QUrl>
 
+#include <aspell.h>
 #include "qtincs.h"
 #include "internet.h"
 
@@ -56,6 +57,7 @@ struct manProps
 #include "QT_menuitem.h"
 #include "Callbacks.h"
 #include "ManpageConvert.h"
+
 
 extern ManPageEditorQT	*mpclass;
 

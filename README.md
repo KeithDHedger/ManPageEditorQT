@@ -16,8 +16,7 @@ USEQTVERSION=5 ./autogen.sh --prefix=/usr
 ```
 
 #### TODO
-Help pages.  
 
+Find/Replace  
 
-Spell check.  
 

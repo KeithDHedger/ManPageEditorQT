@@ -30,6 +30,10 @@ ManPageEditorQT::~ManPageEditorQT()
 {
 	QDir		fold(this->tmpFolderName);
 	fold.removeRecursively();
+
+	delete_aspell_config(this->aspellConfig);
+	delete_aspell_speller(this->spellChecker);
+	delete this->mpConv;
 }
 
 MenuItemClass* ManPageEditorQT::makeMenuItemClass(int mainmenu,const QString name,const QKeySequence key,const QString iconname,int userdata)
@@ -152,8 +156,16 @@ void ManPageEditorQT::buildMainGui(void)
 	this->copyMenuItem=this->makeMenuItemClass(EDITMENU,"Copy",QKeySequence::Copy,"edit-copy",COPYMENUITEM);
 //paste
 	this->pasteMenuItem=this->makeMenuItemClass(EDITMENU,"Paste",QKeySequence::Paste,"edit-paste",PASTEMENUITEM);
-//find
+
+	this->editMenu->addSeparator();
+
+//spellcheck
+	this->spellCheckMenuItem=this->makeMenuItemClass(EDITMENU,"Spell Check Section",0,"tools-check-spelling",SPELLCHECKMENUITEM);
+
+//find//TODO//
 	this->findMenuItem=this->makeMenuItemClass(EDITMENU,"Find",QKeySequence::Find,"edit-find",FINDMENUITEM);
+
+this->findMenuItem->setEnabled(false);
 
 	this->editMenu->addSeparator();
 
@@ -214,24 +226,146 @@ QTextEdit* ManPageEditorQT::makeNewTab(QString html,QString sectname,bool issub,
 
 	QObject::connect(te,&QTextEdit::cursorPositionChanged,[this,te]()
 		{
-			QTextCursor						cursor=te->textCursor();
-			QTextCharFormat					format;
-			QList<QTextEdit::ExtraSelection>	extraSelections;
-			QTextEdit::ExtraSelection		selection;
-
-	        format.setBackground(QColor(this->hiliteColour)); // Set highlight color
-			// Highlight the current line
-			selection.format = format;
-			selection.cursor = cursor;
-			selection.cursor.clearSelection();
-			selection.cursor.movePosition(QTextCursor::StartOfBlock);
-			selection.cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
-			extraSelections.append(selection);
-
-			// Apply the highlight
-			te->setExtraSelections(extraSelections);
+			this->hiliteLine(te,this->lineHiliteColour);
 		});
 	return(te);
+}
+
+void ManPageEditorQT::spellCheckDoc(QTextEdit *te)
+{
+	QString							qstr;
+	QTextCursor						cursor;
+	QByteArray						bytearray;
+	QTextCharFormat					format;
+	QList<QTextEdit::ExtraSelection>	extraSelections;
+	QString							form;
+	QString							opts;
+	QStringList						slist;
+	QTextEdit::ExtraSelection		selection;
+	AspellCanHaveError				*ret;
+	AspellDocumentChecker			*checker;
+	AspellToken						token;
+	AspellWordList					*suggestions;
+	AspellStringEnumeration			*elements;
+	char*							line;
+	int								docstart=0;
+	const char						*suggestedword;
+
+	cursor=te->textCursor();
+	qstr=te->toPlainText();
+	bytearray=qstr.toUtf8();
+	line=(char*)bytearray.constData();
+
+	/* Set up the document checker */
+	ret=new_aspell_document_checker(this->spellChecker);
+	if (aspell_error(ret)!=0)
+		{
+			printf("Error: %s\n",aspell_error_message(ret));
+			return;
+		}
+
+	checker=to_aspell_document_checker(ret);
+	  /* First process the line */
+	aspell_document_checker_process(checker,line,-1);
+	  /* Now find the misspellings in the line */
+
+	while(token=aspell_document_checker_next_misspelling(checker),token.len!=0)
+		{
+			prefsClass						newprefs;
+	    /* Pay particular attention to how token.offset and diff is used */
+			this->goodWord="";
+			this->cancelCheck=false;
+			this->returnWord=true;
+			cursor.setPosition(docstart+token.offset);
+			cursor.movePosition(QTextCursor::EndOfWord,QTextCursor::KeepAnchor);
+			this->badWord=cursor.selectedText();
+
+			extraSelections.clear();
+			format.setBackground(QColor(this->extraHiliteColour)); // Set highlight color
+			format.setForeground(QColor(newprefs.bestFontColour(this->extraHiliteColour))); // Set highlight color
+			selection.format=format;
+			selection.cursor=cursor;
+			selection.cursor.clearSelection();
+			selection.cursor.setPosition(docstart+token.offset);
+			selection.cursor.movePosition(QTextCursor::EndOfWord,QTextCursor::KeepAnchor);
+			extraSelections.append(selection);
+//			// Apply the highlight
+			te->setExtraSelections(extraSelections);
+
+			form="";
+			opts="";
+			slist.clear();
+
+			suggestions=(AspellWordList*)aspell_speller_suggest(spellChecker,this->badWord.toStdString().c_str(),-1);
+			elements=aspell_word_list_elements(suggestions);
+
+			while((suggestedword=aspell_string_enumeration_next(elements))!=NULL)
+				opts+=QString("%1@").arg(suggestedword);
+			delete_aspell_string_enumeration(elements);
+
+			if(opts.isEmpty()==true)
+				continue;
+			//no default entry
+			opts="@"+opts;
+			form=QString("edit@Unknown Word@%2@combostart@Correct Word To@%1comboend@").arg(opts).arg(this->badWord);
+
+			QDialogButtonBox::StandardButton	dbutton=(QDialogButtonBox::StandardButton)((int)QDialogButtonBox::Close|(int)QDialogButtonBox::Ignore|(int)QDialogButtonBox::Apply);
+
+			newprefs.paged=false;
+			newprefs.useSavedPrefs=false;
+			newprefs.bb->setStandardButtons(dbutton);
+			newprefs.dialogPrefs.valid=false;
+
+			slist=form.split('@');
+			newprefs.createDialog(QString("Spell Check"),slist,QSize(400,-1));
+			if(newprefs.dialogPrefs.valid==true)
+				{
+					if(newprefs.button==QDialogButtonBox::Apply)
+						{
+							comboTuple ct=newprefs.getComboValue("Correct Word To");
+							cursor.insertText(ct.value);
+							qstr=te->toPlainText();
+							bytearray=qstr.toUtf8();
+							line=(char*)bytearray.constData();
+							aspell_document_checker_process(checker,line,-1);
+							continue;
+						}
+
+					if(newprefs.button==QDialogButtonBox::Close)
+						{
+							delete_aspell_document_checker(checker);
+							this->hiliteLine(te,this->lineHiliteColour);
+							return;
+						}
+
+					if(newprefs.button==QDialogButtonBox::Ignore)
+						{
+							this->hiliteLine(te,this->lineHiliteColour);
+							aspell_speller_add_to_session(this->spellChecker,this->badWord.toStdString().c_str(),-1);
+							continue;
+						}
+				}
+		}		
+	delete_aspell_document_checker(checker);
+}
+
+void ManPageEditorQT::hiliteLine(QTextEdit *te,QColor colour)
+{
+	QTextCursor						cursor=te->textCursor();
+	QTextCharFormat					format;
+	QList<QTextEdit::ExtraSelection>	extraSelections;
+	QTextEdit::ExtraSelection		selection;
+
+	format.setBackground(QColor(colour)); // Set highlight color
+	// Highlight the current line
+	selection.format=format;
+	selection.cursor=cursor;
+	selection.cursor.clearSelection();
+	selection.cursor.movePosition(QTextCursor::StartOfBlock);
+	selection.cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
+	extraSelections.append(selection);
+	// Apply the highlight
+	te->setExtraSelections(extraSelections);
 }
 
 void ManPageEditorQT::initApp(void)
@@ -279,6 +413,15 @@ void ManPageEditorQT::initApp(void)
 			this->buildSectionProps(ss,issub,false);
 		});
 
+	AspellCanHaveError	*possible_err;
+	this->aspellConfig=new_aspell_config();
+	possible_err=new_aspell_speller(this->aspellConfig);
+
+	if(aspell_error_number(possible_err)!= 0)
+		puts(aspell_error_message(possible_err));
+	else
+		this->spellChecker=to_aspell_speller(possible_err);
+//
 //TODO//
 
 //	this->buildFindReplace();
@@ -713,7 +856,7 @@ void ManPageEditorQT::doPrefs(void)
 	newprefs.autoshowDialog=true;
 	newprefs.dialogPrefs.valid=false;
 
-	newprefs.createDialog("ManpageQT Prefs",QString("%1/%2").arg(DATADIR).arg("docs/prefs.config"));
+	newprefs.createDialog("ManpageQT Prefs",QString("%1/%2").arg(DATADIR).arg("docs/prefs.config"),QSize(450,-1));
 	if(newprefs.dialogPrefs.valid==true)
 		{
 			newprefs.saveCurrentPrefs();
@@ -731,7 +874,11 @@ void ManPageEditorQT::doPrefs(void)
 
 			st=newprefs.getStringValue("highlight_colour");
 				if(st.valid==true)
-					mpclass->hiliteColour=st.value;
+					mpclass->lineHiliteColour=st.value;
+
+			st=newprefs.getStringValue("extra_highlight_colour");
+				if(st.valid==true)
+					mpclass->extraHiliteColour=st.value;
 
 			bt=newprefs.getBoolValue("italic_as_underline");
 			if(bt.valid==true)
