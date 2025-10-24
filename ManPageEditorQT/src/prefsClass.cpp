@@ -53,9 +53,11 @@ prefsClass::~prefsClass()
 /**
 * this->dialogPrefsClass.
 */
-prefsClass::prefsClass()
+prefsClass::prefsClass(QString prefsname)
 {
 	this->bb=new QDialogButtonBox(QDialogButtonBox::NoButton);
+	this->dialogTitle=prefsname.trimmed();
+	this->prefsEntry=prefsname.toLower().trimmed().replace(" ","_");
 }
 
 QString prefsClass::bestFontColour(QString colour)
@@ -72,63 +74,6 @@ QString prefsClass::bestFontColour(QString colour)
 	else
 		return("white");
 }
-
-#if 0
-unsigned long prefsClass::hashFromKey(QString key)
-{
-	unsigned long hash=0;
-
-	for(int i=0;i<key.length();i++)
-		hash=31*hash+key.at(i).toLatin1();
-
-	return(hash);
-}
-
-void prefsClass::setPrefValue(QString name,QVariant val)
-{
-	this->prefsData[this->hashFromKey(name)]=val;
-}
-
-QVariant prefsClass::getPrefValue(QString name)
-{
-	return(this->prefsData.value(this->hashFromKey(name)));
-}
-
-void prefsClass::writePrefs(void)
-{
-	QSettings	defaults;
-
-	for(int j=0;j<this->prefsData.size();j++)
-		{
-			defaults.setValue(this->prefsNames.at(j),this->prefsData.value(this->hashFromKey(this->prefsNames.at(j))));
-		}
-}
-
-void prefsClass::readPrefs(void)
-{
-	QSettings	defaults;
-
-	for(int j=0;j<this->prefsData.size();j++)
-		{
-			this->prefsData[this->hashFromKey(this->prefsNames.at(j))]=defaults.value(this->prefsNames.at(j),this->prefsData.value(this->hashFromKey(this->prefsNames.at(j))));
-		}
-}
-
-void prefsClass::setPrefs(QStringList items)
-{
-	int			j=0;
-	QSettings	defaults;
-
-	this->prefsNames=items;
-	this->prefsData.clear();
-
-	while(j<items.size())
-		{
-			this->prefsData[this->hashFromKey(items.at(j))]=QVariant(0);
-			j++;
-		}
-}
-#endif
 
 void prefsClass::printCurrentPrefs()
 {
@@ -213,10 +158,6 @@ stringTuple prefsClass::getEditValue(QString prefsname)
 
 comboTuple prefsClass::getComboValue(QString prefsname)
 {
-//	QSettings defaults;
-//
-//	if(defaults.contains(prefsname))
-//		return((comboTuple){defaults.value(prefsname).toString(),-1,true});				
 	if(this->dialogPrefs.valid==true)
 		{
 			int what=-1;
@@ -324,74 +265,105 @@ void prefsClass::createDialog(QString title,QStringList items,QSize sze)
 	QHBoxLayout				*hlayout=NULL;
 	QString					prefsentry;
 	QSettings				defaults;
-	int						j=0;
 	QString					labelstr;
 	QFrame					f;
 	QTabWidget				*tabbar=NULL;
+	bool						noadd=false;
+	int						j=0;
 
 	f.setFrameStyle(QFrame::HLine|QFrame::Plain);
-	this->dialogPrefs.theDialog=new QDialog();
-	this->dialogPrefs.theDialog->setWindowTitle(title);
-
-	if(this->useSavedPrefs==true)
-		this->dialogPrefs.theDialog->setGeometry(defaults.value(QString("%1_%2").arg(qApp->applicationName()).arg(title)).toRect());
-
-	if(this->paged==true)
+	if(this->reUseDialog==false || this->dialogPrefs.theDialog==NULL)
 		{
-			tabbar=new QTabWidget(nullptr);
-			
-			mainvlayout->setContentsMargins(0,0,0,0);
-			mainvlayout->addWidget(tabbar);
-			this->dialogPrefs.theDialog->setLayout(mainvlayout);
-	}
+			this->dialogPrefs.theDialog=new QDialog();
+		}
 	else
 		{
-			docvlayout=new QVBoxLayout;
-			this->dialogPrefs.theDialog->setLayout(mainvlayout);
-			mainvlayout->addLayout(docvlayout);
+			noadd=true;
+			for(int q=0;q<this->dialogPrefs.comboBoxCnt;q++)
+				this->dialogPrefs.comboBoxes[q]->clear();
+			this->dialogPrefs.comboBoxCnt=0;
+			this->dialogPrefs.editBoxCnt=0;
+		}
+	this->dialogPrefs.theDialog->setWindowTitle(this->dialogTitle);
+
+	if(this->useSavedPrefs==true && noadd==false)
+		this->dialogPrefs.theDialog->setGeometry(defaults.value(QString("%1").arg(this->prefsEntry)).toRect());
+
+	if(noadd==false)
+		{
+			if(this->paged==true)
+				{
+					tabbar=new QTabWidget(nullptr);
+					mainvlayout->setContentsMargins(0,0,0,0);
+					mainvlayout->addWidget(tabbar);
+					this->dialogPrefs.theDialog->setLayout(mainvlayout);
+				}
+			else
+				{
+					docvlayout=new QVBoxLayout;
+					this->dialogPrefs.theDialog->setLayout(mainvlayout);
+					mainvlayout->addLayout(docvlayout);
+				}
 		}
 
 	j=0;
 	while(j<items.size())
 		{
 			//new page
-			if((this->paged==true) && (items.at(j).compare("page")==0))
+			if(noadd==false)
 				{
-					QWidget	*vbox;
-					hbox=new QWidget;
-					if(docvlayout!=NULL)
-						docvlayout->addWidget(hbox,1);
-					docvlayout=new QVBoxLayout;
-					j++;
-					labelstr=items.at(j).trimmed();
-					vbox=new QWidget;
-					vbox->setLayout(docvlayout);
-					tabbar->addTab(vbox,QIcon(""),labelstr);
+					if((this->paged==true) && (items.at(j).compare("page")==0))
+						{
+							QWidget	*vbox;
+							hbox=new QWidget;
+							if(docvlayout!=NULL)
+								docvlayout->addWidget(hbox,1);
+							docvlayout=new QVBoxLayout;
+							j++;
+							labelstr=items.at(j).trimmed();
+							vbox=new QWidget;
+							vbox->setLayout(docvlayout);
+							tabbar->addTab(vbox,QIcon(""),labelstr);
+						}
 				}
 
 			//edits
 			if(items.at(j).compare("edit")==0)
 				{
-					hbox=new QWidget;
-					hlayout=new QHBoxLayout;
-					hlayout->setContentsMargins(0,0,0,0);
-					hbox->setLayout(hlayout);
+					if(noadd==false)
+						{
+							hbox=new QWidget;
+							hlayout=new QHBoxLayout;
+							hlayout->setContentsMargins(0,0,0,0);
+							hbox->setLayout(hlayout);
+						}
 					j++;
 					labelstr=items.at(j).trimmed();
 					prefsentry=labelstr;
 					labelstr=labelstr.mid(labelstr.lastIndexOf("/")+1,-1);
-					hlayout->addWidget(new QLabel(labelstr),1);
+
+					if(noadd==false)
+						hlayout->addWidget(new QLabel(labelstr),1);
+
 					prefsentry.replace(" ","_");
 					this->dialogPrefs.editBoxesPrefsName[this->dialogPrefs.editBoxCnt]=prefsentry.toLower();
 					j++;
-					this->dialogPrefs.editBoxes[this->dialogPrefs.editBoxCnt]=new QLineEdit(defaults.value(this->dialogPrefs.editBoxesPrefsName[this->dialogPrefs.editBoxCnt],items.at(j)).toString());
-					hlayout->addWidget(this->dialogPrefs.editBoxes[this->dialogPrefs.editBoxCnt],RITESTRETCH);
-					docvlayout->addWidget(hbox,0);
+
+					if(noadd==false)
+						this->dialogPrefs.editBoxes[this->dialogPrefs.editBoxCnt]=new QLineEdit(defaults.value(this->dialogPrefs.editBoxesPrefsName[this->dialogPrefs.editBoxCnt],items.at(j)).toString());
+					else
+						this->dialogPrefs.editBoxes[this->dialogPrefs.editBoxCnt]->setText(items.at(j));
+
+					if(noadd==false)
+						{
+							hlayout->addWidget(this->dialogPrefs.editBoxes[this->dialogPrefs.editBoxCnt],RITESTRETCH);
+							docvlayout->addWidget(hbox,0);
+						}
 					this->dialogPrefs.editBoxes[this->dialogPrefs.editBoxCnt]->setCursorPosition(0);
 					this->dialogPrefs.editBoxCnt++;
 				}
 
-			//spin boxes
+			//spin boxes//TODO//
 			if(items.at(j).compare("spinner")==0)
 				{
 					hbox=new QWidget;
@@ -424,17 +396,24 @@ void prefsClass::createDialog(QString title,QStringList items,QSize sze)
 			//combo
 			if(items.at(j).compare("combostart")==0)
 				{
-					hbox=new QWidget;
-					hlayout=new QHBoxLayout;
-					hlayout->setContentsMargins(0,0,0,0);
-					hbox->setLayout(hlayout);
+					if(noadd==false)
+						{
+							hbox=new QWidget;
+							hlayout=new QHBoxLayout;
+							hlayout->setContentsMargins(0,0,0,0);
+							hbox->setLayout(hlayout);
+						}
 					j++;
 					labelstr=items.at(j);
 					prefsentry=labelstr;
 					labelstr=labelstr.mid(labelstr.lastIndexOf("/")+1,-1);
-					hlayout->addWidget(new QLabel(labelstr),1);
-					this->dialogPrefs.comboBoxes[this->dialogPrefs.comboBoxCnt]=new QComboBox();
+					if(noadd==false)
+						{
+							hlayout->addWidget(new QLabel(labelstr),1);
+							this->dialogPrefs.comboBoxes[this->dialogPrefs.comboBoxCnt]=new QComboBox();
+						}
 					prefsentry.replace(" ","_");
+					
 					this->dialogPrefs.comboBoxesPrefsName[this->dialogPrefs.comboBoxCnt]=prefsentry.toLower();
 					j++;
 					QString defstr=items.at(j).trimmed();
@@ -447,12 +426,16 @@ void prefsClass::createDialog(QString title,QStringList items,QSize sze)
 					this->dialogPrefs.comboBoxes[this->dialogPrefs.comboBoxCnt]->setCurrentText(defstr);
 					this->dialogPrefs.comboBoxes[this->dialogPrefs.comboBoxCnt]->setCurrentText(defaults.value(this->dialogPrefs.comboBoxesPrefsName[this->dialogPrefs.comboBoxCnt],items.at(j)).toString());
 					this->dialogPrefs.comboBoxes[this->dialogPrefs.comboBoxCnt]->setMinimumSize(1,1);
-					hlayout->addWidget(this->dialogPrefs.comboBoxes[this->dialogPrefs.comboBoxCnt],RITESTRETCH);
-					docvlayout->addWidget(hbox);
+
+					if(noadd==false)
+						{
+							hlayout->addWidget(this->dialogPrefs.comboBoxes[this->dialogPrefs.comboBoxCnt],RITESTRETCH);
+							docvlayout->addWidget(hbox);
+						}
 					this->dialogPrefs.comboBoxCnt++;
 				}
 
-			//checkboxes
+			//checkboxes//TODO//
 			if(items.at(j).compare("check")==0)
 				{
 					hbox=new QWidget;
@@ -473,7 +456,7 @@ void prefsClass::createDialog(QString title,QStringList items,QSize sze)
 					this->dialogPrefs.checkBoxCnt++;
 				}
 
-			//colours
+			//colours//TODO//
 			if(items.at(j).compare("colour")==0)
 				{
 					hbox=new QWidget;
@@ -523,7 +506,7 @@ void prefsClass::createDialog(QString title,QStringList items,QSize sze)
 					this->dialogPrefs.colourBoxCnt++;
 				}
 
-			//font
+			//font//TODO//
 			if(items.at(j).compare("font")==0)
 				{
 					QWidget		*hbox2=new QWidget;
@@ -577,7 +560,7 @@ void prefsClass::createDialog(QString title,QStringList items,QSize sze)
 					this->dialogPrefs.fontBoxCnt++;
 				}
 
-			//load files
+			//load files//TODO//
 			if(items.at(j).compare("file")==0)
 				{
 					QWidget		*hbox2=new QWidget;
@@ -620,7 +603,7 @@ void prefsClass::createDialog(QString title,QStringList items,QSize sze)
 					this->dialogPrefs.fileBoxCnt++;
 				}
 
-			//select folders
+			//select folders//TODO//
 			if(items.at(j).compare("folder")==0)
 				{
 					QWidget		*hbox2=new QWidget;
@@ -664,7 +647,7 @@ void prefsClass::createDialog(QString title,QStringList items,QSize sze)
 					this->dialogPrefs.fileBoxCnt++;
 				}
 
-			//save files
+			//save files//TODO//
 			if(items.at(j).compare("save")==0)
 				{
 					QWidget		*hbox2=new QWidget;
@@ -709,50 +692,60 @@ void prefsClass::createDialog(QString title,QStringList items,QSize sze)
 			j++;
 		}
 
-	if(this->paged==true)
+	if(noadd==false)
 		{
-			hbox=new QWidget;
-			docvlayout->addWidget(hbox,1);
-		}
-
-	QObject::connect(this->bb,&QDialogButtonBox::clicked,[this,&title](QAbstractButton *button)//TODO//
-		{
-			QSettings	defaults;
-			QRect		rf,rg;
-			rg=this->dialogPrefs.theDialog->geometry();
-			rf=this->dialogPrefs.theDialog->frameGeometry();
-			rf.setHeight(rf.height()-(rf.height()-rg.height()));
-			rf.setWidth(rf.width()-(rf.width()-rg.width()));
-			defaults.setValue(QString("%1_%2").arg(qApp->applicationName()).arg(title),rf);
-
-			switch(this->bb->standardButton(button))
+			if(this->paged==true)
 				{
-					case QDialogButtonBox::Ok:
-						{
-							this->dialogPrefs.theDialog->accept();
-							this->dialogPrefs.valid=true;
-						}
-						break;
-					default:
-						this->button=this->bb->standardButton(button);
-						this->dialogPrefs.theDialog->close();
-						this->dialogPrefs.valid=true;
-						break;
+					hbox=new QWidget;
+					docvlayout->addWidget(hbox,1);
 				}
-		});
 
-	if(this->paged==false)
-		{
-			mainvlayout->addWidget(&f);
-			mainvlayout->addWidget(this->bb);
+			QObject::connect(this->bb,&QDialogButtonBox::clicked,[this](QAbstractButton *button)//TODO//
+				{
+					QSettings	defaults;
+					QRect		rf,rg;
+					rg=this->dialogPrefs.theDialog->geometry();
+					rf=this->dialogPrefs.theDialog->frameGeometry();
+					rf.setHeight(rf.height()-(rf.height()-rg.height()));
+					rf.setWidth(rf.width()-(rf.width()-rg.width()));
+					defaults.setValue(QString("%1").arg(this->prefsEntry),rf);
+
+					switch(this->bb->standardButton(button))
+						{
+							case QDialogButtonBox::Cancel:
+								{
+									this->dialogPrefs.theDialog->reject();
+									this->dialogPrefs.valid=false;
+								}
+								break;
+
+							case QDialogButtonBox::Ok:
+								{
+									this->dialogPrefs.theDialog->accept();
+									this->dialogPrefs.valid=true;
+								}
+								break;
+							default:
+								this->button=this->bb->standardButton(button);
+								this->dialogPrefs.valid=true;
+								break;
+						}
+				});
+
+			if(this->paged==false)
+				{
+					mainvlayout->addWidget(&f);
+					mainvlayout->addWidget(this->bb);
+				}
+			else
+				{
+					mainvlayout->addWidget(this->bb);
+					mainvlayout->addSpacing(8);
+				}
 		}
-	else
-		{
-			mainvlayout->addWidget(this->bb);
-			mainvlayout->addSpacing(8);
-		}
+		
 //TODO//
-	if(this->useSavedPrefs==false)
+	if(this->useSavedPrefs==false && noadd==false)
 		{
 			QSize tsze(this->dialogPrefs.theDialog->sizeHint());
 			if(sze.width()!=-1)
@@ -760,13 +753,18 @@ void prefsClass::createDialog(QString title,QStringList items,QSize sze)
 			if(sze.height()!=-1)
 				tsze.setHeight(sze.height());
 			
-			this->dialogPrefs.theDialog->setGeometry(defaults.value(QString("%1_%2").arg(qApp->applicationName()).arg(title)).toRect());
+			this->dialogPrefs.theDialog->setGeometry(defaults.value(QString("%1_%2").arg(qApp->applicationName()).arg(this->prefsEntry)).toRect());
 			if((sze.width()!=1) || (sze.height()!=-1))
 				this->dialogPrefs.theDialog->resize(tsze);
 		}
 
 	if(this->autoshowDialog==true)
-		this->dialogPrefs.theDialog->exec();
+		{
+			if(this->reUseDialog==false)
+				this->dialogPrefs.theDialog->exec();
+			else
+				this->dialogPrefs.theDialog->show();
+		}
 }
 
 QSize prefsClass::adjustBoxSize(int defw,int defy)

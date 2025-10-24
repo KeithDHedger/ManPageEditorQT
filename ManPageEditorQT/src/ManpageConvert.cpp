@@ -145,7 +145,7 @@ void ManpageConvertClass::exportManpage(QString filepath,bool nozip)
 	QFile data(filepath);
 	if(data.open(QFile::WriteOnly|QFile::Truncate))
 		{
-			prefsClass	newprefs;
+			prefsClass	newprefs(QString("%1").arg(PACKAGE_NAME));
 			boolTuple	bt;
 			QTextStream	out(&data);
 			out<<prevpage;

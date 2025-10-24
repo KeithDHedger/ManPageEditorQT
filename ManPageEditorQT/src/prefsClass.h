@@ -52,7 +52,6 @@ struct prefsReturnStruct
 	QHash<int,QLineEdit*>	fileBoxes;
 	QHash<int,QString>		fileBoxesPrefsName;
 	int						fileBoxCnt=0;
-
 	bool						valid=false;
 };
 
@@ -86,7 +85,7 @@ struct spinTuple
 class prefsClass
 {
 	public:
-		prefsClass();
+		prefsClass(QString prefsname);
 		~prefsClass();
 
 	prefsReturnStruct		dialogPrefs;
@@ -96,6 +95,8 @@ class prefsClass
 	QDialogButtonBox			*bb=NULL;
 	bool						autoshowDialog=true;
 	bool						useSavedPrefs=true;
+	QString					dialogTitle;
+	QString					prefsEntry;
 	int						button=QDialogButtonBox::NoButton;
 
 	bool						reUseDialog=false;
@@ -104,12 +105,6 @@ class prefsClass
 	void						createDialog(QString title,QString filepath,QSize sze=QSize(-1,-1));
 	QSize					adjustBoxSize(int defw,int defy);
 
-
-//	void						setPrefs(QStringList items);//TODO//
-//	void						setPrefValue(QString name,QVariant val);//TODO//
-//	QVariant					getPrefValue(QString name);//TODO//
-//	void						writePrefs(void);//TODO//
-//	void						readPrefs(void);//TODO//
 	void						printCurrentPrefs(void);
 	void						saveCurrentPrefs(void);
 
@@ -132,7 +127,6 @@ class prefsClass
 
 	protected:
 	private:
-		//unsigned long		hashFromKey(QString key);//TODO//
 };
 
 #endif

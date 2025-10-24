@@ -251,6 +251,9 @@ void ManPageEditorQT::spellCheckDoc(QTextEdit *te)
 	char*							line;
 	int								docstart=0;
 	const char						*suggestedword;
+	prefsClass						newprefs(QString("%1").arg("Spell Check"));
+
+	newprefs.reUseDialog=true;
 
 	cursor=te->textCursor();
 	qstr=te->toPlainText();
@@ -270,9 +273,9 @@ void ManPageEditorQT::spellCheckDoc(QTextEdit *te)
 	aspell_document_checker_process(checker,line,-1);
 	  /* Now find the misspellings in the line */
 
+
 	while(token=aspell_document_checker_next_misspelling(checker),token.len!=0)
 		{
-			prefsClass						newprefs;
 	    /* Pay particular attention to how token.offset and diff is used */
 			this->goodWord="";
 			this->cancelCheck=false;
@@ -323,39 +326,47 @@ void ManPageEditorQT::spellCheckDoc(QTextEdit *te)
 			QDialogButtonBox::StandardButton	dbutton=(QDialogButtonBox::StandardButton)((int)QDialogButtonBox::Close|(int)QDialogButtonBox::Ignore|(int)QDialogButtonBox::Apply);
 
 			newprefs.paged=false;
-			newprefs.useSavedPrefs=false;
+			newprefs.useSavedPrefs=true;
 			newprefs.bb->setStandardButtons(dbutton);
 			newprefs.dialogPrefs.valid=false;
 
 			slist=form.split('@');
-			newprefs.createDialog(QString("Spell Check"),slist,QSize(400,-1));//TODO//
-			//newprefs.createDialog(QString("Spell Check"),slist);
+			newprefs.createDialog(QString("Spell Check"),slist);
 
-			if(newprefs.dialogPrefs.valid==true)
+			bool flag=true;
+			while(flag==true)
 				{
-					if(newprefs.button==QDialogButtonBox::Apply)
+					qApp->processEvents();
+					if(newprefs.dialogPrefs.valid==true)
 						{
-							comboTuple ct=newprefs.getComboValue("Correct Word To");
-							cursor.insertText(ct.value);
-							qstr=te->toPlainText();
-							bytearray=qstr.toUtf8();
-							line=(char*)bytearray.constData();
-							aspell_document_checker_process(checker,line,-1);
-							continue;
-						}
+							if(newprefs.button==QDialogButtonBox::Apply)
+								{
+									comboTuple ct=newprefs.getComboValue("Correct Word To");
+									cursor.insertText(ct.value);
+									qstr=te->toPlainText();
+									bytearray=qstr.toUtf8();
+									line=(char*)bytearray.constData();
+									aspell_document_checker_process(checker,line,-1);
+									newprefs.dialogPrefs.valid=false;
+									flag=false;
+									continue;
+								}
 
-					if(newprefs.button==QDialogButtonBox::Close)
-						{
-							delete_aspell_document_checker(checker);
-							this->hiliteLine(te,this->lineHiliteColour);
-							return;
-						}
+							if(newprefs.button==QDialogButtonBox::Close)
+								{
+									delete_aspell_document_checker(checker);
+									this->hiliteLine(te,this->lineHiliteColour);
+									return;
+								}
 
-					if(newprefs.button==QDialogButtonBox::Ignore)
-						{
-							this->hiliteLine(te,this->lineHiliteColour);
-							aspell_speller_add_to_session(this->spellChecker,this->badWord.toStdString().c_str(),-1);
-							continue;
+							if(newprefs.button==QDialogButtonBox::Ignore)
+								{
+									this->hiliteLine(te,this->lineHiliteColour);
+									aspell_speller_add_to_session(this->spellChecker,this->badWord.toStdString().c_str(),-1);
+									newprefs.dialogPrefs.valid=false;
+									flag=false;
+									continue;
+								}
 						}
 				}
 		}		
@@ -438,22 +449,6 @@ void ManPageEditorQT::initApp(void)
 //TODO//
 
 //	this->buildFindReplace();
-//#ifdef _ASPELL_
-//	AspellCanHaveError	*possible_err;
-//	this->aspellConfig=new_aspell_config();
-//	possible_err=new_aspell_speller(this->aspellConfig);
-//
-//	if(aspell_error_number(possible_err)!= 0)
-//		puts(aspell_error_message(possible_err));
-//	else
-//		spellChecker=to_aspell_speller(possible_err);
-//
-//	this->spellCheckMenuItem=new MenuItemClass("Spell Check");
-//	QIcon	itemicon=QIcon::fromTheme("tools-check-spelling");
-//	this->spellCheckMenuItem->setMenuID(SPELLCHECKMENUITEM);
-//	this->spellCheckMenuItem->setIcon(itemicon);
-//	QObject::connect(this->spellCheckMenuItem,SIGNAL(triggered()),this,SLOT(doOddMenuItems()));
-//	this->buildSpellCheckerGUI();
 //#endif
 //
 	r=this->prefs.value("app/geometry",QVariant(QRect(50,50,1024,768))).value<QRect>();
@@ -860,7 +855,7 @@ void ManPageEditorQT::doPreView(void)
 
 void ManPageEditorQT::doPrefs(void)
 {
-	prefsClass	newprefs;
+	prefsClass	newprefs(QString("%1").arg("Preferences"));
 
 	QDialogButtonBox::StandardButton	dbutton=(QDialogButtonBox::StandardButton)((int)QDialogButtonBox::Ok|(int)QDialogButtonBox::Cancel);
 
@@ -875,7 +870,6 @@ void ManPageEditorQT::doPrefs(void)
 			newprefs.saveCurrentPrefs();
 	
 			QTextEdit	*te;
-			prefsClass	newprefs;
 			stringTuple	st;
 			boolTuple	bt;
 			QString		fh;
@@ -944,6 +938,7 @@ void ManPageEditorQT::doPrefs(void)
 		}
 }
 
+//TODO//
 #if 0
 
 void ManPageEditorQT::setToolbarSensitive(void)

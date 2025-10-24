@@ -24,7 +24,7 @@ int main(int argc, char **argv)
 {
 	int				status;
 	QApplication		app(argc,argv);
-	prefsClass		newprefs;
+	prefsClass		newprefs(QString("%1").arg(PACKAGE_NAME));
 	stringTuple		st;
 	boolTuple		bt;
 
