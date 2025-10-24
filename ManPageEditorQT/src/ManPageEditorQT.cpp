@@ -241,6 +241,7 @@ void ManPageEditorQT::spellCheckDoc(QTextEdit *te)
 	QString							form;
 	QString							opts;
 	QStringList						slist;
+	QTextCursor						mc;
 	QTextEdit::ExtraSelection		selection;
 	AspellCanHaveError				*ret;
 	AspellDocumentChecker			*checker;
@@ -288,6 +289,16 @@ void ManPageEditorQT::spellCheckDoc(QTextEdit *te)
 			selection.cursor.clearSelection();
 			selection.cursor.setPosition(docstart+token.offset);
 			selection.cursor.movePosition(QTextCursor::EndOfWord,QTextCursor::KeepAnchor);
+
+//move selection into view
+			mc=selection.cursor;
+			mc.movePosition(QTextCursor::NextBlock,QTextCursor::MoveAnchor,2);
+			mc.movePosition(QTextCursor::StartOfBlock);
+			te->setTextCursor(mc);
+			mc.movePosition(QTextCursor::PreviousBlock,QTextCursor::MoveAnchor,2);
+			mc.movePosition(QTextCursor::StartOfBlock);
+			te->setTextCursor(mc);
+
 			extraSelections.append(selection);
 //			// Apply the highlight
 			te->setExtraSelections(extraSelections);
@@ -317,7 +328,9 @@ void ManPageEditorQT::spellCheckDoc(QTextEdit *te)
 			newprefs.dialogPrefs.valid=false;
 
 			slist=form.split('@');
-			newprefs.createDialog(QString("Spell Check"),slist,QSize(400,-1));
+			newprefs.createDialog(QString("Spell Check"),slist,QSize(400,-1));//TODO//
+			//newprefs.createDialog(QString("Spell Check"),slist);
+
 			if(newprefs.dialogPrefs.valid==true)
 				{
 					if(newprefs.button==QDialogButtonBox::Apply)

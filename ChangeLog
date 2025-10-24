@@ -1,4 +1,5 @@
 0.2.0
+Save spell check dialog.
 Updated help.
 Done spellcheck.
 Removed system and popen calls.

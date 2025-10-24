@@ -334,7 +334,7 @@ void prefsClass::createDialog(QString title,QStringList items,QSize sze)
 	this->dialogPrefs.theDialog->setWindowTitle(title);
 
 	if(this->useSavedPrefs==true)
-		this->dialogPrefs.theDialog->setGeometry(defaults.value(QString("%1_%2").arg(qApp->applicationName()).arg("prefsgeometry"),QRect(100,100,320,128)).toRect());
+		this->dialogPrefs.theDialog->setGeometry(defaults.value(QString("%1_%2").arg(qApp->applicationName()).arg(title)).toRect());
 
 	if(this->paged==true)
 		{
@@ -715,22 +715,20 @@ void prefsClass::createDialog(QString title,QStringList items,QSize sze)
 			docvlayout->addWidget(hbox,1);
 		}
 
-	QObject::connect(this->bb,&QDialogButtonBox::clicked,[this](QAbstractButton *button)//TODO//
+	QObject::connect(this->bb,&QDialogButtonBox::clicked,[this,&title](QAbstractButton *button)//TODO//
 		{
+			QSettings	defaults;
+			QRect		rf,rg;
+			rg=this->dialogPrefs.theDialog->geometry();
+			rf=this->dialogPrefs.theDialog->frameGeometry();
+			rf.setHeight(rf.height()-(rf.height()-rg.height()));
+			rf.setWidth(rf.width()-(rf.width()-rg.width()));
+			defaults.setValue(QString("%1_%2").arg(qApp->applicationName()).arg(title),rf);
+
 			switch(this->bb->standardButton(button))
 				{
 					case QDialogButtonBox::Ok:
 						{
-							QSettings	defaults;
-							QRect		rf,rg;
-							if(this->useSavedPrefs==true)
-								{
-									rg=this->dialogPrefs.theDialog->geometry();
-									rf=this->dialogPrefs.theDialog->frameGeometry();
-									rf.setHeight(rf.height()-(rf.height()-rg.height()));
-									rf.setWidth(rf.width()-(rf.width()-rg.width()));
-									defaults.setValue(QString("%1_%2").arg(qApp->applicationName()).arg("prefsgeometry"),rf);
-								}
 							this->dialogPrefs.theDialog->accept();
 							this->dialogPrefs.valid=true;
 						}
@@ -753,13 +751,19 @@ void prefsClass::createDialog(QString title,QStringList items,QSize sze)
 			mainvlayout->addWidget(this->bb);
 			mainvlayout->addSpacing(8);
 		}
-
-	QSize tsze(this->dialogPrefs.theDialog->sizeHint());
-	if(sze.width()!=-1)
-		tsze.setWidth(sze.width());
-	if(sze.height()!=-1)
-		tsze.setHeight(sze.height());
-	this->dialogPrefs.theDialog->resize(tsze);
+//TODO//
+	if(this->useSavedPrefs==false)
+		{
+			QSize tsze(this->dialogPrefs.theDialog->sizeHint());
+			if(sze.width()!=-1)
+				tsze.setWidth(sze.width());
+			if(sze.height()!=-1)
+				tsze.setHeight(sze.height());
+			
+			this->dialogPrefs.theDialog->setGeometry(defaults.value(QString("%1_%2").arg(qApp->applicationName()).arg(title)).toRect());
+			if((sze.width()!=1) || (sze.height()!=-1))
+				this->dialogPrefs.theDialog->resize(tsze);
+		}
 
 	if(this->autoshowDialog==true)
 		this->dialogPrefs.theDialog->exec();
