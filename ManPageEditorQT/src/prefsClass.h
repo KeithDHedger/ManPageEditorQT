@@ -98,6 +98,8 @@ class prefsClass
 	bool						useSavedPrefs=true;
 	int						button=QDialogButtonBox::NoButton;
 
+	bool						reUseDialog=false;
+
 	void						createDialog(QString title,QStringList items,QSize sze=QSize(-1,-1));
 	void						createDialog(QString title,QString filepath,QSize sze=QSize(-1,-1));
 	QSize					adjustBoxSize(int defw,int defy);
