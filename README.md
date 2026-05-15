@@ -2,6 +2,7 @@
 A manpage editor for QT  
 I now consider this usable, but please make backups when changing man pages.  
 
+There is an AppImage in releases, tested on mint and void.
 
 ### Compile
 ```
