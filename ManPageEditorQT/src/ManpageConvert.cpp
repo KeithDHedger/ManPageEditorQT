@@ -19,6 +19,7 @@
 */
 
 #include "ManpageConvert.h"
+#include "QT_ManpageExporter.h"
 
 ManpageConvertClass::~ManpageConvertClass()
 {
@@ -99,48 +100,19 @@ QString ManpageConvertClass::buildOpenSystemPage(void)
 
 void ManpageConvertClass::exportManpage(QString filepath,bool nozip)
 {
-	QString	prevpage=this->mainClass->getProperties(this->manString);
-
-	prevpage+="\n";
-
+	QString	manpage=this->mainClass->getProperties(this->manString);
+	QString os="";
+	
 	for(int j=0;j<this->mainClass->mainNotebook->count();j++)
 		{
-			QTextEdit	*te=this->mainClass->getDocumentForTab(j);
-			prevpage+="\n"+te->statusTip()+"\n";
-			QStringList ss=te->toHtml().split("\n");
-			for(int j=0;j<ss.size();j++)
-				{
-					if(ss.at(j).startsWith("<p style="))
-						{
-							QString res1=ss.at(j);
-
-							res1=res1.replace(QRegularExpression(R"RX(<br.*/>)RX",QRegularExpression::InvertedGreedinessOption),"\n.br\n");
-							res1=res1.replace(QRegularExpression(R"RX(&quot;)RX",QRegularExpression::InvertedGreedinessOption),"\"");
-							res1=res1.replace(QRegularExpression(R"RX(&lt;)RX",QRegularExpression::InvertedGreedinessOption),"<");
-							res1=res1.replace(QRegularExpression(R"RX(&gt;)RX",QRegularExpression::InvertedGreedinessOption),">");
-
-							res1=res1.replace(QRegularExpression(R"RX(<span style=" font-weight:.*;">(.*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fB\\1\\fR");
-							res1=res1.replace(QRegularExpression(R"RX(<span style=" text-decoration: underline;">(.*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fI\\1\\fR");
-							res1=res1.replace(QRegularExpression(R"RX(<span style=" font-style:italic;">(.*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\fI\\1\\fR");
-							res1=res1.replace(QRegularExpression(R"RX(<span style=" font-family:'Monospace';">(.*)</span>)RX",QRegularExpression::InvertedGreedinessOption),"\\1");
-
-							res1=res1.replace(QRegularExpression(R"RX(<p style="-qt-paragraph-type:empty; .*">)RX",QRegularExpression::InvertedGreedinessOption),"");
-
-							res1=res1.replace(QRegularExpression(R"RX(<p style=" margin-top.* -qt-block-indent:0; text-indent:0px;">(.*)</p>)RX",QRegularExpression::InvertedGreedinessOption),"\\1");	
-
-							prevpage+=res1+"\n.br\n";
-						}
-				}
+			QTextEdit *te=this->mainClass->getDocumentForTab(j);
+			os+="\n"+te->statusTip()+"\n";
+			os+=QManpageExporter(te->document()).toMan();
+			os=os.trimmed();
 		}
 
-	prevpage=prevpage.replace(QRegularExpression(R"RX(\\fR)RX",QRegularExpression::InvertedGreedinessOption|QRegularExpression::MultilineOption),R"RX(\\fR)RX");
-	prevpage=prevpage.replace(QRegularExpression(R"RX(\\\")RX",QRegularExpression::InvertedGreedinessOption|QRegularExpression::MultilineOption),R"RX(\\")RX");
-	prevpage=prevpage.replace(QRegularExpression(R"RX(\\\$)RX",QRegularExpression::InvertedGreedinessOption|QRegularExpression::MultilineOption),R"RX($)RX");
-	prevpage=prevpage.replace(QRegularExpression(R"RX(([^\\])\\\\fR)RX",QRegularExpression::InvertedGreedinessOption|QRegularExpression::MultilineOption),"\\1\\fR");
-	prevpage=prevpage.replace(QRegularExpression(R"RX(<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">)RX",QRegularExpression::InvertedGreedinessOption|QRegularExpression::MultilineOption),"");
-	prevpage=prevpage.replace(QRegularExpression(R"RX(<p style=" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">)RX",QRegularExpression::InvertedGreedinessOption),"");
-	prevpage=prevpage.replace(QRegularExpression(R"RX(</p>)RX",QRegularExpression::InvertedGreedinessOption),"");
-	prevpage=prevpage.replace(QRegularExpression(R"RX(</body></html>)RX",QRegularExpression::InvertedGreedinessOption),"");
+	os.replace(QRegularExpression("\n(?![\n[:space:]])"),"\n.br\n");
+	os=manpage+"\n"+os;
 
 	QFile data(filepath);
 	if(data.open(QFile::WriteOnly|QFile::Truncate))
@@ -148,7 +120,7 @@ void ManpageConvertClass::exportManpage(QString filepath,bool nozip)
 			prefsClass	newprefs(QString("%1").arg(PACKAGE_NAME));
 			boolTuple	bt;
 			QTextStream	out(&data);
-			out<<prevpage;
+			out<<os;
 			data.close();
 
 			bt=newprefs.getBoolValue("gzip_pages");
@@ -168,7 +140,7 @@ void ManpageConvertClass::exportManpage(QString filepath,bool nozip)
 					this->mainClass->lastSaveDir=QFileInfo(filepath).canonicalPath();
 					this->exportManpage(filepath);
 				}
-				
+
 			for(int j=0;j<this->mainClass->mainNotebook->count();j++)
 				{
 					QTextEdit	*te=this->mainClass->getDocumentForTab(j);
@@ -182,6 +154,9 @@ void ManpageConvertClass::importManpage(QString filepath)
 	QString				adjfp=filepath;
 	runExternalProcClass	rp;
 
+	if(QFile::exists(this->mainClass->tmpFolderName+"/adpage")==true)
+		QFile::remove(this->mainClass->tmpFolderName+"/adpage");
+
 	if(filepath.endsWith(".gz"))
 		{
 			rp.runExternalCommands(QString("gunzip -c %1").arg(filepath).toStdString(),false,QString("%2/adpage").arg(this->mainClass->tmpFolderName).toStdString());
@@ -194,7 +169,8 @@ void ManpageConvertClass::importManpage(QString filepath)
 	QStringList			sections;
 	bool					retval;
 	QString				htmlstr;
-	std::string			sfp;
+	QString				com;
+	std::string			sfp="";
 
 	retval=file.open(QIODevice::Text | QIODevice::ReadOnly);
 	if(retval==true)
@@ -216,14 +192,38 @@ void ManpageConvertClass::importManpage(QString filepath)
 			this->mainClass->currentFilePath="";
 		}
 
+	if(QFileInfo::exists(adjfp)==false)
+		{
+			qDebug()<<"no such manpage ...";
+			return;
+		}
+
 	rp.trimOP=true;
 	sfp=rp.runExternalCommands(QString("cat %1| sed -n '/^.TH/p'").arg(adjfp).toStdString(),true);
+	if(sfp.empty()==true)
+		{
+			sfp=rp.runExternalCommands(QString("cat %1| sed -n 's/^.Dt\\(.*\\)$/.TH \\1/p'").arg(adjfp).toStdString(),true);
+			sfp=sfp+" "+rp.runExternalCommands(QString("cat %1|sed -n 's/.Dd[[:space:]]*\\(.*\\)$/\"\\1\"/p'").arg(adjfp).toStdString(),true);
+		}
 
 	this->manString=this->mainClass->getProperties(QString::fromStdString(sfp));
 	setenv("GROFF_SGR","1",1);
 	setenv("MANWIDTH","2000",1);
 	setenv("MAN_KEEP_FORMATTING","1",1);
-	sfp=rp.runExternalCommands(QString("echo -e '\n.SH \"\"'|cat '%1' -|sed 's/^\\(\\.S[Hh]\\) \\(.*\\)/\\n@SECTION@--\\2--\\n\\1 \\2/g;s/^\\(\\.S[Ss]\\) \\(.*\\)/\\n@section@++\\2++\\n\\1 \\2/g'|man -l --no-justification --no-hyphenation -|ul|head -n -4").arg(adjfp).toStdString(),true);
+
+	com=QString("echo -e '\n.SH \"\"'|cat '%1' -|sed 's/^\\(\\.S[Hh]\\) \\(.*\\)/\\n@SECTION@--\\2--\\n\\1 \\2/g;s/^\\(\\.S[Ss]\\) \\(.*\\)/\\n@section@++\\2++\\n\\1 \\2/g'|man -l --no-justification --no-hyphenation -|ul|head -n -4").arg(adjfp);
+	sfp=rp.runExternalCommands(com.toStdString(),true);
+	if(sfp.empty()==true)
+		{
+			com=QString("echo -e '\n.SH \"\"'|cat '%1' -|sed 's/^\\(\\.S[Hh]\\) \\(.*\\)/\\n@SECTION@--\\2--\\n\\1 \\2/g;s/^\\(\\.S[Ss]\\) \\(.*\\)/\\n@section@++\\2++\\n\\1 \\2/g'|man -l --no-justification --no-hyphenation -|head -n -4|tee \"/tmp/man.log.raw\"").arg(adjfp);
+			sfp=rp.runExternalCommands(com.toStdString(),true);
+		}
+	if(sfp.empty()==true)
+		{
+			com=QString("echo -e '\n.SH \"\"'|cat '%1'|sed 's/^\\(\\.S[Hh]\\) \\(.*\\)/\\n@SECTION@--\\2--\\n\\1 \\2/g;s/^\\(\\.S[Ss]\\) \\(.*\\)/\\n@section@++\\2++\\n\\1 \\2/g'|mandoc -l -O width=500|ul|head -n -2").arg(adjfp);
+			sfp=rp.runExternalCommands(com.toStdString(),true);
+		}
+
 	unsetenv("GROFF_SGR");
 	unsetenv("MANWIDTH");
 	unsetenv("MAN_KEEP_FORMATTING");
@@ -249,13 +249,24 @@ void ManpageConvertClass::importManpage(QString filepath)
 					htmlstr+=buf+"\n";
 					htmlstr=htmlstr.replace("<","&lt;");
 					htmlstr=htmlstr.replace(">","&gt;");
+					htmlstr=htmlstr.replace("\n.br","");
+					htmlstr=htmlstr.replace("\n\n\n","\n");
 				}
 			htmlstr="<style> pre {white-space: pre-wrap;word-wrap: break-word;overflow-x: auto;}</style>\n<pre>"+htmlstr;
-			htmlstr=htmlstr.replace(QRegularExpression(R"RX(\x1b\[1m(.*)\e\[m)RX",QRegularExpression::InvertedGreedinessOption),"<b>\\1</b>");
+
+			htmlstr=htmlstr.replace(QRegularExpression(R"RX(\e\[1m(.*)\e\[.{,3}m)RX",QRegularExpression::InvertedGreedinessOption),"<b>\\1</b>");
+			htmlstr=htmlstr.replace(QRegularExpression("\e\\[1m(.*)\e\\[m",QRegularExpression::InvertedGreedinessOption),"<b>\\1</b>");
+
 			if(this->mainClass->useUnderline==false)
-				htmlstr=htmlstr.replace(QRegularExpression(R"RX(\x1b\[4m(.*)\e\[m)RX",QRegularExpression::InvertedGreedinessOption),"<i>\\1</i>");
+				htmlstr=htmlstr.replace(QRegularExpression(R"RX(\e\[4m(.*)\e\[.{,3}m)RX",QRegularExpression::InvertedGreedinessOption),"<i>\\1</i>");
 			else
-				htmlstr=htmlstr.replace(QRegularExpression(R"RX(\x1b\[4m(.*)\e\[m)RX",QRegularExpression::InvertedGreedinessOption),"<u>\\1</u>");
+				htmlstr=htmlstr.replace(QRegularExpression(R"RX(\e\[4m(.*)\e\[.{,3}m)RX",QRegularExpression::InvertedGreedinessOption),"<u>\\1</u>");
+
+			if(this->mainClass->useUnderline==false)
+				htmlstr=htmlstr.replace(QRegularExpression(R"RX(\e\[22m(.*)\e\[.{,3}m)RX",QRegularExpression::InvertedGreedinessOption),"<i>\\1</i>");
+			else
+				htmlstr=htmlstr.replace(QRegularExpression(R"RX(\e\[22m(.*)\e\[.{,3}m)RX",QRegularExpression::InvertedGreedinessOption),"<u>\\1</u>");
+
 			htmlstr=htmlstr.replace(QRegularExpression(R"RX(\x1b\[1m)RX"),"");
 			htmlstr=htmlstr.replace(QRegularExpression(R"RX(\x1b\[m)RX"),"");
 			htmlstr+="</pre>\n";

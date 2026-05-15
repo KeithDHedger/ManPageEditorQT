@@ -1,4 +1,25 @@
+0.3.0
+Fixed using default highlight colours on 1st run.
+Set Prefs default size.
+Include prefs defs in code instead of external file.
+Code Clean.
+Added default icons to install.
+Fixed some odd highlighting from some manpages.
+Fixed unzipping gzipped manpage.
+Fixed not switching font.
+Fixed switching between underline/italic. 
+Fixed no man .TH line.
+Fixed aspell dicts installed in unversioned folder.
+Fixed no aspell dictionary's available.
+Removed unneeded code from QManpageExporter.
+Removed erroneous blank lines at end of section's when importing.
+Removed forced c(xx)flags from configure.ac.
+Added custom export class, based on QBasicHtmlExporter available here: https://gitlab.com/Open-App-Library/QBasicHtmlExporter.
+
 0.2.0
+Fixed trying to import non existant file.
+Fixed spell check on empty tab.
+Fixed no aspell dictionary's found.
 Code clean.
 Stopped spell check dialog flickering.
 Save prefs dialog pos/size.

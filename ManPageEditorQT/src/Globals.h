@@ -27,6 +27,7 @@
 #include "qtincs.h"
 #include "internet.h"
 
+class QManpageExporter;
 class runExternalProcClass;
 class prefsClass;
 class LFSTK_prefsClass;

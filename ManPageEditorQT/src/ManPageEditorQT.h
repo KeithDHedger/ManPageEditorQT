@@ -58,14 +58,16 @@ class ManPageEditorQT : public QObject
 		QApplication					*application;
 
 		QString						homeFolder;
+		QString						realDataDir;
+		QString						realBinDir;
 		QString						homeDataFolder;
 		QString						tmpFolderName;
 		QString						lastSaveDir="";
 		QString						lastLoadDir="";
 		QString						currentFilePath="";
-		QString						terminalCommand="xterm -hold -e";
-		QString						lineHiliteColour="#80ffffff";
-		QString						extraHiliteColour="#80000000";
+		QString						terminalCommand="xterm -e ";
+		QString						lineHiliteColour="#30000000";
+		QString						extraHiliteColour="#30ff0000";
 		QSettings					prefs;
 		QTextEdit::LineWrapMode		lineWrap=QTextEdit::WidgetWidth;
 
@@ -86,7 +88,6 @@ class ManPageEditorQT : public QObject
 		QDialog						*spellCheckGUI=NULL;
 		QComboBox					*wordDropBox;
 		QLabel						*infoLabel;
-		//MenuItemClass				*spellCheckMenuItem;
 		bool							returnWord=false;
 		QString						goodWord;
 		QString						badWord;
@@ -108,7 +109,7 @@ class ManPageEditorQT : public QObject
 		bool							closingAllTabs=false;
 
 		QString						fontName="MonoSpace";
-		int							fontSize=10;
+		int							fontSize=12;
 		bool							useUnderline=false;
 //editor functions
 //menubar
@@ -173,6 +174,7 @@ class ManPageEditorQT : public QObject
 		void							doClear(void);
 		void							doPreView(void);
 
+//TODO//
 //prefswindow
 //prefswindow vars
 //prefswindow functions
@@ -202,7 +204,7 @@ class ManPageEditorQT : public QObject
 		void							doFormatMenuItems(MenuItemClass *mc);
 		void							doHelpMenuItems(MenuItemClass *mc);
 		bool							closeTabs(bool all);
-		void							hiliteLine(QTextEdit *te,QColor colour=QColor("#20000000"));
+		void							hiliteLine(QTextEdit *te,QColor colour=QColor("#30000000"));
 };
 
 #endif

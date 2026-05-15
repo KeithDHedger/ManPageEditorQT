@@ -38,9 +38,19 @@ std::string runExternalProcClass::runExternalCommands(std::string str,bool captu
 	char			found=0;
 	int			wstatus=-1;
 	int			filefd=-1;
+	int			stderrhold=dup(STDERR_FILENO);
+	int			devnull;
+ 
 
 	if(this->showCli==true)
 		fprintf(stderr,"\n%s\n",str.c_str());
+	else
+		{
+// Redirect stderr to /dev/null
+			devnull=open("/dev/null",O_WRONLY);
+		    dup2(devnull,STDERR_FILENO);
+		    close(devnull);
+		}
 
 	slen=str.length();
 	data=(char*)alloca(slen*8);
@@ -185,6 +195,12 @@ std::string runExternalProcClass::runExternalCommands(std::string str,bool captu
 
 	if(filefd>0)
 		close(filefd);
+
+	if(this->showCli==false)
+		{
+			dup2(stderrhold,STDERR_FILENO);
+			close(stderrhold);
+		}
 
 	if(capture==true)
 		{

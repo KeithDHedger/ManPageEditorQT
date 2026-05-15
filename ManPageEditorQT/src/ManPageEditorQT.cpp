@@ -19,6 +19,7 @@
 */
 
 #include "ManPageEditorQT.h"
+#include "prefsDefaultConfig.h"
 
 ManPageEditorQT::ManPageEditorQT(QApplication *app)
 {
@@ -160,12 +161,12 @@ void ManPageEditorQT::buildMainGui(void)
 	this->editMenu->addSeparator();
 
 //spellcheck
-	this->spellCheckMenuItem=this->makeMenuItemClass(EDITMENU,"Spell Check Section",0,"tools-check-spelling",SPELLCHECKMENUITEM);
+	if(this->spellChecker!=NULL)
+		this->spellCheckMenuItem=this->makeMenuItemClass(EDITMENU,"Spell Check Section",0,"tools-check-spelling",SPELLCHECKMENUITEM);
 
 //find//TODO//
 	this->findMenuItem=this->makeMenuItemClass(EDITMENU,"Find",QKeySequence::Find,"edit-find",FINDMENUITEM);
-
-this->findMenuItem->setEnabled(false);
+	this->findMenuItem->setEnabled(false);
 
 	this->editMenu->addSeparator();
 
@@ -192,24 +193,23 @@ this->findMenuItem->setEnabled(false);
 	this->mainWindow->setMenuBar(qobject_cast<QMenuBar*>(this->menuBar));
 	this->mainWindow->addToolBar(&this->toolBar);
 	this->mainWindow->setCentralWidget(this->mainNotebook);
-
-//	this->statusText=new QLabel;	
-//	this->statusText->setText("Line 0\tCol 0");
-// 	this->statusBar=this->mainWindow->statusBar();
- //	this->statusBar->addWidget(this->statusText);
 }
 
 QTextEdit* ManPageEditorQT::makeNewTab(QString html,QString sectname,bool issub,int pos)
 {
 	QString		fh;
 	QTextEdit	*te=new QTextEdit;
+	te->setCurrentFont(QFont(this->fontName,this->fontSize));
+	te->setFont(QFont(this->fontName,this->fontSize));
 	QTextCursor	cursor(te->document());
 
 	cursor.select(QTextCursor::Document);
-	te->setFont(QFont(this->fontName,this->fontSize));
+
 	te->setHtml(html);
 	fh=te->toHtml();
-	fh=fh.replace("Monospace",this->fontName);
+
+	fh=fh.replace(QRegularExpression("(<span style.*)font-family:'.*'(.*</span>)",QRegularExpression::InvertedGreedinessOption|QRegularExpression::MultilineOption),"\\1font-family:'"+this->fontName+"'\\2");
+
 	te->setHtml(fh);
 
 	if(issub==false)
@@ -243,14 +243,14 @@ void ManPageEditorQT::spellCheckDoc(QTextEdit *te)
 	QStringList						slist;
 	QTextCursor						mc;
 	QTextEdit::ExtraSelection		selection;
-	AspellCanHaveError				*ret;
-	AspellDocumentChecker			*checker;
+	AspellCanHaveError				*ret=NULL;
+	AspellDocumentChecker			*checker=NULL;
 	AspellToken						token;
-	AspellWordList					*suggestions;
-	AspellStringEnumeration			*elements;
+	AspellWordList					*suggestions=NULL;
+	AspellStringEnumeration			*elements=NULL;
 	char*							line;
 	int								docstart=0;
-	const char						*suggestedword;
+	const char						*suggestedword=NULL;
 	prefsClass						newprefs(QString("%1").arg("Spell Check"));
 
 	newprefs.reUseDialog=true;
@@ -272,7 +272,6 @@ void ManPageEditorQT::spellCheckDoc(QTextEdit *te)
 	  /* First process the line */
 	aspell_document_checker_process(checker,line,-1);
 	  /* Now find the misspellings in the line */
-
 
 	while(token=aspell_document_checker_next_misspelling(checker),token.len!=0)
 		{
@@ -369,7 +368,7 @@ void ManPageEditorQT::spellCheckDoc(QTextEdit *te)
 								}
 						}
 				}
-		}		
+		}
 	delete_aspell_document_checker(checker);
 }
 
@@ -401,6 +400,8 @@ void ManPageEditorQT::initApp(void)
 	QFile	file;
 
 	this->homeFolder=QString("%1").arg(tdir.homePath());
+	this->realDataDir=QString("%1%2").arg(getenv("APPDIR")).arg(DATADIR);
+	this->realBinDir=QString("%1%2").arg(getenv("APPDIR")).arg(BINDIR);
 
 	this->tmpFolderName=mkdtemp(tmpfoldertemplate);
 	if(this->tmpFolderName.isEmpty()==true)
@@ -410,6 +411,28 @@ void ManPageEditorQT::initApp(void)
 		}
 	this->mainWindow=new QMainWindow;
 	this->mpConv=new ManpageConvertClass(this);
+
+	QIcon::setThemeSearchPaths(QStringList()<<QString("%1/usr/share/icons").arg(getenv("APPDIR"))<<QString("/usr/share/icons")<<QString("%1/.icons").arg(getenv("HOME")) <<QString("%1/icons").arg(this->realDataDir) );
+	QIcon::setFallbackSearchPaths(QStringList()<<QString("%1/usr/share/icons").arg(getenv("APPDIR"))<<QString("/usr/share/icons")<<QString("%1/.icons").arg(getenv("HOME"))  <<QString("%1/icons").arg(this->realDataDir));
+	QIcon::setFallbackThemeName("kkeditqticons");
+
+	AspellCanHaveError	*possible_err;
+	this->aspellConfig=new_aspell_config();
+
+	possible_err=new_aspell_speller(this->aspellConfig);
+	if(aspell_error_number(possible_err)!=0)
+		{
+			aspell_config_replace(this->aspellConfig,"dict-dir","/lib/aspell");
+			possible_err=new_aspell_speller(this->aspellConfig);
+		}
+
+	if(aspell_error_number(possible_err)!= 0)
+		{
+			qDebug()<<aspell_error_message(possible_err);
+			qDebug()<<"Install some dictionary's in /lib/aspell ...";
+		}
+	else
+		this->spellChecker=to_aspell_speller(possible_err);
 
 	this->readConfigs();
 	this->buildMainGui();
@@ -437,24 +460,21 @@ void ManPageEditorQT::initApp(void)
 			this->buildSectionProps(ss,issub,false);
 		});
 
-	AspellCanHaveError	*possible_err;
-	this->aspellConfig=new_aspell_config();
-	possible_err=new_aspell_speller(this->aspellConfig);
-
-	if(aspell_error_number(possible_err)!= 0)
-		puts(aspell_error_message(possible_err));
-	else
-		this->spellChecker=to_aspell_speller(possible_err);
-//
 //TODO//
 
 //	this->buildFindReplace();
 //#endif
 //
-	r=this->prefs.value("app/geometry",QVariant(QRect(50,50,1024,768))).value<QRect>();
+
+	r=prefs.value("app/geometry").toRect();
+	if(r.isEmpty()==true)
+		{
+			r.setWidth(1024);
+			r.setHeight(768);
+		}
 	this->mainWindow->setGeometry(r);
 
-//	this->setToolbarSensitive();
+//	this->setToolbarSensitive();//TODO//
 	this->mainWindow->show();
 }
 
@@ -576,7 +596,7 @@ bool ManPageEditorQT::confirmClose(QTextEdit *te)
 {
 	if(te->document()->isModified()==true)
 		{
-			if(QMessageBox::question(nullptr,"Document Modified","Document has been modified, please confirm close...")==QMessageBox::No)
+			if(QMessageBox::question(nullptr,"Document Modified","Document has been modified, please confirm close...",QMessageBox::Cancel|QMessageBox::Close)==QMessageBox::Cancel)
 				return(false);
 		}
 	return(true);
@@ -594,7 +614,7 @@ bool ManPageEditorQT::closeTabs(bool all)
 
 	if(docdirty==true)
 		{
-			if(QMessageBox::question(nullptr,"Document Modified","Document has been modified, please confirm close...")==QMessageBox::No)
+			if(QMessageBox::question(nullptr,"Document Modified","Document has been modified, please confirm close...",QMessageBox::Cancel|QMessageBox::Close)==QMessageBox::Cancel)
 				return(false);
 		}
 
@@ -832,6 +852,7 @@ void ManPageEditorQT::doItalic(void)
 	else
 		fmt.setFontUnderline(true);
 	te->setCurrentCharFormat(fmt);
+	
 }
 
 void ManPageEditorQT::doClear(void)
@@ -842,6 +863,7 @@ void ManPageEditorQT::doClear(void)
 	fmt.setFontWeight(QFont::Normal);			
 	fmt.setFontUnderline(false);			
 	fmt.setFontItalic(false);			
+	fmt.clearProperty(QTextFormat::TextUnderlineStyle);
 	te->setCurrentCharFormat(fmt);			
 }
 
@@ -864,7 +886,8 @@ void ManPageEditorQT::doPrefs(void)
 	newprefs.autoshowDialog=true;
 	newprefs.dialogPrefs.valid=false;
 
-	newprefs.createDialog("ManpageQT Prefs",QString("%1/%2").arg(DATADIR).arg("docs/prefs.config"),QSize(450,-1));
+	newprefs.createDialog("ManpageQT Prefs",configStr,QSize(480,256));
+
 	if(newprefs.dialogPrefs.valid==true)
 		{
 			newprefs.saveCurrentPrefs();
@@ -883,7 +906,7 @@ void ManPageEditorQT::doPrefs(void)
 				if(st.valid==true)
 					mpclass->lineHiliteColour=st.value;
 
-			st=newprefs.getStringValue("extra_highlight_colour");
+			st=newprefs.getStringValue("spell_check_colour");
 				if(st.valid==true)
 					mpclass->extraHiliteColour=st.value;
 
@@ -915,23 +938,25 @@ void ManPageEditorQT::doPrefs(void)
 					this->fontSize=fnt.pointSize();
 				}
 
+
 			for(int j=0;j<this->mainNotebook->count();j++)
 				{
 					te=this->getDocumentForTab(j);
 						te->setLineWrapMode(this->lineWrap);
+					te->setFont(QFont(this->fontName,this->fontSize));
+					te->setCurrentFont(QFont(this->fontName,this->fontSize));
 
 					fh=te->toHtml();
+					fh=fh.replace(QRegularExpression("(<span style.*)font-family:'.*'(.*</span>)",QRegularExpression::InvertedGreedinessOption|QRegularExpression::MultilineOption),"\\1font-family:'"+this->fontName+"'\\2");
+
 					QTextCursor	cursor(te->document());
 					cursor.select(QTextCursor::Document);
-					te->setFont(QFont(this->fontName,this->fontSize));
-					te->setHtml(fh);
-					fh=te->toHtml();
-					fh=fh.replace(oldname,this->fontName);
 					fh=fh.replace(QRegularExpression("font-size:(.*)pt",QRegularExpression::InvertedGreedinessOption),QString("font-size:%1pt").arg(this->fontSize));
 					if(mpclass->useUnderline==true)
-						fh=fh.replace(R"foo(<span style=" font-style:italic;">)foo",R"foo(<span style=" text-decoration: underline;">)foo");
+						fh=fh.replace(QRegularExpression("(<span style.*)font-style:italic(.*</span>)",QRegularExpression::InvertedGreedinessOption|QRegularExpression::MultilineOption),"\\1text-decoration: underline\\2");
 					else
-						fh=fh.replace(R"foo(<span style=" text-decoration: underline;">)foo",R"foo(<span style=" font-style:italic;">)foo");
+						fh=fh.replace(QRegularExpression("(<span style.*)text-decoration: underline(.*</span>)",QRegularExpression::InvertedGreedinessOption|QRegularExpression::MultilineOption),"\\1font-style:italic\\2");
+
 					te->setHtml(fh);
 					te->setLineWrapMode(this->lineWrap);
 				}

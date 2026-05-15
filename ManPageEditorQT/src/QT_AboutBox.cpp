@@ -211,7 +211,7 @@ void AboutBoxClass::showHelp(void)
 	docvlayout->setContentsMargins(MARGINS,MARGINS,MARGINS,MARGINS);
 	docvlayout->addWidget(te);
 
-	te->setSource(QUrl::fromLocalFile(QString("%1/%2").arg(DATADIR).arg("docs/help.html")));
+	te->setSource(QUrl::fromLocalFile(QString("%1/%2").arg(mpclass->realDataDir).arg("docs/help.html")));
 	te->setOpenExternalLinks(true);
 	hlayout=new QHBoxLayout;
 //back

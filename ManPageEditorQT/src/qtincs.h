@@ -37,6 +37,10 @@
 #include <QTextDocument>
 #include <QTextDocumentWriter>
 #include <QTextEdit>
+#include <QTextFrame>
+#include <QTextList>
+#include <QTextTable>
+#include <QTextTableFormat>
 #include <QToolBar>
 #include <QToolButton>
 #include <QWidget>

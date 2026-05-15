@@ -22,8 +22,6 @@
 
 void ManPageEditorQT::doFileMenuItems(MenuItemClass *mc)
 {
-	//MenuItemClass	*mc=qobject_cast<MenuItemClass*>(sender());
-//qDebug()<<mc;
 	switch(mc->getMenuID())
 		{
 //file menu
@@ -119,7 +117,7 @@ void ManPageEditorQT::doFileMenuItems(MenuItemClass *mc)
 			case OPENTEMPLATEMENUITEM:
 				if(this->closeTabs(true)==true)
 					{
-						this->mpConv->importManpage(QString("%1/docs/template.1").arg(DATADIR));
+						this->mpConv->importManpage(QString("%1/docs/template.1").arg(this->realDataDir));
 						this->currentFilePath="";
 					}
 				break;
@@ -129,6 +127,8 @@ void ManPageEditorQT::doFileMenuItems(MenuItemClass *mc)
 void ManPageEditorQT::doEditMenuItems(MenuItemClass *mc)
 {
 	QTextEdit	*te=this->getDocumentForTab(this->mainNotebook->currentIndex());
+	if(te==NULL)
+		return;
 	switch(mc->getMenuID())
 		{
 			case UNDOMENUITEM:
@@ -167,6 +167,7 @@ void ManPageEditorQT::doFormatMenuItems(MenuItemClass *mc)
 				this->doBold();
 				break;
 			case ITALICMENUITEM:
+				this->doClear();
 				this->doItalic();
 				break;
 			case CLEARMENUITEM:
@@ -182,9 +183,9 @@ void ManPageEditorQT::doHelpMenuItems(MenuItemClass *mc)
 			case ABOUTMENUITEM:
 				{
 					QString			content;
-					QFile			licencefile(DATADIR "/docs/gpl-3.0.txt");
+					QFile			licencefile(QString("%1/docs/gpl-3.0.txt").arg(this->realDataDir));
 					bool				retval;
-					AboutBoxClass	about(this->mainWindow,DATADIR "/pixmaps/" PACKAGE ".png");
+					AboutBoxClass	about(this->mainWindow,QString("%1/pixmaps/%2.png").arg(this->realDataDir).arg(PACKAGE));
 
 					retval=licencefile.open(QIODevice::Text | QIODevice::ReadOnly);
 					if(retval==true)

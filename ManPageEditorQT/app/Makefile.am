@@ -18,6 +18,7 @@ bin_PROGRAMS = manpageeditorqt
 install-exec-hook:
 	install -D ../resources/pixmaps/ManPageEditorQT.png $(DESTDIR)${prefix}/share/pixmaps/ManPageEditorQT.png
 	install -D ../resources/pixmaps/ManPageEditorQT.desktop $(DESTDIR)${prefix}/share/applications/ManPageEditorQT.desktop
+	cp -r "../resources/icons" "$(DESTDIR)$(pkgdatadir)"
 
 uninstall-hook:
 	rm -f $(DESTDIR)${prefix}/share/applications/ManPageEditorQT.desktop

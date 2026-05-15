@@ -34,6 +34,7 @@ class ManpageConvertClass
 		void		importManpage(QString filepath);
 		void		exportManpage(QString filepath,bool nozip=false);
 		QString	buildOpenSystemPage(void);
+		QString appFontName;
 
 	private:
 		ManPageEditorQT	*mainClass=NULL;

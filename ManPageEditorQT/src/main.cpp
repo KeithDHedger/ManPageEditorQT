@@ -24,6 +24,7 @@ int main(int argc, char **argv)
 {
 	int				status;
 	QApplication		app(argc,argv);
+
 	prefsClass		newprefs(QString("%1").arg(PACKAGE_NAME));
 	stringTuple		st;
 	boolTuple		bt;
@@ -51,6 +52,7 @@ int main(int argc, char **argv)
 
 	mpclass=new ManPageEditorQT(&app);
 	mpclass->mpConv->manString=mpclass->getProperties();
+	mpclass->mpConv->appFontName=app.font().family();
 
 	st=newprefs.getStringValue("main_font");
 	if(st.valid==true)
@@ -65,7 +67,7 @@ int main(int argc, char **argv)
 	if(st.valid==true)
 		mpclass->lineHiliteColour=st.value;
 
-	st=newprefs.getStringValue("extra_highlight_colour");
+	st=newprefs.getStringValue("spell_check_colour");
 	if(st.valid==true)
 		mpclass->extraHiliteColour=st.value;
 

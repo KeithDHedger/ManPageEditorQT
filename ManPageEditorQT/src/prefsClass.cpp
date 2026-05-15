@@ -287,7 +287,15 @@ void prefsClass::createDialog(QString title,QStringList items,QSize sze)
 	this->dialogPrefs.theDialog->setWindowTitle(this->dialogTitle);
 
 	if(this->useSavedPrefs==true && noadd==false)
-		this->dialogPrefs.theDialog->setGeometry(defaults.value(QString("%1").arg(this->prefsEntry)).toRect());
+		{
+			QRect	r=defaults.value(QString("%1").arg(this->prefsEntry)).toRect();
+			if(r.isEmpty()==true)
+				{
+					r.setWidth(sze.width());
+					r.setHeight(sze.height());
+				}
+			this->dialogPrefs.theDialog->setGeometry(r);
+		}
 
 	if(noadd==false)
 		{
@@ -743,10 +751,11 @@ void prefsClass::createDialog(QString title,QStringList items,QSize sze)
 					mainvlayout->addSpacing(8);
 				}
 		}
-		
+//this->dialogPrefs.theDialog->resize(sze);		
 //TODO//
 	if(this->useSavedPrefs==false && noadd==false)
 		{
+		qDebug()<<"here";
 			QSize tsze(this->dialogPrefs.theDialog->sizeHint());
 			if(sze.width()!=-1)
 				tsze.setWidth(sze.width());
@@ -757,6 +766,11 @@ void prefsClass::createDialog(QString title,QStringList items,QSize sze)
 			if((sze.width()!=1) || (sze.height()!=-1))
 				this->dialogPrefs.theDialog->resize(tsze);
 		}
+//	else
+//		{
+//		qDebug()<<"there";
+//			this->dialogPrefs.theDialog->resize(sze);
+//		}
 
 	if(this->autoshowDialog==true)
 		{
