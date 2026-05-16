@@ -207,6 +207,8 @@ void ManpageConvertClass::importManpage(QString filepath)
 		}
 
 	this->manString=this->mainClass->getProperties(QString::fromStdString(sfp));
+	this->mainClass->mainWindow->setWindowTitle(QString("Manpage for %1").arg(this->mainClass->pageProperties.name));
+
 	setenv("GROFF_SGR","1",1);
 	setenv("MANWIDTH","2000",1);
 	setenv("MAN_KEEP_FORMATTING","1",1);

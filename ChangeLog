@@ -1,4 +1,6 @@
 0.3.0
+Set window title.
+Fixed autogen.sh script.
 Fixed using default highlight colours on 1st run.
 Set Prefs default size.
 Include prefs defs in code instead of external file.

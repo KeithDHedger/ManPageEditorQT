@@ -19,6 +19,7 @@ case $USEQTVERSION in
 		;;
 	*)
 		autoconf configure.ac > ./configure
+		chmod +x ./configure
 		;;
 esac
 
