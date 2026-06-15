@@ -43,6 +43,7 @@ int main(int argc, char **argv)
 			{prefs.LFSTK_hashFromKey("opensyspage"),{TYPESTRING,"opensyspage","Open system manpage","",false,0}}
 		};
 
+
 	if(prefs.LFSTK_argsToPrefs(argc,argv,long_options,true)==false)
 		return(0);
 
@@ -115,7 +116,23 @@ int main(int argc, char **argv)
 			else
 				{
 					if(prefs.cliArgs.size()>0)
-						mpclass->mpConv->importManpage(prefs.cliArgs.at(0).c_str());
+						{
+							if(QFileInfo::exists(prefs.cliArgs.at(0).c_str()))
+								{
+									mpclass->mpConv->importManpage(prefs.cliArgs.at(0).c_str());
+								}
+							else
+								{
+									QString				command;
+									std::string			sfp;
+									runExternalProcClass	rp;
+
+									command=QString("man -w %1").arg(prefs.cliArgs.at(0).c_str());
+									rp.trimOP=true;
+									sfp=rp.runExternalCommands(command.toStdString(),true);
+									mpclass->mpConv->importManpage(sfp.c_str());
+								}
+						}
 				}
 		}
 

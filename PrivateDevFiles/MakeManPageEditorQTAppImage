@@ -2,7 +2,7 @@
 
 APPIMAGENAME="ManPageEditorQT"
 WHERE=${WHERE:-"/tmp/qtchroot"}
-PROJECTFOLDER="/media/LinuxData/Development64/Projects/${APPIMAGENAME}"
+PROJECTFOLDER=..
 ELFLOG=/tmp/linked.log
 LIBS=/tmp/libs
 :>$ELFLOG
@@ -83,15 +83,15 @@ cat >${APPIMAGEFOLDER}/AppRun <<EOF
 #!/bin/bash
 
 export LD_LIBRARY_PATH="\$APPDIR/lib:\$APPDIR/usr/lib:/lib:usr/lib"
-export PATH="\$APPDIR/usr/bin:\${PATH}"
+export PATH="\${APPDIR}/bin:\${PATH}"
 export QT_QPA_PLATFORMTHEME=qt6ct
 export QT_PLUGIN_PATH="\$APPDIR/usr/lib/qt6/plugins:\$APPDIR/usr/lib/qt6/:\$APPDIR/usr/lib/qt6/plugins/xcbglintegrations:\$APPDIR/usr/lib/qt6/plugins/platforms:\$APPDIR/usr/lib/qt6/plugins/styles:\$APPDIR/usr/lib/qt6/plugins/platformthemes"
 
-exec \$APPDIR/usr/bin/${APPNAME} \$@
+exec \$APPDIR/bin/${APPNAME} "\$@"
 EOF
 
 chmod +x ${APPIMAGEFOLDER}/AppRun
 
 ARCH=x86_64 ~/.local/bin/appimagetool-x86_64.AppImage --no-appstream --runtime-file=./runtime-x86_64 ${APPIMAGEFOLDER} ${APPIMAGENAME}.AppImage
 
-rm -rf "$ELFLOG" "$LIBS"
+#rm -rf "$ELFLOG" "$LIBS"

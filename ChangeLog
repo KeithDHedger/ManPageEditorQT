@@ -1,4 +1,5 @@
 0.3.0
+Can now give just a manpage name or a full path on the cli.
 Set window title.
 Fixed autogen.sh script.
 Fixed using default highlight colours on 1st run.
