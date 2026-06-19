@@ -288,13 +288,19 @@ void prefsClass::createDialog(QString title,QStringList items,QSize sze)
 
 	if(this->useSavedPrefs==true && noadd==false)
 		{
-			QRect	r=defaults.value(QString("%1").arg(this->prefsEntry)).toRect();
-			if(r.isEmpty()==true)
-				{
-					r.setWidth(sze.width());
-					r.setHeight(sze.height());
-				}
-			this->dialogPrefs.theDialog->setGeometry(r);
+			if(defaults.contains(this->prefsEntry)==true)
+				this->dialogPrefs.theDialog->restoreGeometry(defaults.value(this->prefsEntry).toByteArray());
+			else
+				this->dialogPrefs.theDialog->setGeometry(100,100,550,198);
+
+
+			//QRect	r=defaults.value(QString("%1").arg(this->prefsEntry)).toRect();
+//			if(r.isEmpty()==true)
+//				{
+//					r.setWidth(sze.width());
+//					r.setHeight(sze.height());
+//				}
+//			this->dialogPrefs.theDialog->setGeometry(r);
 		}
 
 	if(noadd==false)
@@ -711,27 +717,18 @@ void prefsClass::createDialog(QString title,QStringList items,QSize sze)
 			QObject::connect(this->bb,&QDialogButtonBox::clicked,[this](QAbstractButton *button)//TODO//
 				{
 					QSettings	defaults;
-					QRect		rf,rg;
-					rg=this->dialogPrefs.theDialog->geometry();
-					rf=this->dialogPrefs.theDialog->frameGeometry();
-					rf.setHeight(rf.height()-(rf.height()-rg.height()));
-					rf.setWidth(rf.width()-(rf.width()-rg.width()));
-					defaults.setValue(QString("%1").arg(this->prefsEntry),rf);
-
+					
+					defaults.setValue(this->prefsEntry,this->dialogPrefs.theDialog->saveGeometry());
 					switch(this->bb->standardButton(button))
 						{
 							case QDialogButtonBox::Cancel:
-								{
-									this->dialogPrefs.theDialog->reject();
-									this->dialogPrefs.valid=false;
-								}
+								this->dialogPrefs.theDialog->reject();
+								this->dialogPrefs.valid=false;
 								break;
 
 							case QDialogButtonBox::Ok:
-								{
-									this->dialogPrefs.theDialog->accept();
-									this->dialogPrefs.valid=true;
-								}
+								this->dialogPrefs.theDialog->accept();
+								this->dialogPrefs.valid=true;
 								break;
 							default:
 								this->button=this->bb->standardButton(button);
@@ -751,11 +748,10 @@ void prefsClass::createDialog(QString title,QStringList items,QSize sze)
 					mainvlayout->addSpacing(8);
 				}
 		}
-//this->dialogPrefs.theDialog->resize(sze);		
+
 //TODO//
 	if(this->useSavedPrefs==false && noadd==false)
 		{
-		qDebug()<<"here";
 			QSize tsze(this->dialogPrefs.theDialog->sizeHint());
 			if(sze.width()!=-1)
 				tsze.setWidth(sze.width());
@@ -766,11 +762,6 @@ void prefsClass::createDialog(QString title,QStringList items,QSize sze)
 			if((sze.width()!=1) || (sze.height()!=-1))
 				this->dialogPrefs.theDialog->resize(tsze);
 		}
-//	else
-//		{
-//		qDebug()<<"there";
-//			this->dialogPrefs.theDialog->resize(sze);
-//		}
 
 	if(this->autoshowDialog==true)
 		{

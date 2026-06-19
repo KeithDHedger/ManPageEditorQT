@@ -322,7 +322,7 @@ void ManPageEditorQT::spellCheckDoc(QTextEdit *te)
 			opts="@"+opts;
 			form=QString("edit@Unknown Word@%2@combostart@Correct Word To@%1comboend@").arg(opts).arg(this->badWord);
 
-			QDialogButtonBox::StandardButton	dbutton=(QDialogButtonBox::StandardButton)((int)QDialogButtonBox::Close|(int)QDialogButtonBox::Ignore|(int)QDialogButtonBox::Apply);
+			QDialogButtonBox::StandardButton	dbutton=(QDialogButtonBox::StandardButton)((int)QDialogButtonBox::Close|(int)QDialogButtonBox::Discard|(int)QDialogButtonBox::Apply);
 
 			newprefs.paged=false;
 			newprefs.useSavedPrefs=true;
@@ -358,7 +358,7 @@ void ManPageEditorQT::spellCheckDoc(QTextEdit *te)
 									return;
 								}
 
-							if(newprefs.button==QDialogButtonBox::Ignore)
+							if(newprefs.button==QDialogButtonBox::Discard)
 								{
 									this->hiliteLine(te,this->lineHiliteColour);
 									aspell_speller_add_to_session(this->spellChecker,this->badWord.toStdString().c_str(),-1);
@@ -394,7 +394,7 @@ void ManPageEditorQT::hiliteLine(QTextEdit *te,QColor colour)
 void ManPageEditorQT::initApp(void)
 {
 	char		tmpfoldertemplate[]="/tmp/ManPageEditorQT-XXXXXX";
-	QRect	r(0,0,1024,768);
+	//QRect	r(0,0,1024,768);
 	QDir		tdir;
 	QString	tstr;
 	QFile	file;
@@ -465,14 +465,18 @@ void ManPageEditorQT::initApp(void)
 //	this->buildFindReplace();
 //#endif
 //
+	if(this->prefs.contains("app/geometry")==true)
+		this->mainWindow->restoreGeometry(prefs.value("app/geometry").toByteArray());
+	else
+		this->mainWindow->setGeometry(100,100,800,400);
 
-	r=prefs.value("app/geometry").toRect();
-	if(r.isEmpty()==true)
-		{
-			r.setWidth(1024);
-			r.setHeight(768);
-		}
-	this->mainWindow->setGeometry(r);
+//	r=prefs.value("app/geometry").toRect();
+//	if(r.isEmpty()==true)
+//		{
+//			r.setWidth(1024);
+//			r.setHeight(768);
+//		}
+//	this->mainWindow->setGeometry(r);
 
 //	this->setToolbarSensitive();//TODO//
 	this->mainWindow->show();
@@ -537,15 +541,16 @@ QString ManPageEditorQT::openFileDialog(QString title,QString dir)
 
 void ManPageEditorQT::writeExitData(void)
 {
-	QRect rg;
-	QRect rf;
+	//QRect rg;
+	//QRect rf;
 
 //editor
-	rg=this->mainWindow->geometry();
-	rf=this->mainWindow->frameGeometry();
-	rf.setHeight(rf.height()-(rf.height()-rg.height()));
-	rf.setWidth(rf.width()-(rf.width()-rg.width()));
-	this->prefs.setValue("app/geometry",rf);
+	//rg=this->mainWindow->geometry();
+	//rf=this->mainWindow->frameGeometry();
+	//rf.setHeight(rf.height()-(rf.height()-rg.height()));
+	//rf.setWidth(rf.width()-(rf.width()-rg.width()));
+	//this->prefs.setValue("app/geometry",rf);
+	this->prefs.setValue("app/geometry",this->mainWindow->saveGeometry());
 	this->prefs.setValue("editor/lastsavedir",this->lastSaveDir);
 	this->prefs.setValue("editor/lastloaddir",this->lastLoadDir);
 

@@ -187,6 +187,7 @@ AboutBoxClass::AboutBoxClass(QWidget* window,QString pixpath)
 
 //licence
 	button=new QPushButton("&Licence");
+	button->setIcon(QIcon::fromTheme("text-x-license"));
 	QObject::connect(button,&QPushButton::clicked,[=]() {this->showLicence();});
 	hlayout->addWidget(button);
 
@@ -207,6 +208,7 @@ void AboutBoxClass::showHelp(void)
 	QVBoxLayout	*docvlayout=new QVBoxLayout;
 	QHBoxLayout	*hlayout;
 	QPushButton	*button;
+	QSettings	prefs;
 
 	docvlayout->setContentsMargins(MARGINS,MARGINS,MARGINS,MARGINS);
 	docvlayout->addWidget(te);
@@ -214,24 +216,29 @@ void AboutBoxClass::showHelp(void)
 	te->setSource(QUrl::fromLocalFile(QString("%1/%2").arg(mpclass->realDataDir).arg("docs/help.html")));
 	te->setOpenExternalLinks(true);
 	hlayout=new QHBoxLayout;
-//back
 
+//back
 	button=new QPushButton("&Back");
+	button->setIcon(QIcon::fromTheme("go-previous"));
 	QObject::connect(button,&QPushButton::clicked,[te]()
 		{
 			te->backward();
 		});
 	hlayout->addWidget(button);
+
 //forward
 	button=new QPushButton("&Forward");
+	button->setIcon(QIcon::fromTheme("go-next"));
 	QObject::connect(button,&QPushButton::clicked,[te]()
 		{
 			te->forward();
 		});
 	hlayout->addWidget(button);
 	hlayout->addStretch();
+
 //close
 	button=new QPushButton("&Close");
+	button->setIcon(QIcon::fromTheme("window-close"));
 	QObject::connect(button,&QPushButton::clicked,[&helpdialog]()
 		{
 			helpdialog.close();
@@ -240,10 +247,15 @@ void AboutBoxClass::showHelp(void)
 
 	docvlayout->addLayout(hlayout);
 
-	button->setIcon(QIcon::fromTheme("window-close"));
 	helpdialog.setLayout(docvlayout);
 	helpdialog.setWindowTitle(QString("%1 Help").arg(PACKAGE_NAME));
-	helpdialog.resize(880,660);
+	//helpdialog.resize(880,660);
+	if(prefs.contains("help/geometry")==true)
+		helpdialog.restoreGeometry(prefs.value("help/geometry").toByteArray());
+	else
+		helpdialog.setGeometry(100,100,880,660);
+
 	helpdialog.setModal(true);
 	helpdialog.exec();
+	prefs.setValue("help/geometry",helpdialog.saveGeometry());
 }

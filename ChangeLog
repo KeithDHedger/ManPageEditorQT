@@ -1,3 +1,18 @@
+0.4.0
+Fixed licence button icon.
+Removed unneeded icons.
+Save size/position of help dialog.
+Added icons to buttons in help dialog.
+Changed ignore button text to discard.
+Fixed default size/position of prefs dialog.
+Fixed default size/position of spellcheck dialog.
+Fixed default size/position of main window.
+Code clean.
+Fixed saving prefs dialog geometry.
+Fixed saving prefs spellcheck geometry.
+Fixed saving main window geometry.
+Fixed links.
+
 0.3.0
 Can now give just a manpage name or a full path on the cli.
 Set window title.
