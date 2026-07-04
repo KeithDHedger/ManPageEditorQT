@@ -1,6 +1,6 @@
 /*
  *
- * ©K. D. Hedger. Fri 10 Oct 14:20:15 BST 2025 keithdhedger@gmail.com
+ * ©K. D. Hedger. Sat  4 Jul 14:37:18 BST 2026 keithdhedger@gmail.com
 
  * This file (QT_AboutBox.cpp) is part of ManPageEditorQT.
 
@@ -20,23 +20,19 @@
 
 #include "QT_AboutBox.h"
 
-void AboutBoxClass::setAuthors(QString authors)
-{
-	this->authors=authors;
-}
-
 void AboutBoxClass::runAbout(void)
 {
+	this->setAppName();
 	this->aboutDialog->exec();
-}
-
-void AboutBoxClass::setLicence(QString licence)
-{
-	this->licence=licence;
 }
 
 AboutBoxClass::~AboutBoxClass()
 {
+}
+
+void AboutBoxClass::killCreditsBox(void)
+{
+	this->creditsDialog->close();
 }
 
 void AboutBoxClass::showCredits(void)
@@ -48,13 +44,14 @@ void AboutBoxClass::showCredits(void)
 	QTabWidget	*tabWidget=new QTabWidget;
 
 	this->creditsDialog=new QDialog(this->aboutDialog);
-	this->creditsDialog->setWindowTitle("Credits");
+	this->creditsDialog->setWindowTitle(QString("Credits For %1").arg(qApp->applicationDisplayName()));
+
 	hlayout=new QHBoxLayout;
 	hbox=new QWidget;
 	hbox->setLayout(hlayout);
 
 	QTextBrowser	*text=new QTextBrowser;
-	text->setText(this->authors);
+	text->setHtml(this->credits);
 	text->setReadOnly(true);
 	text->setOpenExternalLinks(true);
 
@@ -64,14 +61,17 @@ void AboutBoxClass::showCredits(void)
 //close
 	hlayout->setContentsMargins(0,0,0,0);
 	button=new QPushButton("&Close");
-	QObject::connect(button,&QPushButton::clicked,[=]() {this->creditsDialog->close();});
+	QObject::connect(button,&QPushButton::clicked,[this]()
+		{
+			this->killCreditsBox();
+		});
 	hlayout->addWidget(button);
 
 	button->setIcon(QIcon::fromTheme("window-close"));
 	hlayout->insertStretch(0,1);
 	vlayout->addWidget(hbox);
 
-	creditsDialog->setLayout((QLayout*)vlayout);
+	creditsDialog->setLayout(vlayout);
 	creditsDialog->setModal(true);
 	creditsDialog->resize(500,320);
 	creditsDialog->exec();
@@ -83,6 +83,11 @@ void AboutBoxClass::showCredits(void)
 	delete this->creditsDialog;
 }
 
+void AboutBoxClass::killLicenceBox(void)
+{
+	this->licenceDialog->close();
+}
+
 void AboutBoxClass::killAboutBox(void)
 {
 	this->aboutDialog->close();
@@ -92,7 +97,7 @@ void AboutBoxClass::showLicence(void)
 {
 	QPushButton		*button;
 	QHBoxLayout		*hlayout;
-	QWidget			*hbox;
+	QWidget*			hbox;
 	QVBoxLayout		*vlayout=new QVBoxLayout;
 	QPlainTextEdit	*text=new QPlainTextEdit;
 
@@ -101,7 +106,8 @@ void AboutBoxClass::showLicence(void)
 	hbox=new QWidget;
 	hbox->setLayout(hlayout);
 
-	this->licenceDialog->setWindowTitle("Licence");
+	this->licenceDialog->setWindowTitle(QString("Licence For %1").arg(qApp->applicationDisplayName()));
+
 	vlayout->setContentsMargins(0,4,4,4);
 	text->setPlainText(this->licence);
 	text->setReadOnly(true);
@@ -110,16 +116,18 @@ void AboutBoxClass::showLicence(void)
 
 //close
 	hlayout->setContentsMargins(0,0,0,0);
-
 	button=new QPushButton("&Close");
-	QObject::connect(button,&QPushButton::clicked,[=]() {this->licenceDialog->close();});
 	button->setIcon(QIcon::fromTheme("window-close"));
+	QObject::connect(button,&QPushButton::clicked,[this]()
+		{
+			this->killLicenceBox();
+		});
 	hlayout->addWidget(button);
 
 	hlayout->insertStretch(0,1);
 	vlayout->addWidget(hbox);
 
-	this->licenceDialog->setLayout((QLayout*)vlayout);
+	this->licenceDialog->setLayout(vlayout);
 	this->licenceDialog->setModal(true);
 	this->licenceDialog->resize(500,320);
 	this->licenceDialog->exec();
@@ -131,21 +139,38 @@ void AboutBoxClass::showLicence(void)
 	delete this->licenceDialog;
 }
 
-AboutBoxClass::AboutBoxClass(void)
+void AboutBoxClass::setHomepage(QString hpaddr,QString hpstr)
 {
+	this->hpLabel->setText(QString("<a href=\"%1\">%2</a>").arg(hpaddr).arg(hpstr));
 }
 
-AboutBoxClass::AboutBoxClass(QWidget* window,QString pixpath)
+void AboutBoxClass::setBodyText(QString bodystr)
+{
+	this->bodyLabel->setText(bodystr);
+}
+
+void AboutBoxClass::setAppName(void)
+{
+	QString xtradata="";
+
+	if(qApp->applicationVersion().isEmpty()==false)
+		xtradata=QString("<br><font size=\"3\">Version %1</font>").arg(qApp->applicationVersion());
+	
+	this->appNameLabel->setText(QString("<font size=\"5\"><b>%1</b></font>%2").arg(qApp->applicationDisplayName()).arg(xtradata));
+}
+
+AboutBoxClass::AboutBoxClass(QWidget *window,QString pixpath)
 {
 	QVBoxLayout	*vlayout=new QVBoxLayout;
 	QWidget		*hbox;
 	QHBoxLayout	*hlayout;
 	QPushButton	*button;
+
 	QPixmap		pic(pixpath);
-	QLabel		*label=new QLabel;
+	QLabel*		label=new QLabel;
 
 	this->aboutDialog=new QDialog(window);
-	this->aboutDialog->setWindowTitle("About");
+	this->aboutDialog->setWindowTitle(QString("About %1").arg(qApp->applicationDisplayName()));
 	this->aboutDialog->resize(320,128);
 	this->aboutDialog->setModal(true);
 
@@ -159,103 +184,97 @@ AboutBoxClass::AboutBoxClass(QWidget* window,QString pixpath)
 	label->setAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
 	vlayout->addWidget(label);
 //progname
-	label=new QLabel;
-	label->setText("<font size=\"5\"><b>" PACKAGE_STRING "</b></font>");
-	label->setAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
-	vlayout->addWidget(label);
+	appNameLabel=new QLabel;
+	appNameLabel->setText("");
+	appNameLabel->setAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+	vlayout->addWidget(appNameLabel);
 //text
-	label=new QLabel;
-	label->setText("QT 5/6 Linux Manpage Editor");
-	label->setAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
-	vlayout->addWidget(label);
+	this->bodyLabel=new QLabel;
+	this->bodyLabel->setText("");
+	this->bodyLabel->setAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+	vlayout->addWidget(this->bodyLabel);
 //copyrite
 	label=new QLabel;
 	label->setText("<small>" COPYRITE "</small>");
 	label->setAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
 	vlayout->addWidget(label);
 //homepage
-	label=new QLabel;
-	label->setText("<a href=\"" MANPAGEPAGEQTPAGE "\">" PACKAGE "</a>");
-	label->setOpenExternalLinks(true);
-	label->setAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
-	vlayout->addWidget(label);
+	this->hpLabel=new QLabel;
+	this->hpLabel->setText("<a href=\"https://keithdhedger.github.io/\">Home Page</a>");
+	this->hpLabel->setOpenExternalLinks(true);
+	this->hpLabel->setAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+	vlayout->addWidget(this->hpLabel);
+
 //credits
-	button=new QPushButton("&Credits");
-	QObject::connect(button,&QPushButton::clicked,[=]() {this->showCredits();});
-	hlayout->addWidget(button);
-	button->setIcon(QIcon::fromTheme("help-about"));
+	this->creditsButton=new QPushButton("&Credits");
+	this->creditsButton->setIcon(QIcon::fromTheme("text-x-credits"));
+	QObject::connect(this->creditsButton,&QPushButton::clicked,[this]()
+		{
+			this->showCredits();
+		});
+	hlayout->addWidget(this->creditsButton);
 
 //licence
-	button=new QPushButton("&Licence");
-	button->setIcon(QIcon::fromTheme("text-x-license"));
-	QObject::connect(button,&QPushButton::clicked,[=]() {this->showLicence();});
-	hlayout->addWidget(button);
+	this->licenseButton=new QPushButton("&Licence");
+	this->licenseButton->setIcon(QIcon::fromTheme("text-x-license"));
+	QObject::connect(this->licenseButton,&QPushButton::clicked,[this]()
+		{
+			this->showLicence();
+		});
+	hlayout->addWidget(this->licenseButton);
+
+//about qt
+	this->aboutQtButton=new QPushButton("&About Qt");
+	this->aboutQtButton->setIcon(QIcon::fromTheme("help-about"));
+	QObject::connect(this->aboutQtButton,&QPushButton::clicked,[this]()
+		{
+			qApp->aboutQt();
+		});
+	hlayout->addWidget(this->aboutQtButton);
 
 //close
 	button=new QPushButton("&Close");
-	QObject::connect(button,&QPushButton::clicked,[=]() {this->killAboutBox();});
-	hlayout->addWidget(button);
 	button->setIcon(QIcon::fromTheme("window-close"));
+	QObject::connect(button,&QPushButton::clicked,[this]()
+		{
+			this->killAboutBox();
+		});
+	hlayout->addWidget(button);
 
 	vlayout->addWidget(hbox);
-	this->aboutDialog->setLayout((QLayout*)vlayout);
+	this->aboutDialog->setLayout(vlayout);
 }
 
-void AboutBoxClass::showHelp(void)
+void AboutBoxClass::showAboutQtButton(bool show)
 {
-	QDialog		helpdialog;
-	QTextBrowser	*te=new QTextBrowser;
-	QVBoxLayout	*docvlayout=new QVBoxLayout;
-	QHBoxLayout	*hlayout;
-	QPushButton	*button;
-	QSettings	prefs;
+	this->aboutQtButton->setVisible(show);
+}
 
-	docvlayout->setContentsMargins(MARGINS,MARGINS,MARGINS,MARGINS);
-	docvlayout->addWidget(te);
+void AboutBoxClass::showLicenceButton(bool show)
+{
+	this->licenseButton->setVisible(show);
+}
 
-	te->setSource(QUrl::fromLocalFile(QString("%1/%2").arg(mpclass->realDataDir).arg("docs/help.html")));
-	te->setOpenExternalLinks(true);
-	hlayout=new QHBoxLayout;
+void AboutBoxClass::showCreditsButton(bool show)
+{
+	this->creditsButton->setVisible(show);
+}
 
-//back
-	button=new QPushButton("&Back");
-	button->setIcon(QIcon::fromTheme("go-previous"));
-	QObject::connect(button,&QPushButton::clicked,[te]()
-		{
-			te->backward();
-		});
-	hlayout->addWidget(button);
+void AboutBoxClass::showHelp(QString htmlpath)
+{
+	QDialog			dialog;
+	QVBoxLayout		*layout;
+	QTextBrowser		*textBrowser=new QTextBrowser(&dialog);
 
-//forward
-	button=new QPushButton("&Forward");
-	button->setIcon(QIcon::fromTheme("go-next"));
-	QObject::connect(button,&QPushButton::clicked,[te]()
-		{
-			te->forward();
-		});
-	hlayout->addWidget(button);
-	hlayout->addStretch();
+	textBrowser->setSource(QUrl(htmlpath));
+	layout=new QVBoxLayout(&dialog);
+    layout->addWidget(textBrowser);
+ 
+	QDialogButtonBox *buttonBox=new QDialogButtonBox(QDialogButtonBox::Close,&dialog);
+	QObject::connect(buttonBox,&QDialogButtonBox::rejected,&dialog,&QDialog::reject);
+	layout->addWidget( buttonBox);
 
-//close
-	button=new QPushButton("&Close");
-	button->setIcon(QIcon::fromTheme("window-close"));
-	QObject::connect(button,&QPushButton::clicked,[&helpdialog]()
-		{
-			helpdialog.close();
-		});
-	hlayout->addWidget(button);
-
-	docvlayout->addLayout(hlayout);
-
-	helpdialog.setLayout(docvlayout);
-	helpdialog.setWindowTitle(QString("%1 Help").arg(PACKAGE_NAME));
-	//helpdialog.resize(880,660);
-	if(prefs.contains("help/geometry")==true)
-		helpdialog.restoreGeometry(prefs.value("help/geometry").toByteArray());
-	else
-		helpdialog.setGeometry(100,100,880,660);
-
-	helpdialog.setModal(true);
-	helpdialog.exec();
-	prefs.setValue("help/geometry",helpdialog.saveGeometry());
+    dialog.setWindowTitle(QString("Help For %1").arg(qApp->applicationDisplayName()));
+    dialog.resize(640,480);
+    dialog.exec();
 }

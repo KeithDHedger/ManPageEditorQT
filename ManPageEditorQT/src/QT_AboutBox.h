@@ -1,6 +1,6 @@
 /*
  *
- * ©K. D. Hedger. Fri 10 Oct 14:20:29 BST 2025 keithdhedger@gmail.com
+ * ©K. D. Hedger. Sat  4 Jul 14:37:06 BST 2026 keithdhedger@gmail.com
 
  * This file (QT_AboutBox.h) is part of ManPageEditorQT.
 
@@ -18,32 +18,46 @@
  * along with ManPageEditorQT.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "globals.h"
+#include "credits.h"
+
 #ifndef _QT_ABOUTBOX_
 #define _QT_ABOUTBOX_
-
-#include "Globals.h"
 
 class AboutBoxClass : public QObject
 {
 	public:
-		AboutBoxClass(QWidget* window,QString pixpath);
-		AboutBoxClass(void);
+		AboutBoxClass(QWidget *window,QString pixpath=NULL);
 		~AboutBoxClass();
 
-		void		runAbout(void);
-		void		setLicence(QString);
-		void		setAuthors(QString authors);
-		void		showLicence(void);
-		void		showCredits(void);
-		void		killAboutBox(void);
-		void		showHelp(void);
+		QString		licence;
+		QString		credits;
+
+		void			runAbout(void);
+		void			setHomepage(QString hpaddr,QString hpstr);
+		void			setBodyText(QString bodystr);
+		void			showAboutQtButton(bool show=false);
+		void			showLicenceButton(bool show=false);
+		void			showCreditsButton(bool show=false);
+		void			showHelp(QString htmlpath);
 
 	private:
-		QDialog	*aboutDialog;
-		QDialog	*licenceDialog;
-		QDialog	*creditsDialog;
-		QString	licence;
-		QString	authors;
+		QDialog		*aboutDialog;
+		QDialog		*licenceDialog;
+		QDialog		*creditsDialog;
+		QLabel		*hpLabel;
+		QLabel		*bodyLabel;
+		QLabel		*appNameLabel;
+		QPushButton	*aboutQtButton;
+		QPushButton	*licenseButton;
+		QPushButton	*creditsButton;
+
+		void			setAppName(void);
+		void			showLicence(void);
+		void			showCredits(void);
+		void			killLicenceBox(void);
+		void			killAboutBox(void);
+		void			killCreditsBox(void);
 };
 
 #endif

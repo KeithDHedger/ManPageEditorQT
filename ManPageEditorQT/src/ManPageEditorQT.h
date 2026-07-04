@@ -42,7 +42,7 @@ enum {SPELLCHECKMENUITEM=0x2000,APPLYWORDBUTTON,IGNOREWORDBUTTON,ADDWORDBUTTON,C
 
 enum {FRCASE=0,FRUSEREGEX,FRREPLACEFIND,FRWRAP,FRALLFILES,FRHIGHLIGHTALL,FRREPLACEALL,FRSEARCHBACK,FRMAXSWITCHES};
 
-#include "Globals.h"
+#include "globals.h"
 
 class ManPageEditorQT : public QObject
 {
@@ -68,15 +68,20 @@ class ManPageEditorQT : public QObject
 		QString						terminalCommand="xterm -e ";
 		QString						lineHiliteColour="#30000000";
 		QString						extraHiliteColour="#30ff0000";
-		QSettings					prefs;
 		QTextEdit::LineWrapMode		lineWrap=QTextEdit::WidgetWidth;
+		QString						fontName="MonoSpace";
+		int							fontSize=12;
+		bool							useUnderline=false;
+		bool							zipPages=false;
+
+		QSettings					prefs;
 
 //app functions
 		void							initApp(void);
 		void							buildMainGui(void);
 		void							readConfigs(void);
 		void							setAppShortcuts(void);
-//		void							setToolbarSensitive(void);
+//		void							setToolbarSensitive(void);//TODO//
 		void							writeExitData(void);
 		bool							confirmClose(QTextEdit *te);
 		QTextEdit*					makeNewTab(QString html,QString sectname,bool issub,int pos=-1);
@@ -85,14 +90,6 @@ class ManPageEditorQT : public QObject
 //spell check
 		AspellConfig					*aspellConfig=NULL;
 		AspellSpeller				*spellChecker=0;
-		QDialog						*spellCheckGUI=NULL;
-		QComboBox					*wordDropBox;
-		QLabel						*infoLabel;
-		bool							returnWord=false;
-		QString						goodWord;
-		QString						badWord;
-		bool							cancelCheck=false;
-		void							spellCheckDoc(QTextEdit *te);
 
 //editor vars
 		QStatusBar					*statusBar;
@@ -107,10 +104,6 @@ class ManPageEditorQT : public QObject
 		bool							findAfterReplace=false;
 		int							currentPage=0;
 		bool							closingAllTabs=false;
-
-		QString						fontName="MonoSpace";
-		int							fontSize=12;
-		bool							useUnderline=false;
 //editor functions
 //menubar
 		QMenuBar						*menuBar;
@@ -160,7 +153,6 @@ class ManPageEditorQT : public QObject
 //file vars
 //file functions
 		QString						openFileDialog(QString title,QString dir);
-
 //document vars
 		struct manProps				pageProperties;
 		QVector<QLineEdit*>			propBoxes;
@@ -173,12 +165,11 @@ class ManPageEditorQT : public QObject
 		void							doItalic(void);
 		void							doClear(void);
 		void							doPreView(void);
+//aspell
+		void							doSpellCheckDoc(QTextEdit *te);
+
 
 //TODO//
-//prefswindow
-//prefswindow vars
-//prefswindow functions
-
 //find replace vars
 //		QWidget						*findReplaceDialog;
 //		QComboBox					*findDropBox;
@@ -196,8 +187,23 @@ class ManPageEditorQT : public QObject
 //		void							buildFindReplace(void);
 //		void							doFindReplace(int response_id);
 
+
+
 	protected:
 	private:
+//spellcheck
+		QLabel						*badWordLabel=NULL;
+		QDialog						*spellCheckWord=NULL;
+		QComboBox					*wordListDropbox=NULL;
+		QString						badWord;
+		QString						goodWord;
+		bool							blockFlag=false;
+		bool							cancelCheck=false;
+
+		void							buildWordCheckQt(void);
+		bool							checkTheWord(QString word);
+		void							doChangeWord(QTextEdit *te);
+//app
 		void							doFileMenuItems(MenuItemClass *mc);
 		void							doLiveSearch(const QString text="");
 		void							doEditMenuItems(MenuItemClass *mc);
@@ -205,6 +211,7 @@ class ManPageEditorQT : public QObject
 		void							doHelpMenuItems(MenuItemClass *mc);
 		bool							closeTabs(bool all);
 		void							hiliteLine(QTextEdit *te,QColor colour=QColor("#30000000"));
+
 };
 
 #endif

@@ -25,6 +25,7 @@ ManPageEditorQT::ManPageEditorQT(QApplication *app)
 {
 	this->application=app;
 	this->initApp();
+	this->buildWordCheckQt();
 }
 
 ManPageEditorQT::~ManPageEditorQT()
@@ -183,8 +184,6 @@ void ManPageEditorQT::buildMainGui(void)
 //
 //about
 	this->makeMenuItemClass(HELPMENU,"About",0,"help-about",ABOUTMENUITEM);
-//aboutqt
-	this->makeMenuItemClass(HELPMENU,"About QT",0,"help-about",ABOUTQTMENUITEM);
 
 //help
 	this->makeMenuItemClass(HELPMENU,"Help",0,"help-contents",HELPMENUITEM);
@@ -231,145 +230,228 @@ QTextEdit* ManPageEditorQT::makeNewTab(QString html,QString sectname,bool issub,
 	return(te);
 }
 
-void ManPageEditorQT::spellCheckDoc(QTextEdit *te)
+void ManPageEditorQT::doChangeWord(QTextEdit *te)
 {
-	QString							qstr;
-	QTextCursor						cursor;
-	QByteArray						bytearray;
-	QTextCharFormat					format;
+	QString	qstr;
+
+	if(te->textCursor().hasSelection()==true)
+		badWord=te->textCursor().selectedText();
+
+	goodWord=wordListDropbox->currentText();
+	te->textCursor().insertText(goodWord);
+
+	this->blockFlag=false;
+}
+
+void ManPageEditorQT::buildWordCheckQt(void)
+{
+	QVBoxLayout	*vlayout=new QVBoxLayout;
+	QWidget		*hbox;
+	QHBoxLayout	*hlayout;
+	QPushButton	*button;
+	QSettings	prefs("KDHedger",PACKAGE_NAME);
+
+	this->spellCheckWord=new QDialog(this->mainWindow);
+	this->spellCheckWord->setWindowTitle("Check Section");
+
+	hlayout=new QHBoxLayout;
+	hbox=new QWidget(spellCheckWord);
+	hbox->setLayout(hlayout);
+
+	badWordLabel=new QLabel(QString("Change <i><b>%1</b></i> to: ").arg(badWord),spellCheckWord);
+	hlayout->addWidget(badWordLabel);
+	this->wordListDropbox=new QComboBox(spellCheckWord);
+	hlayout->addWidget(wordListDropbox);
+	vlayout->addWidget(hbox);
+
+//buttons
+	hlayout=new QHBoxLayout;
+	hbox=new QWidget(spellCheckWord);
+	hbox->setLayout(hlayout);
+
+	button=new QPushButton("&Apply",spellCheckWord);
+	button->setIcon(QIcon::fromTheme("dialog-ok"));
+	QObject::connect(button,&QPushButton::clicked,[this]()
+		{
+			QTextEdit *te=this->getDocumentForTab(this->mainNotebook->currentIndex());
+			doChangeWord(te);
+		});
+	hlayout->addWidget(button);
+
+	button=new QPushButton("&Ignore",spellCheckWord);
+	button->setIcon(QIcon::fromTheme("list-remove"));
+	QObject::connect(button,&QPushButton::clicked,[this]()
+		{
+			aspell_speller_add_to_session(this->spellChecker,qPrintable(this->badWord),-1);
+			this->badWord.clear();
+			this->blockFlag=false;
+		});
+	hlayout->addWidget(button);
+
+	button=new QPushButton("A&dd",spellCheckWord);
+	button->setIcon(QIcon::fromTheme("list-add"));
+	QObject::connect(button,&QPushButton::clicked,[this]()
+		{
+			aspell_speller_add_to_personal(this->spellChecker,qPrintable(this->badWord),-1);
+			aspell_speller_save_all_word_lists(this->spellChecker);
+			this->badWord.clear();
+			this->blockFlag=false;
+		});
+	hlayout->addWidget(button);
+
+	button=new QPushButton("&Close",spellCheckWord);
+	button->setIcon(QIcon::fromTheme("dialog-cancel"));
+	QObject::connect(button,&QPushButton::clicked,[this]()
+		{
+			QSettings	prefs("KDHedger",PACKAGE_NAME);
+			prefs.setValue("spell/spellgeometry",this->spellCheckWord->saveGeometry());
+
+			this->badWord.clear();
+			this->goodWord.clear();
+			this->cancelCheck=true;
+			this->blockFlag=false;
+			this->spellCheckWord->hide();
+		});
+	hlayout->addWidget(button);
+
+	vlayout->addWidget(hbox);
+	spellCheckWord->setLayout(vlayout);
+	spellCheckWord->setModal(true);
+	spellCheckWord->restoreGeometry(prefs.value("spell/spellgeometry").toByteArray());
+}
+
+bool ManPageEditorQT::checkTheWord(QString word)
+{
+	int						correct;
+	AspellWordList			*suggestions=NULL;
+	AspellStringEnumeration	*elements=NULL;
+	const char				*suggestedword=NULL;
+	int						wordcnt=0;
+	bool						retval=false;
+
+	wordListDropbox->clear();
+	correct=aspell_speller_check(spellChecker,qPrintable(word),-1);
+	if(correct==0)
+		{
+			badWord=word;
+			cancelCheck=false;
+			badWordLabel->setText(QString("Change <i><b>%1</b></i> to: ").arg(badWord));
+			suggestions=(AspellWordList*)aspell_speller_suggest(spellChecker,qPrintable(word),-1);
+			if(suggestions==NULL)
+				return(false);
+			elements=aspell_word_list_elements(suggestions);
+			if(elements==NULL)
+				return(false);
+			while((suggestedword=aspell_string_enumeration_next(elements))!=NULL)
+				{
+					wordListDropbox->addItem(suggestedword);
+					wordcnt++;
+					suggestedword=NULL;
+				}
+			if(wordcnt==0)
+				return(false);
+
+			retval=true;
+			delete_aspell_string_enumeration(elements);
+			spellCheckWord->show();
+			while(blockFlag==true)
+				qApp->processEvents();
+		}
+	return(retval);
+}
+
+
+void ManPageEditorQT::doSpellCheckDoc(QTextEdit *te)
+{
 	QList<QTextEdit::ExtraSelection>	extraSelections;
-	QString							form;
-	QString							opts;
-	QStringList						slist;
-	QTextCursor						mc;
+	QTextCharFormat					format;
 	QTextEdit::ExtraSelection		selection;
-	AspellCanHaveError				*ret=NULL;
-	AspellDocumentChecker			*checker=NULL;
+	QTextCursor						mc;
+	QTextCursor						cursor;
+	QString							xbadword	;
+	QSettings						defaults("KDHedger",PACKAGE_NAME);
+	AspellCanHaveError				*ret;
+	AspellDocumentChecker			*checker;
 	AspellToken						token;
-	AspellWordList					*suggestions=NULL;
-	AspellStringEnumeration			*elements=NULL;
-	char*							line;
-	int								docstart=0;
-	const char						*suggestedword=NULL;
-	prefsClass						newprefs(QString("%1").arg("Spell Check"));
-
-	newprefs.reUseDialog=true;
-
-	cursor=te->textCursor();
-	qstr=te->toPlainText();
-	bytearray=qstr.toUtf8();
-	line=(char*)bytearray.constData();
+	int								diff;
+	unsigned int						goodwordlen;
+	char								*word_begin;
+	char								*line=NULL;
+	int								buffdiff=0;
 
 	/* Set up the document checker */
-	ret=new_aspell_document_checker(this->spellChecker);
+	if(spellChecker==NULL)
+		return;
+	ret=new_aspell_document_checker(spellChecker);
 	if (aspell_error(ret)!=0)
 		{
 			printf("Error: %s\n",aspell_error_message(ret));
 			return;
 		}
 
+	line=strdup(qPrintable(te->toPlainText()));
+	if(line==NULL)
+		return;
 	checker=to_aspell_document_checker(ret);
 	  /* First process the line */
 	aspell_document_checker_process(checker,line,-1);
+	diff=0;
 	  /* Now find the misspellings in the line */
-
 	while(token=aspell_document_checker_next_misspelling(checker),token.len!=0)
 		{
-	    /* Pay particular attention to how token.offset and diff is used */
-			this->goodWord="";
-			this->cancelCheck=false;
-			this->returnWord=true;
-			cursor.setPosition(docstart+token.offset);
-			cursor.movePosition(QTextCursor::EndOfWord,QTextCursor::KeepAnchor);
-			this->badWord=cursor.selectedText();
+			if(this->spellCheckWord->isHidden()==true)
+				this->spellCheckWord->show();
+			free(line);
+			line=strdup(qPrintable(te->toPlainText()));
+			/* Pay particular attention to how token.offset and diff is used */
+			xbadword=QString(line).mid(token.offset+diff,token.len);
+			goodWord.clear();
+			cursor=te->textCursor();
+			cursor.setPosition(token.offset-buffdiff,QTextCursor::MoveAnchor);
+			te->setTextCursor(cursor);
+			te->ensureCursorVisible();
 
 			extraSelections.clear();
 			format.setBackground(QColor(this->extraHiliteColour)); // Set highlight color
-			format.setForeground(QColor(newprefs.bestFontColour(this->extraHiliteColour))); // Set highlight color
 			selection.format=format;
-			selection.cursor=cursor;
+			selection.cursor=te->textCursor();
 			selection.cursor.clearSelection();
-			selection.cursor.setPosition(docstart+token.offset);
+			selection.cursor.setPosition(token.offset-buffdiff,QTextCursor::MoveAnchor);
 			selection.cursor.movePosition(QTextCursor::EndOfWord,QTextCursor::KeepAnchor);
 
-//move selection into view
-			mc=selection.cursor;
-			mc.movePosition(QTextCursor::NextBlock,QTextCursor::MoveAnchor,2);
-			mc.movePosition(QTextCursor::StartOfBlock);
-			te->setTextCursor(mc);
-			mc.movePosition(QTextCursor::PreviousBlock,QTextCursor::MoveAnchor,2);
-			mc.movePosition(QTextCursor::StartOfBlock);
-			te->setTextCursor(mc);
-
 			extraSelections.append(selection);
-//			// Apply the highlight
+			// Apply the highlight
 			te->setExtraSelections(extraSelections);
 
-			form="";
-			opts="";
-			slist.clear();
-
-			suggestions=(AspellWordList*)aspell_speller_suggest(spellChecker,this->badWord.toStdString().c_str(),-1);
-			elements=aspell_word_list_elements(suggestions);
-
-			while((suggestedword=aspell_string_enumeration_next(elements))!=NULL)
-				opts+=QString("%1@").arg(suggestedword);
-			delete_aspell_string_enumeration(elements);
-
-			if(opts.isEmpty()==true)
-				continue;
-			//no default entry
-			opts="@"+opts;
-			form=QString("edit@Unknown Word@%2@combostart@Correct Word To@%1comboend@").arg(opts).arg(this->badWord);
-
-			QDialogButtonBox::StandardButton	dbutton=(QDialogButtonBox::StandardButton)((int)QDialogButtonBox::Close|(int)QDialogButtonBox::Discard|(int)QDialogButtonBox::Apply);
-
-			newprefs.paged=false;
-			newprefs.useSavedPrefs=true;
-			newprefs.bb->setStandardButtons(dbutton);
-			newprefs.dialogPrefs.valid=false;
-
-			slist=form.split('@');
-			newprefs.createDialog(QString("Spell Check"),slist);
-
-			bool flag=true;
-			while(flag==true)
+			this->blockFlag=true;
+			checkTheWord(xbadword);
+			if(cancelCheck==true)
 				{
-					qApp->processEvents();
-					if(newprefs.dialogPrefs.valid==true)
-						{
-							if(newprefs.button==QDialogButtonBox::Apply)
-								{
-									comboTuple ct=newprefs.getComboValue("Correct Word To");
-									cursor.insertText(ct.value);
-									qstr=te->toPlainText();
-									bytearray=qstr.toUtf8();
-									line=(char*)bytearray.constData();
-									aspell_document_checker_process(checker,line,-1);
-									newprefs.dialogPrefs.valid=false;
-									flag=false;
-									continue;
-								}
-
-							if(newprefs.button==QDialogButtonBox::Close)
-								{
-									delete_aspell_document_checker(checker);
-									this->hiliteLine(te,this->lineHiliteColour);
-									return;
-								}
-
-							if(newprefs.button==QDialogButtonBox::Discard)
-								{
-									this->hiliteLine(te,this->lineHiliteColour);
-									aspell_speller_add_to_session(this->spellChecker,this->badWord.toStdString().c_str(),-1);
-									newprefs.dialogPrefs.valid=false;
-									flag=false;
-									continue;
-								}
-						}
+					delete_aspell_document_checker(checker);
+					te->setPlainText(line);
+					free(line);
+					return;
+				}
+			word_begin=line+token.offset+diff;
+			if(goodWord.isEmpty()==false)
+				{
+					goodwordlen=goodWord.length();
+					/* Replace the misspelled word with the replacement */
+					diff+=goodwordlen-token.len;
+					memmove(word_begin+goodwordlen,word_begin+token.len,strlen(word_begin+token.len)+1);
+					memcpy(word_begin,qPrintable(goodWord),goodwordlen);
+					te->setPlainText(line);
+					buffdiff+=badWord.length()-goodWord.length();
 				}
 		}
+	if(this->spellCheckWord->isHidden()==false)
+				this->spellCheckWord->hide();
+
 	delete_aspell_document_checker(checker);
+//replace all text in check document
+	te->setPlainText(line);
+	free(line);
+	defaults.setValue("spell/spellgeometry",this->spellCheckWord->saveGeometry());
 }
 
 void ManPageEditorQT::hiliteLine(QTextEdit *te,QColor colour)
@@ -394,7 +476,6 @@ void ManPageEditorQT::hiliteLine(QTextEdit *te,QColor colour)
 void ManPageEditorQT::initApp(void)
 {
 	char		tmpfoldertemplate[]="/tmp/ManPageEditorQT-XXXXXX";
-	//QRect	r(0,0,1024,768);
 	QDir		tdir;
 	QString	tstr;
 	QFile	file;
@@ -470,14 +551,6 @@ void ManPageEditorQT::initApp(void)
 	else
 		this->mainWindow->setGeometry(100,100,800,400);
 
-//	r=prefs.value("app/geometry").toRect();
-//	if(r.isEmpty()==true)
-//		{
-//			r.setWidth(1024);
-//			r.setHeight(768);
-//		}
-//	this->mainWindow->setGeometry(r);
-
 //	this->setToolbarSensitive();//TODO//
 	this->mainWindow->show();
 }
@@ -541,15 +614,7 @@ QString ManPageEditorQT::openFileDialog(QString title,QString dir)
 
 void ManPageEditorQT::writeExitData(void)
 {
-	//QRect rg;
-	//QRect rf;
-
 //editor
-	//rg=this->mainWindow->geometry();
-	//rf=this->mainWindow->frameGeometry();
-	//rf.setHeight(rf.height()-(rf.height()-rg.height()));
-	//rf.setWidth(rf.width()-(rf.width()-rg.width()));
-	//this->prefs.setValue("app/geometry",rf);
 	this->prefs.setValue("app/geometry",this->mainWindow->saveGeometry());
 	this->prefs.setValue("editor/lastsavedir",this->lastSaveDir);
 	this->prefs.setValue("editor/lastloaddir",this->lastLoadDir);
@@ -882,72 +947,38 @@ void ManPageEditorQT::doPreView(void)
 
 void ManPageEditorQT::doPrefs(void)
 {
-	prefsClass	newprefs(QString("%1").arg("Preferences"));
+	prefsClass	newprefs;
 
-	QDialogButtonBox::StandardButton	dbutton=(QDialogButtonBox::StandardButton)((int)QDialogButtonBox::Ok|(int)QDialogButtonBox::Cancel);
-
-	newprefs.paged=false;
-	newprefs.bb->setStandardButtons(dbutton);
-	newprefs.autoshowDialog=true;
-	newprefs.dialogPrefs.valid=false;
-
-	newprefs.createDialog("ManpageQT Prefs",configStr,QSize(480,256));
-
+	newprefs.createDialog(PACKAGE_STRING,configStr);
 	if(newprefs.dialogPrefs.valid==true)
 		{
-			newprefs.saveCurrentPrefs();
-	
 			QTextEdit	*te;
-			stringTuple	st;
-			boolTuple	bt;
 			QString		fh;
-			QString		oldname=this->fontName;
+			QFont		fnt;
 
-			st=newprefs.getStringValue("teminal_command");
-			if(st.valid==true)
-				mpclass->terminalCommand=st.value;
+			mpclass->terminalCommand=newprefs.dialogPrefs.editBoxes[TERMBOX]->text();
+			mpclass->lineHiliteColour=newprefs.dialogPrefs.colourBoxes[HIGHLIGHTBOX]->text();
+			mpclass->extraHiliteColour=newprefs.dialogPrefs.colourBoxes[SPELLBOX]->text();
+			mpclass->zipPages=newprefs.dialogPrefs.checkBoxes[GZIPBOX]->isChecked();
+			if(mpclass->zipPages=newprefs.dialogPrefs.checkBoxes[WRAPBOX]->isChecked()==true)
+				mpclass->lineWrap=QTextEdit::WidgetWidth;
+			else
+				mpclass->lineWrap=QTextEdit::NoWrap;
 
-			st=newprefs.getStringValue("highlight_colour");
-				if(st.valid==true)
-					mpclass->lineHiliteColour=st.value;
-
-			st=newprefs.getStringValue("spell_check_colour");
-				if(st.valid==true)
-					mpclass->extraHiliteColour=st.value;
-
-			bt=newprefs.getBoolValue("italic_as_underline");
-			if(bt.valid==true)
-				{
-					if(bt.value==true)
-						mpclass->italicMenuItem->setAppearance("format-text-underline","Underline","Ctrl+U");
-					else
-						mpclass->italicMenuItem->setAppearance("format-text-italic","Italic","Ctrl+I");
-					mpclass->useUnderline=bt.value;
-				}
-
-			bt=newprefs.getBoolValue("wrap_lines");
-			if(bt.valid==true)
-				{
-					if(bt.value==true)
-						this->lineWrap=QTextEdit::WidgetWidth;
-					else
-						this->lineWrap=QTextEdit::NoWrap;
-				}
-
-			st=newprefs.getStringValue("main_font");
-			if(st.valid==true)
-				{
-					QFont fnt;
-					fnt.fromString(st.value);
-					this->fontName=fnt.family();
-					this->fontSize=fnt.pointSize();
-				}
-
+			if(newprefs.dialogPrefs.checkBoxes[ITALICBOX]->isChecked()==true)
+				mpclass->italicMenuItem->setAppearance("format-text-underline","Underline","Ctrl+U");
+			else
+				mpclass->italicMenuItem->setAppearance("format-text-italic","Italic","Ctrl+I");
+			mpclass->useUnderline=newprefs.dialogPrefs.checkBoxes[ITALICBOX]->isChecked();
+		
+			fnt.fromString(newprefs.dialogPrefs.fontBoxes[FONTBOX]->text());
+			mpclass->fontName=fnt.family();
+			mpclass->fontSize=fnt.pointSize();
 
 			for(int j=0;j<this->mainNotebook->count();j++)
 				{
 					te=this->getDocumentForTab(j);
-						te->setLineWrapMode(this->lineWrap);
+					te->setLineWrapMode(this->lineWrap);
 					te->setFont(QFont(this->fontName,this->fontSize));
 					te->setCurrentFont(QFont(this->fontName,this->fontSize));
 

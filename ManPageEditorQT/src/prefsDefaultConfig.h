@@ -21,6 +21,14 @@
 #ifndef _PREFSDEFAULTCONFIG_H_
 #define _PREFSDEFAULTCONFIG_H_
 
+#define HIGHLIGHTBOX 0
+#define SPELLBOX 1
+#define TERMBOX 0
+#define FONTBOX 0
+#define GZIPBOX 0
+#define WRAPBOX 1
+#define ITALICBOX 2
+
 static const QStringList	configStr={
 "edit",
 "Teminal Command",

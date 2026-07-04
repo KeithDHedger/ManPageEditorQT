@@ -148,7 +148,8 @@ void ManPageEditorQT::doEditMenuItems(MenuItemClass *mc)
 				break;
 
 			case SPELLCHECKMENUITEM:
-				this->spellCheckDoc(te);
+				//this->spellCheckDoc(te);
+				this->doSpellCheckDoc(te);
 				break;
 
 			case FINDMENUITEM://TODO//
@@ -182,19 +183,22 @@ void ManPageEditorQT::doHelpMenuItems(MenuItemClass *mc)
 		{
 			case ABOUTMENUITEM:
 				{
-					QString			content;
-					QFile			licencefile(QString("%1/docs/gpl-3.0.txt").arg(this->realDataDir));
-					bool				retval;
 					AboutBoxClass	about(this->mainWindow,QString("%1/pixmaps/%2.png").arg(this->realDataDir).arg(PACKAGE));
-
-					retval=licencefile.open(QIODevice::Text | QIODevice::ReadOnly);
-					if(retval==true)
+					QFile			file(QString("%1/docs/gpl-3.0.txt").arg(this->realDataDir));
+							
+					if(file.open(QIODevice::ReadOnly | QIODevice::Text))
 						{
-							content=QString::fromUtf8(licencefile.readAll());
-							licencefile.close();
-							about.setLicence(content);
+							QTextStream in(&file);
+							about.licence=in.readAll();
+							file.close();
 						}
-					about.setAuthors(defaultauthors);
+					about.credits=credits;
+					about.setHomepage(QString("%1").arg(GLOBALWEBSITE),"Home Page");
+					about.setBodyText("A Qt 5/6 Linux manpage editor");
+					about.showAboutQtButton(true);
+					about.showLicenceButton(true);
+					about.showCreditsButton(true);
+
 					about.runAbout();
 				}
 				break;
@@ -204,8 +208,8 @@ void ManPageEditorQT::doHelpMenuItems(MenuItemClass *mc)
 
 			case HELPMENUITEM:
 				{
-					AboutBoxClass	about;
-					about.showHelp();
+					AboutBoxClass	about(this->mainWindow);
+					about.showHelp(QString("%1/docs/help.html").arg(this->realDataDir));
 				}
 				break;
 		}

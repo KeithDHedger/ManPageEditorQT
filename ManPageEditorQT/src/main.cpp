@@ -18,34 +18,23 @@
  * along with ManPageEditorQT.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "Globals.h"
+#include "globals.h"
 
 int main(int argc, char **argv)
 {
-	int				status;
 	QApplication		app(argc,argv);
+	QVariant			qvar;
 
 	prefsClass		newprefs(QString("%1").arg(PACKAGE_NAME));
-	stringTuple		st;
-	boolTuple		bt;
+	prefsClass		cliargs;	
+	bool				parse;	
+	int				status;
 
-	LFSTK_prefsClass	prefs(QString(PACKAGE_NAME).toLower().toStdString(),VERSION);
 	option			long_options[]=
 		{
-			{"showsyspage",no_argument,NULL,'p'},
-			{"opensyspage",required_argument,NULL,'s'},
+			{"selectpage",no_argument,NULL,'p'},
 			{0,0,0,0}
 		};
-
-	prefs.prefsMap=
-		{
-			{prefs.LFSTK_hashFromKey("showsyspage"),{TYPEBOOL,"showsyspage","Open system manpage dialog at start","",false,0}},
-			{prefs.LFSTK_hashFromKey("opensyspage"),{TYPESTRING,"opensyspage","Open system manpage","",false,0}}
-		};
-
-
-	if(prefs.LFSTK_argsToPrefs(argc,argv,long_options,true)==false)
-		return(0);
 
 	app.setOrganizationName("KDHedger");
 	app.setApplicationName(PACKAGE_NAME);
@@ -55,85 +44,68 @@ int main(int argc, char **argv)
 	mpclass->mpConv->manString=mpclass->getProperties();
 	mpclass->mpConv->appFontName=app.font().family();
 
-	st=newprefs.getStringValue("main_font");
-	if(st.valid==true)
+	qvar=newprefs.getSavedPrefValue("main_font");
+	if(qvar.isValid()==true)
 		{
 			QFont fnt;
-			fnt.fromString(st.value);
+			fnt.fromString(qvar.toString());
 			mpclass->fontName=fnt.family();
 			mpclass->fontSize=fnt.pointSize();
 		}
 
-	st=newprefs.getStringValue("highlight_colour");
-	if(st.valid==true)
-		mpclass->lineHiliteColour=st.value;
+	qvar=newprefs.getSavedPrefValue("highlight_colour");
+	if(qvar.isValid()==true)
+		mpclass->lineHiliteColour=qvar.toString();
 
-	st=newprefs.getStringValue("spell_check_colour");
-	if(st.valid==true)
-		mpclass->extraHiliteColour=st.value;
+	qvar=newprefs.getSavedPrefValue("spell_check_colour");
+	if(qvar.isValid()==true)
+		mpclass->extraHiliteColour=qvar.toString();
 
-	st=newprefs.getStringValue("teminal_command");
-	if(st.valid==true)
-		mpclass->terminalCommand=st.value;
+	qvar=newprefs.getSavedPrefValue("teminal_command");
+	if(qvar.isValid()==true)
+		mpclass->terminalCommand=qvar.toString();
 
-	bt=newprefs.getBoolValue("italic_as_underline");
-	if(bt.valid==true)
+	qvar=newprefs.getSavedPrefValue("italic_as_underline");
+	if(qvar.isValid()==true)
 		{
-			if(bt.value==true)
+			if(qvar.toBool()==true)
 				mpclass->italicMenuItem->setAppearance("format-text-underline","Underline","Ctrl+U");
 			else
 				mpclass->italicMenuItem->setAppearance("format-text-italic","Italic","Ctrl+I");
-			mpclass->useUnderline=bt.value;
+			mpclass->useUnderline=qvar.toBool();
 		}
 
-	bt=newprefs.getBoolValue("wrap_lines");
-		if(bt.valid==true)
-			{
-				if(bt.value==true)
-					mpclass->lineWrap=QTextEdit::WidgetWidth;
-				else
-					mpclass->lineWrap=QTextEdit::NoWrap;
-			}
+	qvar=newprefs.getSavedPrefValue("wrap_lines");
+	if(qvar.isValid()==true)
+		{
+			if(qvar.toBool()==true)
+				mpclass->lineWrap=QTextEdit::WidgetWidth;
+			else
+				mpclass->lineWrap=QTextEdit::NoWrap;
+		}
 
-	if(prefs.LFSTK_getString("opensyspage").empty()==false)
+	parse=cliargs.doCliArgs(argc,argv,long_options);
+	if(parse==false)
+		{
+			fprintf(stderr,"%s","HELP!!!");
+			exit(0);
+		}
+
+	if(cliargs.extraCliArgs.size()>0)
 		{
 			std::string			sfp;
 			runExternalProcClass	rp;
 
 			rp.trimOP=true;
-			sfp=rp.runExternalCommands(QString("man -w %1").arg(prefs.LFSTK_getCString("opensyspage")).toStdString(),true);
+			sfp=rp.runExternalCommands(QString("man -w %1").arg(cliargs.extraCliArgs.constLast()).toStdString(),true);
 			mpclass->mpConv->importManpage(QString::fromStdString(sfp));;
 		}
-	else
+	else if(cliargs.prefsData.contains(cliargs.hashFromKey("selectpage")))
 		{
-			if(prefs.LFSTK_getBool("showsyspage")==true)
-				{
 					QString filepath;
 					filepath=mpclass->mpConv->buildOpenSystemPage();
 					if(filepath.isEmpty()==false)
 						mpclass->mpConv->importManpage(filepath);
-				}
-			else
-				{
-					if(prefs.cliArgs.size()>0)
-						{
-							if(QFileInfo::exists(prefs.cliArgs.at(0).c_str()))
-								{
-									mpclass->mpConv->importManpage(prefs.cliArgs.at(0).c_str());
-								}
-							else
-								{
-									QString				command;
-									std::string			sfp;
-									runExternalProcClass	rp;
-
-									command=QString("man -w %1").arg(prefs.cliArgs.at(0).c_str());
-									rp.trimOP=true;
-									sfp=rp.runExternalCommands(command.toStdString(),true);
-									mpclass->mpConv->importManpage(sfp.c_str());
-								}
-						}
-				}
 		}
 
 	status=app.exec();

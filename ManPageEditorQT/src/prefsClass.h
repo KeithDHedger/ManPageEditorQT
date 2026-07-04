@@ -1,6 +1,6 @@
 /*
  *
- * ©K. D. Hedger. Tue 21 Oct 12:50:36 BST 2025 keithdhedger@gmail.com
+ * ©K. D. Hedger. Sat  4 Jul 15:46:20 BST 2026 keithdhedger@gmail.com
 
  * This file (prefsClass.h) is part of ManPageEditorQT.
 
@@ -21,7 +21,7 @@
 #ifndef _PREFSCLASS_
 #define _PREFSCLASS_
 
-#include "Globals.h"
+#include "globals.h"
 
 #define RITESTRETCH 2
 
@@ -52,81 +52,44 @@ struct prefsReturnStruct
 	QHash<int,QLineEdit*>	fileBoxes;
 	QHash<int,QString>		fileBoxesPrefsName;
 	int						fileBoxCnt=0;
+
 	bool						valid=false;
-};
-
-struct boolTuple
-{
-	bool		value;
-	bool		valid;
-};
-
-struct stringTuple
-{
-	QString	value;
-	bool		valid;
-};
-
-struct comboTuple
-{
-	QString	value;
-	int		index;
-	bool		valid;
-};
-
-struct spinTuple
-{
-	double	value;
-	double	min;
-	double	max;
-	bool		valid;
 };
 
 class prefsClass
 {
 	public:
-		prefsClass(QString prefsname);
+		prefsClass(QString pname="");
 		~prefsClass();
 
-	prefsReturnStruct		dialogPrefs;
-	QStringList				prefsNames;
-	bool						paged=false;
-	QString					opSep="\n";
-	QDialogButtonBox			*bb=NULL;
-	bool						autoshowDialog=true;
-	bool						useSavedPrefs=true;
-	QString					dialogTitle;
-	QString					prefsEntry;
-	int						button=QDialogButtonBox::NoButton;
+		prefsReturnStruct	dialogPrefs;
+		QHash<int,QVariant>	prefsData;
+		QHash<int,QStringList>	prefsStrData;
+		QStringList			prefsNames;
+		bool					paged=false;
+		QString				opSep="\n";
+		QDialogButtonBox		*bb;
+		QStringList			extraCliArgs;
 
-	bool						reUseDialog=false;
-
-	void						createDialog(QString title,QStringList items,QSize sze=QSize(-1,-1));
-	void						createDialog(QString title,QString filepath,QSize sze=QSize(-1,-1));
-	QSize					adjustBoxSize(int defw,int defy);
-
-	void						printCurrentPrefs(void);
-	void						saveCurrentPrefs(void);
-
-	boolTuple				getCheckValue(QString prefsname);//TODO//
-	stringTuple				getEditValue(QString prefsname);//TODO//
-	comboTuple				getComboValue(QString prefsname);//TODO//
-	spinTuple				getSpinValue(QString prefsname);//TODO//
-	stringTuple				getColourValue(QString prefsname);//TODO//
-	stringTuple				getFontValue(QString prefsname);//TODO//
-	stringTuple				getFileValue(QString prefsname);//TODO//
-
-	boolTuple				getBoolValue(QString prefsname);
-	stringTuple				getStringValue(QString prefsname);
-	spinTuple				getFloatValue(QString prefsname);
-
-
-	int						findByName(QHash<int,QString> section,QString name);
-
-	QString					bestFontColour(QString colour);
+		bool					doCliArgs(int argc,char **argv,option longoptions[]);
+		void					createDialog(QString title,QStringList items,QSize sze=QSize(-1,-1));
+		void					writePrefs(void);
+		void					writeManualPrefs(void);
+		void					writeSinglePref(QString name);
+		void					printCurrentPrefs(void);
+		void					addPref(QString name,QVariant qvar);
+		void					setPrefValue(QString name,QVariant val);
+		unsigned long		hashFromKey(QString key);
+		QVariant				getPrefValue(QString name);
+		QVariant				getSavedPrefValue(QString name);
+		QVariant				addPrefSavedValue(QString name,QVariant qvar);
+		void					appendStrPref(QString name,QString str);
 
 	protected:
 	private:
+		QString				bestFontColour(QString colour);
+		QString				prefsFileName;
+		QString				fixPrefName(QString name);
 };
 
 #endif

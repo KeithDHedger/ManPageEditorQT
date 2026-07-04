@@ -24,7 +24,7 @@
 #ifndef _QT_MANPAGEEXPORTER_H
 #define _QT_MANPAGEEXPORTER_H
 
-#include "Globals.h"
+#include "globals.h"
 
 class QManpageExporter
 {

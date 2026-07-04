@@ -21,6 +21,6 @@
 #ifndef _CALLBACKS_
 #define _CALLBACKS_
 
-#include "Globals.h"
+#include "globals.h"
 
 #endif

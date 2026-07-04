@@ -19,7 +19,7 @@
 #ifndef _RUNEXTERNALPROC_
 #define _RUNEXTERNALPROC_
 
-#include "Globals.h"
+#include "globals.h"
 
 #define MAXARGS 50
 #define BUFFER_SIZE 4096

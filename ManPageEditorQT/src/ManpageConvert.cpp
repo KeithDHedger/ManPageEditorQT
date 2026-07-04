@@ -118,17 +118,20 @@ void ManpageConvertClass::exportManpage(QString filepath,bool nozip)
 	if(data.open(QFile::WriteOnly|QFile::Truncate))
 		{
 			prefsClass	newprefs(QString("%1").arg(PACKAGE_NAME));
-			boolTuple	bt;
+			//boolTuple	bt;
+			bool bt;
 			QTextStream	out(&data);
 			out<<os;
 			data.close();
 
-			bt=newprefs.getBoolValue("gzip_pages");
-			if((bt.valid==true) && (bt.value==true) && (nozip==false))
-				{
-					runExternalProcClass	rp;
-					rp.runExternalCommands(QString("gzip -f '%1'").arg(filepath).toStdString(),false,"/dev/null");
-				}
+//			newprefs.getSavedPrefValue("gzip_pages");
+//			//bt=newprefs.getBoolValue("gzip_pages");
+//			//if((bt.valid==true) && (bt.value==true) && (nozip==false))
+//			if(bt==true) && (nozip==false))
+//				{
+//					runExternalProcClass	rp;
+//					rp.runExternalCommands(QString("gzip -f '%1'").arg(filepath).toStdString(),false,"/dev/null");
+//				}
 		}
 	else
 		{

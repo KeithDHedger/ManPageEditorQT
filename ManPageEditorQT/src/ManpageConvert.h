@@ -21,7 +21,7 @@
 #ifndef _MANPAGECONVERT_
 #define _MANPAGECONVERT_
 
-#include "Globals.h"
+#include "globals.h"
 
 class ManpageConvertClass
 {

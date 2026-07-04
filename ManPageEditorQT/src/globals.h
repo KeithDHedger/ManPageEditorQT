@@ -23,14 +23,15 @@
 
 #include <QUrl>
 
+#include <config.h>
+
 #include <aspell.h>
 #include "qtincs.h"
-#include "internet.h"
+#include "credits.h"
 
 class QManpageExporter;
 class runExternalProcClass;
 class prefsClass;
-class LFSTK_prefsClass;
 class AboutBoxClass;
 class NoteBookClass;
 class ManPageEditorQT;
@@ -49,7 +50,6 @@ struct manProps
 	QString catagory="My set of programs";
 };
 
-#include "LFSTKPrefsClass.h"
 #include "runExternalProc.h"
 #include "prefsClass.h"
 #include "QT_AboutBox.h"

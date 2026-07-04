@@ -21,7 +21,7 @@
 #ifndef _QT_NOTEBOOK_
 #define _QT_NOTEBOOK_
 
-#include "Globals.h"
+#include "globals.h"
 
 #define LEFTSCROLLBUTTON 1
 #define RIGHTSCROLLBUTTON 2

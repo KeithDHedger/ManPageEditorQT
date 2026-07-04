@@ -1,4 +1,9 @@
 0.4.0
+Redone spell check.
+Standadised prefs.
+Removed redundant about qt from help menu.
+Redone aboutbox icons.
+Standadised about box.
 Fixed licence button icon.
 Removed unneeded icons.
 Save size/position of help dialog.

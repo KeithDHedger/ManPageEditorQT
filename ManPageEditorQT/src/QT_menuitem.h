@@ -21,7 +21,7 @@
 #ifndef _QT_MENUITEM_
 #define _QT_MENUITEM_
 
-#include "Globals.h"
+#include "globals.h"
 
 class MenuItemClass : public QAction
 {

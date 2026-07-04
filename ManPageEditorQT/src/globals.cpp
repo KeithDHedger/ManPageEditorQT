@@ -18,6 +18,6 @@
  * along with ManPageEditorQT.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "Globals.h"
+#include "globals.h"
 
 ManPageEditorQT	*mpclass=NULL;
