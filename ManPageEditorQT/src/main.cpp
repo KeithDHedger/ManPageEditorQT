@@ -32,10 +32,20 @@ int main(int argc, char **argv)
 
 	option			long_options[]=
 		{
-			{"selectpage",no_argument,NULL,'p'},
+			{"selectpage",no_argument,NULL,'s'},
 			{0,0,0,0}
 		};
-
+	parse=cliargs.doCliArgs(argc,argv,long_options);
+	if(parse==false)
+		{
+			fprintf(stderr,"%s","\
+manpageeditorqt 0.4.0\n\
+Usage:\n\
+manpageeditorqt [OPTION] [Manpage|/path/to/man/page]\n\
+-s, --selectpage\n\
+        Open system manpage dialog at start\n");
+			exit(0);
+		}
 	app.setOrganizationName("KDHedger");
 	app.setApplicationName(PACKAGE_NAME);
 	app.setApplicationVersion(PACKAGE_VERSION);
@@ -84,12 +94,7 @@ int main(int argc, char **argv)
 				mpclass->lineWrap=QTextEdit::NoWrap;
 		}
 
-	parse=cliargs.doCliArgs(argc,argv,long_options);
-	if(parse==false)
-		{
-			fprintf(stderr,"%s","HELP!!!");
-			exit(0);
-		}
+
 
 	if(cliargs.extraCliArgs.size()>0)
 		{
