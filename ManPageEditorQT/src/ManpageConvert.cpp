@@ -102,7 +102,8 @@ void ManpageConvertClass::exportManpage(QString filepath,bool nozip)
 {
 	QString	manpage=this->mainClass->getProperties(this->manString);
 	QString os="";
-	
+	bool		dozip=false;
+
 	for(int j=0;j<this->mainClass->mainNotebook->count();j++)
 		{
 			QTextEdit *te=this->mainClass->getDocumentForTab(j);
@@ -118,20 +119,17 @@ void ManpageConvertClass::exportManpage(QString filepath,bool nozip)
 	if(data.open(QFile::WriteOnly|QFile::Truncate))
 		{
 			prefsClass	newprefs(QString("%1").arg(PACKAGE_NAME));
-			//boolTuple	bt;
 			bool bt;
 			QTextStream	out(&data);
 			out<<os;
 			data.close();
 
-//			newprefs.getSavedPrefValue("gzip_pages");
-//			//bt=newprefs.getBoolValue("gzip_pages");
-//			//if((bt.valid==true) && (bt.value==true) && (nozip==false))
-//			if(bt==true) && (nozip==false))
-//				{
-//					runExternalProcClass	rp;
-//					rp.runExternalCommands(QString("gzip -f '%1'").arg(filepath).toStdString(),false,"/dev/null");
-//				}
+			dozip=newprefs.getSavedPrefValue("gzip_pages").toBool();
+			if(dozip==true || mpclass->zipPages==true)
+				{
+					runExternalProcClass	rp;
+					rp.runExternalCommands(QString("gzip -f '%1'").arg(filepath).toStdString(),false,"/dev/null");
+				}
 		}
 	else
 		{

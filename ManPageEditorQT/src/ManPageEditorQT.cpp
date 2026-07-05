@@ -940,9 +940,10 @@ void ManPageEditorQT::doClear(void)
 void ManPageEditorQT::doPreView(void)
 {
 	runExternalProcClass	rp;
+//	rp.showCli=true;
 
 	this->mpConv->exportManpage(this->tmpFolderName+"/preview",true);
-	rp.runExternalCommands(QString("%1 \"man '%2/preview'\"").arg(this->terminalCommand,this->tmpFolderName).toStdString(),false,"/dev/null");
+	rp.runExternalCommands(QString("%1 man '%2/preview'").arg(this->terminalCommand).arg(this->tmpFolderName).toStdString(),false,"/dev/null");
 }
 
 void ManPageEditorQT::doPrefs(void)
@@ -960,7 +961,7 @@ void ManPageEditorQT::doPrefs(void)
 			mpclass->lineHiliteColour=newprefs.dialogPrefs.colourBoxes[HIGHLIGHTBOX]->text();
 			mpclass->extraHiliteColour=newprefs.dialogPrefs.colourBoxes[SPELLBOX]->text();
 			mpclass->zipPages=newprefs.dialogPrefs.checkBoxes[GZIPBOX]->isChecked();
-			if(mpclass->zipPages=newprefs.dialogPrefs.checkBoxes[WRAPBOX]->isChecked()==true)
+			if(newprefs.dialogPrefs.checkBoxes[WRAPBOX]->isChecked()==true)
 				mpclass->lineWrap=QTextEdit::WidgetWidth;
 			else
 				mpclass->lineWrap=QTextEdit::NoWrap;

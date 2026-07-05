@@ -38,8 +38,7 @@ int main(int argc, char **argv)
 	parse=cliargs.doCliArgs(argc,argv,long_options);
 	if(parse==false)
 		{
-			fprintf(stderr,"%s","\
-manpageeditorqt 0.4.0\n\
+			fprintf(stderr,"%s\n%s",PACKAGE_STRING,"\
 Usage:\n\
 manpageeditorqt [OPTION] [Manpage|/path/to/man/page]\n\
 -s, --selectpage\n\
