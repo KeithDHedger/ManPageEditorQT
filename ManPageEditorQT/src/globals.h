@@ -53,6 +53,7 @@ struct manProps
 #include "runExternalProc.h"
 #include "prefsClass.h"
 #include "QT_AboutBox.h"
+#include "QT_SpellCheck.h"
 #include "ManPageEditorQT.h"
 #include "QT_notebook.h"
 #include "QT_menuitem.h"

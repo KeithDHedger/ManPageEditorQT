@@ -269,7 +269,7 @@ void ManPageEditorQT::buildWordCheckQt(void)
 	hbox=new QWidget(spellCheckWord);
 	hbox->setLayout(hlayout);
 
-	button=new QPushButton("&Apply",spellCheckWord);
+	button=new QPushButton("&Apply",this->spellCheckWord);
 	button->setIcon(QIcon::fromTheme("dialog-ok"));
 	QObject::connect(button,&QPushButton::clicked,[this]()
 		{
@@ -278,7 +278,7 @@ void ManPageEditorQT::buildWordCheckQt(void)
 		});
 	hlayout->addWidget(button);
 
-	button=new QPushButton("&Ignore",spellCheckWord);
+	button=new QPushButton("&Ignore",this->spellCheckWord);
 	button->setIcon(QIcon::fromTheme("list-remove"));
 	QObject::connect(button,&QPushButton::clicked,[this]()
 		{
@@ -288,7 +288,7 @@ void ManPageEditorQT::buildWordCheckQt(void)
 		});
 	hlayout->addWidget(button);
 
-	button=new QPushButton("A&dd",spellCheckWord);
+	button=new QPushButton("A&dd",this->spellCheckWord);
 	button->setIcon(QIcon::fromTheme("list-add"));
 	QObject::connect(button,&QPushButton::clicked,[this]()
 		{
@@ -299,7 +299,7 @@ void ManPageEditorQT::buildWordCheckQt(void)
 		});
 	hlayout->addWidget(button);
 
-	button=new QPushButton("&Close",spellCheckWord);
+	button=new QPushButton("&Close",this->spellCheckWord);
 	button->setIcon(QIcon::fromTheme("dialog-cancel"));
 	QObject::connect(button,&QPushButton::clicked,[this]()
 		{

@@ -148,8 +148,12 @@ void ManPageEditorQT::doEditMenuItems(MenuItemClass *mc)
 				break;
 
 			case SPELLCHECKMENUITEM:
-				//this->spellCheckDoc(te);
-				this->doSpellCheckDoc(te);
+				//this->doSpellCheckDoc(te);
+				{
+					QT_SpellCheckClass chk(this->mainWindow);
+					chk.te=te;
+					chk.doSpellCheckDoc();
+				}
 				break;
 
 			case FINDMENUITEM://TODO//
