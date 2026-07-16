@@ -28,11 +28,13 @@
 #include <aspell.h>
 #include "qtincs.h"
 #include "credits.h"
+#include "QT_FindClass.h"
 
 class QManpageExporter;
 class runExternalProcClass;
 class prefsClass;
 class AboutBoxClass;
+class QT_FindClass;
 class NoteBookClass;
 class ManPageEditorQT;
 class MenuItemClass;

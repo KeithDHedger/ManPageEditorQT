@@ -36,11 +36,13 @@ ManPageEditorQT::~ManPageEditorQT()
 	delete_aspell_config(this->aspellConfig);
 	delete_aspell_speller(this->spellChecker);
 	delete this->mpConv;
+	delete this->fc;
+	delete this->spellCheckWord;
 }
 
 MenuItemClass* ManPageEditorQT::makeMenuItemClass(int mainmenu,const QString name,const QKeySequence key,const QString iconname,int userdata)
 {
-	MenuItemClass	*menuitem=new MenuItemClass(name);
+	MenuItemClass	*menuitem=new MenuItemClass(name,this->mainWindow);
 	QIcon			itemicon=QIcon::fromTheme(iconname);
 
 	menuitem->setMenuID(userdata);
@@ -86,13 +88,36 @@ MenuItemClass* ManPageEditorQT::makeMenuItemClass(int mainmenu,const QString nam
 	return(menuitem);
 }
 
+void ManPageEditorQT::reHighLight(void)
+{
+	QTextEdit	*te=this->getDocumentForTab(-1);
+
+	if(te==NULL)
+		return;
+
+	this->fc->te=te;
+	if(this->fc->findReplaceDialog->isVisible()==true && this->fc->highlightAll==true)
+		{
+			this->fc->resetHighLights();
+			this->hiliteLine(te,this->lineHiliteColour);
+			this->fc->highLightAllMatches();
+		}
+	else
+		this->hiliteLine(te,this->lineHiliteColour);
+}
+
 void ManPageEditorQT::buildMainGui(void)
 {
-	this->mainNotebook=new NoteBookClass(this);
-	this->menuBar=new QMenuBar;
+	this->mainNotebook=new NoteBookClass(this,this->mainWindow);
+	QObject::connect(this->mainNotebook,&QTabWidget::currentChanged,[this](int index)
+		{
+			this->reHighLight();
+		});
+
+	this->menuBar=new QMenuBar(this->mainWindow);
 
 //file menu
-	this->fileMenu=new QMenu("&File");
+	this->fileMenu=new QMenu("&File",this->menuBar);
 	this->menuBar->addMenu(this->fileMenu);
 
 //new page
@@ -141,7 +166,7 @@ void ManPageEditorQT::buildMainGui(void)
 	this->makeMenuItemClass(FILEMENU,"Quit",QKeySequence::Quit,"application-exit",QUITMENUITEM);
 
 //edit menu
-	this->editMenu=new QMenu("&Edit");
+	this->editMenu=new QMenu("&Edit",this->menuBar);
 	this->menuBar->addMenu(this->editMenu);
 
 //undo
@@ -167,19 +192,18 @@ void ManPageEditorQT::buildMainGui(void)
 
 //find//TODO//
 	this->findMenuItem=this->makeMenuItemClass(EDITMENU,"Find",QKeySequence::Find,"edit-find",FINDMENUITEM);
-	this->findMenuItem->setEnabled(false);
 
 	this->editMenu->addSeparator();
 
 //format menu
-	this->formatMenu=new QMenu("&Formating");
+	this->formatMenu=new QMenu("&Formating",this->menuBar);
 	this->menuBar->addMenu(this->formatMenu);
 	this->boldMenuItem=this->makeMenuItemClass(FORMATMENU,"Bold",QKeySequence::fromString("Ctrl+B"),"format-text-bold",BOLDMENUITEM);
 	this->italicMenuItem=this->makeMenuItemClass(FORMATMENU,"Italic",QKeySequence::fromString("Ctrl+I"),"format-text-italic",ITALICMENUITEM);
 	this->clearMenuItem=this->makeMenuItemClass(FORMATMENU,"Clear",QKeySequence::fromString("Ctrl+R"),"edit-clear",CLEARMENUITEM);
 
 //help
-	this->helpMenu=new QMenu("&Help");
+	this->helpMenu=new QMenu("&Help",this->menuBar);
 	this->menuBar->addMenu(this->helpMenu);
 //
 //about
@@ -225,7 +249,15 @@ QTextEdit* ManPageEditorQT::makeNewTab(QString html,QString sectname,bool issub,
 
 	QObject::connect(te,&QTextEdit::cursorPositionChanged,[this,te]()
 		{
-			this->hiliteLine(te,this->lineHiliteColour);
+			this->reHighLight();
+//			if(this->fc->findReplaceDialog->isVisible()==true)
+//				{
+//					this->fc->resetHighLights();
+//					this->hiliteLine(te,this->lineHiliteColour);
+//					this->fc->highLightAllMatches();
+//				}
+//			else
+//				this->hiliteLine(te,this->lineHiliteColour);
 		});
 	return(te);
 }
@@ -471,6 +503,13 @@ void ManPageEditorQT::hiliteLine(QTextEdit *te,QColor colour)
 	extraSelections.append(selection);
 	// Apply the highlight
 	te->setExtraSelections(extraSelections);
+//	if(this->fc->hightlightAll==true && this->fc->findReplaceDialog->isVisible()==true)
+//	{
+//	// qDebug()<<this->fc->hightlightAll;
+//	 	
+//
+//		this->fc->highLightAllMatches();
+//	}
 }
 
 void ManPageEditorQT::initApp(void)
@@ -541,11 +580,9 @@ void ManPageEditorQT::initApp(void)
 			this->buildSectionProps(ss,issub,false);
 		});
 
-//TODO//
+	this->fc=new QT_FindClass(this->mainWindow);
+	this->fc->autoHighlightAll=false;
 
-//	this->buildFindReplace();
-//#endif
-//
 	if(this->prefs.contains("app/geometry")==true)
 		this->mainWindow->restoreGeometry(prefs.value("app/geometry").toByteArray());
 	else

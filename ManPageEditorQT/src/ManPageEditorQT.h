@@ -105,6 +105,7 @@ class ManPageEditorQT : public QObject
 		int							currentPage=0;
 		bool							closingAllTabs=false;
 //editor functions
+		void							reHighLight(void);
 //menubar
 		QMenuBar						*menuBar;
 
@@ -187,6 +188,7 @@ class ManPageEditorQT : public QObject
 //		void							buildFindReplace(void);
 //		void							doFindReplace(int response_id);
 
+		QT_FindClass					*fc=NULL;
 
 
 	protected:

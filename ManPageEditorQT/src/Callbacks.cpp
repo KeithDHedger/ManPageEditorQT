@@ -148,7 +148,6 @@ void ManPageEditorQT::doEditMenuItems(MenuItemClass *mc)
 				break;
 
 			case SPELLCHECKMENUITEM:
-				//this->doSpellCheckDoc(te);
 				{
 					QT_SpellCheckClass chk(this->mainWindow);
 					chk.te=te;
@@ -156,9 +155,12 @@ void ManPageEditorQT::doEditMenuItems(MenuItemClass *mc)
 				}
 				break;
 
-			case FINDMENUITEM://TODO//
-				//this->findReplaceDialog->show();
-			//	this->findReplaceDialog->activateWindow();
+			case FINDMENUITEM:
+				fc->showFindDialog();
+				this->reHighLight();
+				//this->fc->resetHighLights();
+				//this->hiliteLine(te,this->lineHiliteColour);
+				//this->fc->highLightAllMatches();
 				break;
 		}
 }
