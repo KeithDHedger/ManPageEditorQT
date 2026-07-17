@@ -169,27 +169,7 @@ class ManPageEditorQT : public QObject
 //aspell
 		void							doSpellCheckDoc(QTextEdit *te);
 
-
-//TODO//
-//find replace vars
-//		QWidget						*findReplaceDialog;
-//		QComboBox					*findDropBox;
-//		QComboBox					*replaceDropBox;
-//		QCheckBox					*frSwitches[FRMAXSWITCHES];
-//		QPushButton					*frReplace;
-//		QStringList					findList;
-//		QStringList					replaceList;
-//		unsigned int					maxFRHistory=5;
-//		int							currentTab=0;
-//		QString						correctedFind;
-//		QString						correctedReplace;
-
-//find replace functions
-//		void							buildFindReplace(void);
-//		void							doFindReplace(int response_id);
-
 		QT_FindClass					*fc=NULL;
-
 
 	protected:
 	private:

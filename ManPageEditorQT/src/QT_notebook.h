@@ -29,8 +29,6 @@
 
 class NoteBookClass : public QTabWidget
 {
-	//Q_OBJECT
-
 	public:
 		explicit NoteBookClass(ManPageEditorQT *mpclass,QWidget *parent=0);
 		~NoteBookClass();
@@ -41,7 +39,6 @@ class NoteBookClass : public QTabWidget
 		void			setScrollButtonStatus(int btnnum,bool enabled,bool visible);
 
 	protected:
-//internals
 	private:
 		QToolButton	*scrollLeft;
 		QToolButton	*scrollRight;

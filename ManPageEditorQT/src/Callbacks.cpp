@@ -158,9 +158,6 @@ void ManPageEditorQT::doEditMenuItems(MenuItemClass *mc)
 			case FINDMENUITEM:
 				fc->showFindDialog();
 				this->reHighLight();
-				//this->fc->resetHighLights();
-				//this->hiliteLine(te,this->lineHiliteColour);
-				//this->fc->highLightAllMatches();
 				break;
 		}
 }

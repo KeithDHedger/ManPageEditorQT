@@ -250,14 +250,6 @@ QTextEdit* ManPageEditorQT::makeNewTab(QString html,QString sectname,bool issub,
 	QObject::connect(te,&QTextEdit::cursorPositionChanged,[this,te]()
 		{
 			this->reHighLight();
-//			if(this->fc->findReplaceDialog->isVisible()==true)
-//				{
-//					this->fc->resetHighLights();
-//					this->hiliteLine(te,this->lineHiliteColour);
-//					this->fc->highLightAllMatches();
-//				}
-//			else
-//				this->hiliteLine(te,this->lineHiliteColour);
 		});
 	return(te);
 }
@@ -503,13 +495,6 @@ void ManPageEditorQT::hiliteLine(QTextEdit *te,QColor colour)
 	extraSelections.append(selection);
 	// Apply the highlight
 	te->setExtraSelections(extraSelections);
-//	if(this->fc->hightlightAll==true && this->fc->findReplaceDialog->isVisible()==true)
-//	{
-//	// qDebug()<<this->fc->hightlightAll;
-//	 	
-//
-//		this->fc->highLightAllMatches();
-//	}
 }
 
 void ManPageEditorQT::initApp(void)
@@ -655,24 +640,6 @@ void ManPageEditorQT::writeExitData(void)
 	this->prefs.setValue("app/geometry",this->mainWindow->saveGeometry());
 	this->prefs.setValue("editor/lastsavedir",this->lastSaveDir);
 	this->prefs.setValue("editor/lastloaddir",this->lastLoadDir);
-
-//application
-
-//find
-//	this->setSearchPrefs();
-//	this->findList=this->tailStringList(this->findList,this->maxFRHistory);
-//	this->replaceList=this->tailStringList(this->replaceList,this->maxFRHistory);
-//	this->prefs.setValue("find/findlist",this->findList);
-//	this->prefs.setValue("find/replacelist",this->replaceList);
-//	this->prefs.setValue("find/wrapsearch",this->wrapSearch);
-//	this->prefs.setValue("find/findinallfiles",this->findInAllFiles);
-//	this->prefs.setValue("find/insensitivesearch",this->insensitiveSearch);
-//	this->prefs.setValue("find/useregex",this->useRegex);
-//	this->prefs.setValue("find/hightlightall",this->hightlightAll);
-//	this->prefs.setValue("find/replaceall",this->replaceAll);
-//	this->prefs.setValue("find/searchback",this->searchBack);
-//	this->prefs.setValue("find/findafterreplace",this->findAfterReplace);
-//	this->prefs.setValue("find/maxfrhistory",this->maxFRHistory);
 }
 
 void ManPageEditorQT::readConfigs(void)
@@ -680,23 +647,6 @@ void ManPageEditorQT::readConfigs(void)
 //editor
 	this->lastSaveDir=this->prefs.value("editor/lastsavedir","").toString();
 	this->lastLoadDir=this->prefs.value("editor/lastloaddir","").toString();
-
-//document
-////application
-
-////find
-//	this->findList=this->prefs.value("find/findlist").toStringList();
-//	this->replaceList=this->prefs.value("find/replacelist").toStringList();
-//	this->wrapSearch=this->prefs.value("find/wrapsearch",QVariant(bool(false))).value<bool>();
-//	this->findInAllFiles=this->prefs.value("find/findinallfiles",QVariant(bool(false))).value<bool>();
-//	this->insensitiveSearch=this->prefs.value("find/insensitivesearch",QVariant(bool(false))).value<bool>();
-//	this->useRegex=this->prefs.value("find/useregex",QVariant(bool(false))).value<bool>();
-//	this->hightlightAll=this->prefs.value("find/hightlightall",QVariant(bool(false))).value<bool>();
-//	this->replaceAll=this->prefs.value("find/replaceall",QVariant(bool(false))).value<bool>();
-//	this->searchBack=this->prefs.value("find/searchback",QVariant(bool(false))).value<bool>();
-//	this->findAfterReplace=this->prefs.value("find/findafterreplace",QVariant(bool(false))).value<bool>();
-//	this->maxFRHistory=this->prefs.value("find/maxfrhistory",5).toInt();
-//
 }
 
 bool ManPageEditorQT::confirmClose(QTextEdit *te)
@@ -1041,137 +991,5 @@ void ManPageEditorQT::doPrefs(void)
 #if 0
 
 void ManPageEditorQT::setToolbarSensitive(void)
-{
-	DocumentClass	*doc=this->getDocumentForTab(-1);
-	bool				override;
-	bool				gotdoc=true;
-	bool				hasselection=false;
-	plugData			pd;
-
-	if(this->sessionBusy==true)
-		return;
-
-	if(doc==NULL)
-		{
-			override=false;
-			gotdoc=false;
-		}
-	else
-		{
-			override=doc->dirty;
-			hasselection=doc->textCursor().hasSelection();
-		}
-
-	if(this->mainNotebook->count()==0)
-		{
-			this->saveSessionsMenu->setEnabled(false);
-			this->currentSessionNumber=0xdeadbeef;
-			this->mainNotebook->setScrollButtonStatus(BOTHSCROLLBUTTONS,false,false);
-		}
-	else
-		{
-			this->mainNotebook->setScrollButtonStatus(BOTHSCROLLBUTTONS,true,true);
-			if(this->mainNotebook->currentIndex()==0)
-				this->mainNotebook->setScrollButtonStatus(LEFTSCROLLBUTTON,false,true);
-			else if(this->mainNotebook->currentIndex()==this->mainNotebook->count()-1)
-				this->mainNotebook->setScrollButtonStatus(RIGHTSCROLLBUTTON,false,true);
-			if(this->mainNotebook->count()==1)
-				this->mainNotebook->setScrollButtonStatus(BOTHSCROLLBUTTONS,false,true);
-			this->saveSessionsMenu->setEnabled(true);
-		}
-
-	if(this->currentSessionNumber==0xdeadbeef)
-		this->saveCurrentSessionMenuItem->setEnabled(false);
-	else
-		this->saveCurrentSessionMenuItem->setEnabled(true);
-		
-	this->restoreDefaultSessionMenuItem->setEnabled(this->onExitSaveSession);
-
-	this->pluginMenu->setEnabled(!this->pluginMenu->isEmpty());
-
-	for(int j=0;j<this->prefsToolBarLayout.length();j++)
-		{
-			switch(this->prefsToolBarLayout.at(j).toLatin1())
-				{
-//new
-					case 'N':
-						this->newMenuItem->setEnabled(true);
-						break;
-//open+recent
-					case 'O':
-						this->newMenuItem->setEnabled(true);
-						break;
-//save
-					case 'S':
-						this->saveMenuItem->setEnabled(override);
-						break;
-
-//cut
-					case 'X':
-						this->cutMenuItem->setEnabled((gotdoc==true) && ((hasselection) & (!doc->isReadOnly())));
-						break;
-//copy
-					case 'C':
-						this->copyMenuItem->setEnabled(hasselection);
-						break;
-//paste
-					case 'P':
-						this->pasteMenuItem->setEnabled((gotdoc==true) && (doc->canPaste()));
-						break;
-//delete
-					case 'd':
-						this->deleteMenuItem->setEnabled((gotdoc==true) && (hasselection==true));
-						break;
-//undo
-					case 'U':
-						this->undoMenuItem->setEnabled((gotdoc==true) && (doc->gotUndo));
-						this->undoAllMenuItem->setEnabled((gotdoc==true) && (doc->gotUndo));
-						break;
-//redo
-					case 'R':
-						this->redoMenuItem->setEnabled((gotdoc==true) && (doc->gotRedo));
-						this->redoAllMenuItem->setEnabled((gotdoc==true) && (doc->gotRedo));
-						break;
-//find
-					case 'F':
-						this->findMenuItem->setEnabled(true);
-						break;
-//navigation
-					case 'G':
-						this->goToDefineMenuItem->setEnabled(hasselection);
-						break;
-//go back
-					case 'B':
-						this->goBackMenu->setEnabled(true);
-						break;
-//go foward
-					case 'W':
-						this->goFowardMenu->setEnabled(true);
-						break;
-
-					case '9':
-						this->lineNumberWidget->setEnabled(gotdoc);
-						this->goToLineDialogMenuItem->setEnabled(gotdoc);
-						break;
-//find in gtkdoc
-					case 'A':
-						this->findGtkApiWidget->setEnabled(true);
-						break;
-
-//find in qt5doc
-					case 'Q':
-						this->findQtApiWidget->setEnabled(true);
-						break;
-//find in function def
-					case 'D':
-						this->findDefWidget->setEnabled(true);
-						break;
-//livesearch
-					case 'L':
-						this->liveSearchWidget->setEnabled(gotdoc);
-						break;
-				}
-		}
-}
 
 #endif
